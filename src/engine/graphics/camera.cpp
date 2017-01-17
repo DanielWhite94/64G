@@ -48,47 +48,21 @@ namespace Engine {
 		}
 
 		int Camera::coordXToScreenXOffset(int coordX) const {
-			switch(type) {
-				case Camera::Type::Fixed:
-					return (coordX-getX())*d.fixed.zoom;
-				break;
-			}
-
-			assert(false);
-			return 0;
+			return (coordX-getX())*getZoom();
 		}
 
 		int Camera::coordYToScreenYOffset(int coordY) const {
-			switch(type) {
-				case Camera::Type::Fixed:
-					return (coordY-getY())*d.fixed.zoom;
-				break;
-			}
+			return (coordY-getY())*getZoom();
 
-			assert(false);
-			return 0;
 		}
 
 		int Camera::screenXOffsetToCoordX(int screenXOffset) const {
-			switch(type) {
-				case Camera::Type::Fixed:
-					return screenXOffset/d.fixed.zoom+getX();
-				break;
-			}
-
-			assert(false);
-			return 0;
+			return screenXOffset/getZoom()+getX();
 		}
 
 		int Camera::screenYOffsetToCoordY(int screenYOffset) const {
-			switch(type) {
-				case Camera::Type::Fixed:
-					return screenYOffset/d.fixed.zoom+getY();
-				break;
-			}
+			return screenYOffset/getZoom()+getY();
 
-			assert(false);
-			return 0;
 		}
 	};
 };
