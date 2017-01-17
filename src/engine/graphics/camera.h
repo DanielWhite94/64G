@@ -19,9 +19,11 @@ namespace Engine {
 
 			int coordXToScreenXOffset(int coordX) const;
 			int coordYToScreenYOffset(int coordY) const;
+			int coordLengthToScreenLength(int coordLen) const;
 
 			int screenXOffsetToCoordX(int screenXOffset) const;
 			int screenYOffsetToCoordY(int screenYOffset) const;
+			int screenLengthToCoordLength(int screenLen) const;
 		private:
 			union {
 				struct { int x, y, zoom; } fixed;

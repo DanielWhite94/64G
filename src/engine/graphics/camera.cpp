@@ -53,7 +53,10 @@ namespace Engine {
 
 		int Camera::coordYToScreenYOffset(int coordY) const {
 			return (coordY-getY())*getZoom();
+		}
 
+		int Camera::coordLengthToScreenLength(int coordLen) const {
+			return coordLen*getZoom();
 		}
 
 		int Camera::screenXOffsetToCoordX(int screenXOffset) const {
@@ -62,7 +65,10 @@ namespace Engine {
 
 		int Camera::screenYOffsetToCoordY(int screenYOffset) const {
 			return screenYOffset/getZoom()+getY();
+		}
 
+		int Camera::screenLengthToCoordLength(int screenLen) const {
+			return screenLen/getZoom();
 		}
 	};
 };
