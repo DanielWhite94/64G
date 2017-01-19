@@ -21,6 +21,17 @@ namespace Engine {
 
 			void setX(CoordComponent x);
 			void setY(CoordComponent y);
+
+			CoordVec &operator+=(const CoordVec &rhs) {
+				this->x+=rhs.x;
+				this->y+=rhs.y;
+				return *this;
+			}
+
+			friend CoordVec operator+(CoordVec lhs, const CoordVec &rhs) {
+				lhs+=rhs;
+				return lhs;
+			}
 		};
 	};
 };
