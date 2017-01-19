@@ -3,7 +3,7 @@
 
 namespace Engine {
 	namespace Physics {
-		typedef unsigned CoordComponent;
+		typedef int CoordComponent;
 
 		class CoordVec {
 		public:
