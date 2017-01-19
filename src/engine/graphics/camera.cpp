@@ -4,70 +4,51 @@
 
 namespace Engine {
 	namespace Graphics {
-		Camera::Camera(int x, int y, int zoom) {
-			type=Camera::Type::Fixed;
-			d.fixed.x=x;
-			d.fixed.y=y;
-			d.fixed.zoom=zoom;
+		Camera::Camera(const CoordVec &gPos, int gZoom) {
+			pos=gPos;
+			zoom=gZoom;
 		}
 
 		Camera::~Camera() {
 		}
 
-		int Camera::getX(void) const {
-			switch(type) {
-				case Camera::Type::Fixed:
-					return d.fixed.x;
-				break;
-			}
-
-			assert(false);
-			return 0;
+		CoordComponent Camera::getX(void) const {
+			return pos.x;
 		}
 
-		int Camera::getY(void) const {
-			switch(type) {
-				case Camera::Type::Fixed:
-					return d.fixed.y;
-				break;
-			}
+		CoordComponent Camera::getY(void) const {
+			return pos.y;
+		}
 
-			assert(false);
-			return 0;
+		const CoordVec &Camera::getVec(void) const {
+			return pos;
 		}
 
 		int Camera::getZoom(void) const {
-			switch(type) {
-				case Camera::Type::Fixed:
-					return d.fixed.zoom;
-				break;
-			}
-
-			assert(false);
-			return 1;
+			return zoom;
 		}
 
-		int Camera::coordXToScreenXOffset(int coordX) const {
+		int Camera::coordXToScreenXOffset(CoordComponent coordX) const {
 			return (coordX-getX())*getZoom();
 		}
 
-		int Camera::coordYToScreenYOffset(int coordY) const {
+		int Camera::coordYToScreenYOffset(CoordComponent coordY) const {
 			return (coordY-getY())*getZoom();
 		}
 
-		int Camera::coordLengthToScreenLength(int coordLen) const {
+		int Camera::coordLengthToScreenLength(CoordComponent coordLen) const {
 			return coordLen*getZoom();
 		}
 
-		int Camera::screenXOffsetToCoordX(int screenXOffset) const {
+		CoordComponent Camera::screenXOffsetToCoordX(int screenXOffset) const {
 			return screenXOffset/getZoom()+getX();
 		}
 
-		int Camera::screenYOffsetToCoordY(int screenYOffset) const {
+		CoordComponent Camera::screenYOffsetToCoordY(int screenYOffset) const {
 			return screenYOffset/getZoom()+getY();
 		}
 
-		int Camera::screenLengthToCoordLength(int screenLen) const {
+		CoordComponent Camera::screenLengthToCoordLength(int screenLen) const {
 			return screenLen/getZoom();
 		}
 	};
