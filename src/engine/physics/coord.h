@@ -7,10 +7,7 @@ namespace Engine {
 
 		class CoordVec {
 		public:
-			union {
-				struct { CoordComponent c[2]; };
-				struct { CoordComponent x, y; };
-			};
+			CoordComponent x, y;
 
 			CoordVec();
 			CoordVec(CoordComponent x, CoordComponent y);

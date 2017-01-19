@@ -7,28 +7,28 @@ namespace Engine {
 			setY(0);
 		}
 
-		CoordVec::CoordVec(CoordComponent x, CoordComponent y) {
-			setX(x);
-			setY(y);
+		CoordVec::CoordVec(CoordComponent gX, CoordComponent gY) {
+			setX(gX);
+			setY(gY);
 		}
 
 		CoordVec::~CoordVec() {
 		}
 
 		CoordComponent CoordVec::getX(void) const {
-			return c[0];
+			return x;
 		}
 
 		CoordComponent CoordVec::getY(void) const {
-			return c[1];
+			return y;
 		}
 
-		void CoordVec::setX(CoordComponent x) {
-			c[0]=x;
+		void CoordVec::setX(CoordComponent gX) {
+			x=gX;
 		}
 
-		void CoordVec::setY(CoordComponent y) {
-			c[1]=y;
+		void CoordVec::setY(CoordComponent gY) {
+			y=gY;
 		}
 
 	};
