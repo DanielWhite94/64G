@@ -3,7 +3,7 @@
 
 namespace Engine {
 	struct MapTileLayer {
-		int texture;
+		unsigned textureId;
 	};
 
 	class MapTile {
@@ -11,7 +11,7 @@ namespace Engine {
 		static const unsigned layersMax=16;
 
 		MapTile();
-		MapTile(int temp);
+		MapTile(unsigned temp);
 		~MapTile();
 
 		const MapTileLayer *getLayer(unsigned z) const;

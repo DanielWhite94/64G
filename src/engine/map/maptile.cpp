@@ -10,11 +10,11 @@ MapTile::MapTile() {
 		layers[i].textureId=0;
 }
 
-MapTile::MapTile(int temp) {
-	layers[0].texture=temp;
+MapTile::MapTile(unsigned temp) {
+	layers[0].textureId=temp;
 	unsigned i;
 	for(i=1; i<layersMax; ++i)
-		layers[i].texture=0;
+		layers[i].textureId=0;
 }
 
 MapTile::~MapTile() {
