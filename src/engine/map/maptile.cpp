@@ -4,6 +4,12 @@
 
 using namespace Engine;
 
+MapTile::MapTile() {
+	unsigned i;
+	for(i=0; i<layersMax; ++i)
+		layers[i].textureId=0;
+}
+
 MapTile::MapTile(int temp) {
 	layers[0].texture=temp;
 	unsigned i;

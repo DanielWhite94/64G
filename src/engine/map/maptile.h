@@ -10,6 +10,7 @@ namespace Engine {
 	public:
 		static const unsigned layersMax=16;
 
+		MapTile();
 		MapTile(int temp);
 		~MapTile();
 
