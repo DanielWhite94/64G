@@ -5,6 +5,8 @@ namespace Engine {
 	namespace Physics {
 		typedef int CoordComponent;
 
+		static int CoordsPerTile=8;
+
 		class CoordVec {
 		public:
 			CoordComponent x, y;
