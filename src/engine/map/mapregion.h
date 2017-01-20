@@ -1,0 +1,28 @@
+#ifndef ENGINE_GRAPHICS_MAPREGION_H
+#define ENGINE_GRAPHICS_MAPREGION_H
+
+#include "maptile.h"
+#include "../physics/coord.h"
+
+using namespace Engine::Physics;
+
+namespace Engine {
+	class MapRegion {
+	public:
+		static const unsigned tilesWide=256, tilesHigh=256;
+
+		MapRegion();
+		~MapRegion();
+
+		static unsigned coordXToRegionXBase(CoordComponent x);
+		static unsigned coordXToRegionXOffset(CoordComponent x);
+
+		const MapTile *getTileAtCoordVec(const CoordVec &vec) const ;
+
+		void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
+	private:
+		MapTile tiles[tilesHigh][tilesWide];
+	};
+};
+
+#endif
