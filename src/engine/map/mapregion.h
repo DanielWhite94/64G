@@ -4,24 +4,28 @@
 #include "maptile.h"
 #include "../physics/coord.h"
 
+using namespace Engine::Map;
 using namespace Engine::Physics;
 
 namespace Engine {
-	class MapRegion {
-	public:
-		static const unsigned tilesWide=256, tilesHigh=256;
+	namespace Map {
+		class MapRegion {
+		public:
+			static const unsigned tilesWide=256, tilesHigh=256;
 
-		MapRegion();
-		~MapRegion();
+			MapRegion();
+			~MapRegion();
 
-		static unsigned coordXToRegionXBase(CoordComponent x);
-		static unsigned coordXToRegionXOffset(CoordComponent x);
+			static unsigned coordXToRegionXBase(CoordComponent x);
+			static unsigned coordXToRegionXOffset(CoordComponent x);
 
-		const MapTile *getTileAtCoordVec(const CoordVec &vec) const ;
+			MapTile *getTileAtCoordVec(const CoordVec &vec);
+			const MapTile *getTileAtCoordVec(const CoordVec &vec) const ;
 
-		void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
-	private:
-		MapTile tiles[tilesHigh][tilesWide];
+			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
+		private:
+			MapTile tiles[tilesHigh][tilesWide];
+		};
 	};
 };
 
