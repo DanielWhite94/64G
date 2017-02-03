@@ -5,22 +5,39 @@
 #include <SDL2/SDL_image.h>
 
 #include "camera.h"
+#include "texture.h"
 #include "../map/map.h"
 #include "../physics/coord.h"
+
+// TODO: this better
+const unsigned TextureIdNone=0;
+const unsigned TextureIdGrass0=1;
+const unsigned TextureIdGrass1=2;
+const unsigned TextureIdGrass2=3;
+const unsigned TextureIdGrass3=4;
+const unsigned TextureIdGrass4=5;
+const unsigned TextureIdGrass5=6;
+const unsigned TextureIdGrass6=7;
+const unsigned TextureIdBrickPath=8;
+const unsigned TextureIdDirt=9;
+const unsigned TextureIdDock=10;
+const unsigned TextureIdWater=11;
+const unsigned TextureIdNB=12;
+
+using namespace Engine::Map;
 
 namespace Engine {
 	namespace Graphics {
 		class Renderer {
 		public:
-			static const int TilesWide=24;
-			static const int TilesHigh=18;
-
-			bool drawGrid;
+			bool drawTileGrid; // Draw a grid showing the tile structure.
+			bool drawCoordGrid; // Draw a grid showing the coordinate structure.
+			bool drawHitMasks; // Draw object hitmasks instead of textures.
 
 			Renderer(unsigned windowWidth, unsigned windowHeight);
 			~Renderer();
 
-			void refresh(const Engine::Graphics::Camera *camera, const Map *map);
+			void refresh(const Engine::Graphics::Camera *camera, const class Map *map);
 		private:
 			int windowWidth, windowHeight;
 
@@ -30,9 +47,12 @@ namespace Engine {
 			CoordVec topLeft, bottomRight;
 
 			const Camera *camera;
-			const Map *map;
+			const class Map *map;
 
-			void renderGrid(void);
+			Texture *textures[TextureIdNB];
+
+			void renderGrid(const CoordVec &coordDelta); // Set colour before calling.
+			void renderHitMask(Engine::Physics::HitMask hitmask, int sx, int sy);
 		};
 	};
 };
