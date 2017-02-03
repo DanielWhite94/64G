@@ -1,0 +1,21 @@
+#ifndef ENGINE_GRAPHICS_TEXTURE_H
+#define ENGINE_GRAPHICS_TEXTURE_H
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
+namespace Engine {
+	namespace Graphics {
+		class Texture {
+		public:
+			Texture(SDL_Renderer *renderer, const char *path);
+			~Texture();
+
+			const SDL_Texture *getTexture(void) const;
+		private:
+			SDL_Texture *texture;
+		};
+	};
+};
+
+#endif
