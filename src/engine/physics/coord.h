@@ -7,6 +7,13 @@ namespace Engine {
 
 		static int CoordsPerTile=8;
 
+		enum CoordAngle {
+			CoordAngle0,
+			CoordAngle90,
+			CoordAngle180,
+			CoordAngle270,
+		};
+
 		class CoordVec {
 		public:
 			CoordComponent x, y;
