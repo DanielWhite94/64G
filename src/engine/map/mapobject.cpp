@@ -78,5 +78,12 @@ namespace Engine {
 		void MapObject::setPos(const CoordVec &gPos) {
 			pos=gPos;
 		}
+
+		void MapObject::setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask gHitmask) {
+			assert(xOffset<getTilesWide());
+			assert(yOffset<getTilesHigh());
+
+			tileData[xOffset+yOffset*getTilesWide()]->hitmask=gHitmask;
+		}
 	};
 };

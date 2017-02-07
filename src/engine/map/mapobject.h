@@ -32,6 +32,7 @@ namespace Engine {
 
 			void setAngle(CoordAngle angle);
 			void setPos(const CoordVec &pos);
+			void setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask hitmask);
 		private:
 			CoordAngle angle;
 			CoordVec pos;
