@@ -23,6 +23,7 @@ namespace Engine {
 			unsigned getObjectCount(void) const;
 
 			void addObject(MapObject *object);
+			void removeObject(MapObject *object);
 		private:
 			MapTileLayer layers[layersMax];
 

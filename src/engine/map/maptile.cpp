@@ -50,5 +50,21 @@ namespace Engine {
 
 			objects[objectsNext++]=object;
 		}
+
+		void MapTile::removeObject(MapObject *object) {
+			assert(object!=NULL);
+
+			// Search for the object.
+			unsigned i;
+			for(i=0; i<objectsNext; ++i)
+				if (objects[i]==object) {
+					// Remove this object by overwriting it with the one at the end of the array.
+					objects[i]=objects[--objectsNext];
+					return;
+				}
+
+			// Object not found.
+			assert(false);
+		}
 	};
 };
