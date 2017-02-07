@@ -28,6 +28,14 @@ namespace Engine {
 			return zoom;
 		}
 
+		void Camera::setVec(const CoordVec &gPos) {
+			pos=gPos;
+		}
+
+		void Camera::setZoom(int gZoom) {
+			zoom=gZoom;
+		}
+
 		int Camera::coordXToScreenXOffset(CoordComponent coordX) const {
 			return (coordX-getX())*getZoom();
 		}
