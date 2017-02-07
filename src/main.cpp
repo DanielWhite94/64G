@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
 	// Add objects.
 	MapObject objectPlayer(CoordAngle0, CoordVec(205*Physics::CoordsPerTile, 521*Physics::CoordsPerTile), 1, 1);
 	map->addObject(&objectPlayer);
+	CoordVec playerDelta(0, 0);
 
 	MapObject objectNpc(CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile), 2, 2);
 	map->addObject(&objectNpc);
@@ -41,17 +42,16 @@ int main(int argc, char **argv) {
 	renderer.drawHitMasks=true;
 
 	// Create camera variables.
-	CoordVec cameraPos(205*Physics::CoordsPerTile, 523*Physics::CoordsPerTile);
-	CoordVec cameraDelta(0, 0);
+	Camera camera(CoordVec(0,0), Zoom);
 
 	// Main loop.
 	bool quit=false;
 	while(!quit) {
 		// Debugging.
-		printf("Main: tick (cameraPos (%i,%i))\n", cameraPos.x, cameraPos.y);
+		printf("Main: tick (player position (%i,%i))\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y);
 
 		// Redraw screen.
-		Camera camera(cameraPos, Zoom); // TODO: update rather than create/destroy each time
+		camera.setVec(objectPlayer.getCoordTopLeft());
 		renderer.refresh(&camera, map);
 
 		// Check keyboard and events and move camera.
@@ -65,41 +65,41 @@ int main(int argc, char **argv) {
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym) {
 						case SDLK_LEFT:
-							cameraDelta.x=-moveSpeed;
+							playerDelta.x=-moveSpeed;
 						break;
 						case SDLK_RIGHT:
-							cameraDelta.x=moveSpeed;
+							playerDelta.x=moveSpeed;
 						break;
 						case SDLK_UP:
-							cameraDelta.y=-moveSpeed;
+							playerDelta.y=-moveSpeed;
 						break;
 						case SDLK_DOWN:
-							cameraDelta.y=moveSpeed;
+							playerDelta.y=moveSpeed;
 						break;
 					}
 				break;
 				case SDL_KEYUP:
 					switch(event.key.keysym.sym) {
 						case SDLK_LEFT:
-							if (cameraDelta.x<0)
-								cameraDelta.x=0;
+							if (playerDelta.x<0)
+								playerDelta.x=0;
 						break;
 						case SDLK_RIGHT:
-							if (cameraDelta.x>0)
-								cameraDelta.x=0;
+							if (playerDelta.x>0)
+								playerDelta.x=0;
 						break;
 						case SDLK_UP:
-							if (cameraDelta.y<0)
-								cameraDelta.y=0;
+							if (playerDelta.y<0)
+								playerDelta.y=0;
 						break;
 						case SDLK_DOWN:
-							if (cameraDelta.y>0)
-								cameraDelta.y=0;
+							if (playerDelta.y>0)
+								playerDelta.y=0;
 						break;
 					}
 				break;
 			}
-		cameraPos+=cameraDelta;
+		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta);
 
 		// Delay
 		// TODO: Constant FPS to avoid character speed changes.
