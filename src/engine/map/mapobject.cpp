@@ -5,18 +5,24 @@
 
 namespace Engine {
 	namespace Map {
+		MapObjectTile::MapObjectTile() {
+		}
+
+		MapObjectTile::~MapObjectTile() {
+		}
+
 		MapObject::MapObject(CoordAngle gAngle, const CoordVec &gPos, unsigned gTilesWide, unsigned gTilesHigh) {
 			angle=gAngle;
 			pos=gPos;
 			tilesWide=gTilesWide;
 			tilesHigh=gTilesHigh;
 
-			hitmasks=(Physics::HitMask **)malloc(sizeof(Physics::HitMask)*getTilesWide()*getTilesHigh());
-			assert(hitmasks!=NULL); // TODO: do better
+			tileData=(MapObjectTile **)malloc(sizeof(MapObjectTile)*getTilesWide()*getTilesHigh());
+			assert(tileData!=NULL); // TODO: do better
 
 			unsigned i, max=getTilesWide()*getTilesHigh();
 			for(i=0; i<max; ++i)
-				hitmasks[i]=new HitMask();
+				tileData[i]=new MapObjectTile(); // TODO: do better
 		}
 
 		MapObject::~MapObject() {
@@ -54,7 +60,7 @@ namespace Engine {
 			assert(xOffset<getTilesWide());
 			assert(yOffset<getTilesHigh());
 
-			return *hitmasks[xOffset+yOffset*getTilesWide()];
+			return tileData[xOffset+yOffset*getTilesWide()]->hitmask;
 		}
 
 		HitMask MapObject::getHitMaskByCoord(const CoordVec &vec) const {

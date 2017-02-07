@@ -8,6 +8,13 @@ using namespace Engine::Physics;
 
 namespace Engine {
 	namespace Map {
+		class MapObjectTile {
+		public:
+			MapObjectTile();
+			~MapObjectTile();
+			HitMask hitmask;
+		};
+
 		class MapObject {
 		public:
 			MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh); // pos is top left corner
@@ -30,7 +37,7 @@ namespace Engine {
 			CoordVec pos;
 			unsigned tilesWide, tilesHigh;
 
-			HitMask **hitmasks;
+			MapObjectTile **tileData;
 		};
 	};
 };
