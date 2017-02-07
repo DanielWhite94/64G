@@ -96,6 +96,42 @@ namespace Engine {
 			CoordVec vec;
 			CoordVec vec1=object->getCoordTopLeft();
 			CoordVec vec2=object->getCoordBottomRight();
+			// TODO: verify below code
+			vec1.x=floor(vec1.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.y=floor(vec1.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.x=floor(vec2.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.y=floor(vec2.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+
+			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
+				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
+					getTileAtCoordVec(vec)->addObject(object);
+		}
+
+		void Map::moveObject(MapObject *object, const CoordVec &newPos) {
+			assert(object!=NULL);
+
+			// TODO: Add and removing to/from tiles can be improved by considering newPos-pos.
+
+			CoordVec vec, vec1, vec2;
+
+			// Remove from tiles.
+			vec1=object->getCoordTopLeft();
+			vec2=object->getCoordBottomRight();
+			vec1.x=floor(vec1.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.y=floor(vec1.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.x=floor(vec2.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.y=floor(vec2.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+
+			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
+				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
+					getTileAtCoordVec(vec)->removeObject(object);
+
+			// Move object.
+			object->setPos(newPos);
+
+			// Add to tiles.
+			vec1=object->getCoordTopLeft();
+			vec2=object->getCoordBottomRight();
 			vec1.x=floor(vec1.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
 			vec1.y=floor(vec1.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
 			vec2.x=floor(vec2.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;

@@ -31,6 +31,7 @@ namespace Engine {
 			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
 
 			void addObject(MapObject *object);
+			void moveObject(MapObject *object, const CoordVec &newPos);
 		private:
 			MapRegion *regions[regionsHigh][regionsWide];
 
