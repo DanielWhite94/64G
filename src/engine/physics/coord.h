@@ -12,6 +12,7 @@ namespace Engine {
 			CoordAngle90,
 			CoordAngle180,
 			CoordAngle270,
+			CoordAngleNB,
 		};
 
 		class CoordVec {
