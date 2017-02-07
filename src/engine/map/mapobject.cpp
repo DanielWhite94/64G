@@ -31,7 +31,11 @@ namespace Engine {
 		}
 
 		CoordVec MapObject::getCoordBottomRight(void) const {
-			return getCoordTopLeft()+getCoordSize()-CoordVec(1,1);
+			return getCoordBottomRightExclusive()-CoordVec(1,1);
+		}
+
+		CoordVec MapObject::getCoordBottomRightExclusive(void) const {
+			return getCoordTopLeft()+getCoordSize();
 		}
 
 		CoordVec MapObject::getCoordSize(void) const {

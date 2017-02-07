@@ -16,6 +16,7 @@ namespace Engine {
 			CoordAngle getAngle(void) const;
 			CoordVec getCoordTopLeft(void) const;
 			CoordVec getCoordBottomRight(void) const;
+			CoordVec getCoordBottomRightExclusive(void) const;
 			CoordVec getCoordSize(void) const;
 			unsigned getTilesWide(void) const;
 			unsigned getTilesHigh(void) const;
