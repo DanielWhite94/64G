@@ -29,6 +29,13 @@ int main(int argc, char **argv) {
 
 	// Add objects.
 	MapObject objectPlayer(CoordAngle0, CoordVec(205*Physics::CoordsPerTile, 521*Physics::CoordsPerTile), 1, 1);
+	HitMask playerHitmask;
+	const unsigned playerW=4, playerH=6;
+	unsigned playerX, playerY;
+	for(playerY=(8-playerH)/2; playerY<(8+playerH)/2; ++playerY)
+		for(playerX=(8-playerW)/2; playerX<(8+playerW)/2; ++playerX)
+			playerHitmask.setXY(playerX, playerY, true);
+	objectPlayer.setHitMaskByTileOffset(0, 0, playerHitmask);
 	map->addObject(&objectPlayer);
 	CoordVec playerDelta(0, 0);
 
