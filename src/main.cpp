@@ -39,7 +39,14 @@ int main(int argc, char **argv) {
 	map->addObject(&objectPlayer);
 	CoordVec playerDelta(0, 0);
 
-	MapObject objectNpc(CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile), 2, 2);
+	MapObject objectNpc(CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile), 1, 1);
+	HitMask npcHitmask;
+	const unsigned npcW=4, npcH=5;
+	unsigned npcX, npcY;
+	for(npcY=(8-npcH)/2; npcY<(8+npcH)/2; ++npcY)
+		for(npcX=(8-npcW)/2; npcX<(8+npcW)/2; ++npcX)
+			npcHitmask.setXY(npcX, npcY, true);
+	objectNpc.setHitMaskByTileOffset(0, 0, npcHitmask);
 	map->addObject(&objectNpc);
 
 	// Create renderer.
