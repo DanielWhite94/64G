@@ -52,5 +52,46 @@ namespace Engine {
 			bitset|=(((uint64_t)value)<<shift);
 		}
 
+		void HitMask::translateXY(int dX, int dY) {
+			if (dX<0)
+				translateLeft(-dX);
+			else if (dX>0)
+				translateRight(dX);
+
+			if (dY<0)
+				translateUp(-dY);
+			else if (dY>0)
+				translateDown(dY);
+		}
+
+		void HitMask::translateDown(unsigned n) {
+			if (n>=8)
+				bitset=0;
+			else
+				bitset<<=(n*8);
+		}
+
+		void HitMask::translateLeft(unsigned n) {
+			if (n>=8)
+				bitset=0;
+			else
+				while(n-->0)
+					bitset=((bitset>>1) & ~column7Mask);
+		}
+
+		void HitMask::translateRight(unsigned n) {
+			if (n>=8)
+				bitset=0;
+			else
+				while(n-->0)
+					bitset=((bitset<<1) & ~column0Mask);
+		}
+
+		void HitMask::translateUp(unsigned n) {
+			if (n>=8)
+				bitset=0;
+			else
+				bitset>>=(8*n);
+		}
 	};
 };
