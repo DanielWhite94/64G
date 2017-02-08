@@ -9,6 +9,11 @@ using namespace Engine::Graphics;
 namespace Engine {
 	namespace Graphics {
 		Renderer::Renderer(unsigned gWindowWidth, unsigned gWindowHeight) {
+			// Set parameters.
+			drawTileGrid=false;
+			drawCoordGrid=false;
+			drawHitMasks=false;
+
 			// Init SDL.
 			SDL_Init(SDL_INIT_VIDEO);
 			IMG_Init(IMG_INIT_PNG);
