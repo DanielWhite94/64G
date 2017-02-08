@@ -117,6 +117,9 @@ int main(int argc, char **argv) {
 
 		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta);
 
+		if (tick%8==0)
+			map->moveObject(&objectNpc, objectNpc.getCoordTopLeft()+CoordVec(2, -1)); // west north west
+
 		// Delay
 		// TODO: Constant FPS to avoid character speed changes.
 		SDL_Delay(1000/32);
