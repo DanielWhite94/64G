@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
 		renderer.refresh(&camera, map);
 
 		// Check keyboard and events and move camera.
-		const int moveSpeed=3*Physics::CoordsPerTile+3; // More realistic character running speed is Physics::CoordsPerTile/2.
+		const int moveSpeed=Physics::CoordsPerTile/2;
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
 			switch (event.type) {
@@ -114,11 +114,12 @@ int main(int argc, char **argv) {
 					}
 				break;
 			}
+
 		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta);
 
 		// Delay
 		// TODO: Constant FPS to avoid character speed changes.
-		SDL_Delay(1000/16);
+		SDL_Delay(1000/32);
 	}
 
 	return EXIT_SUCCESS;
