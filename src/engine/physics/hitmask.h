@@ -13,6 +13,8 @@ namespace Engine {
 
 			bool getXY(unsigned x, unsigned y) const; // 0<=x,y<8
 
+			void setColumn(int x, bool value);
+			void setRow(int y, bool value);
 			void setXY(unsigned x, unsigned y, bool value); // 0<=x,y<8
 
 			HitMask &operator|=(const HitMask &rhs) {
@@ -25,8 +27,10 @@ namespace Engine {
 				return lhs;
 			}
 		private:
-			uint64_t bitset;
+			static const uint64_t row0Mask=0x00000000000000FFllu;
+			static const uint64_t column0Mask=0x0101010101010101llu;
 
+			uint64_t bitset;
 		};
 	};
 };
