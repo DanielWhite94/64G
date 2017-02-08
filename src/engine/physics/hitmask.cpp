@@ -18,7 +18,8 @@ namespace Engine {
 		}
 
 		bool HitMask::getXY(unsigned x, unsigned y) const  {
-			return (bitset>>(x+y*8))&1;
+			const unsigned shift=x+y*8;
+			return (bitset>>shift)&1;
 		}
 
 		void HitMask::setXY(unsigned x, unsigned y, bool value) {
