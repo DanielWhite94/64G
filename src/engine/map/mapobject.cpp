@@ -1,6 +1,8 @@
 #include <cassert>
 #include <cstdlib>
 
+#include "../util.h"
+
 #include "mapobject.h"
 
 namespace Engine {
@@ -56,19 +58,34 @@ namespace Engine {
 			return tilesHigh;
 		}
 
-		HitMask MapObject::getHitMaskByTileOffset(unsigned xOffset, unsigned yOffset) const {
-			assert(xOffset<getTilesWide());
-			assert(yOffset<getTilesHigh());
-
-			return tileData[xOffset+yOffset*getTilesWide()]->hitmask;
+		HitMask MapObject::getHitMaskByTileOffset(int xOffset, int yOffset) const {
+			if (xOffset<0 || xOffset>=getTilesWide() || yOffset<0 || yOffset>=getTilesHigh())
+				return emptyHitmask;
+			else
+				return tileData[xOffset+yOffset*getTilesWide()]->hitmask;
 		}
 
 		HitMask MapObject::getHitMaskByCoord(const CoordVec &vec) const {
-			assert(vec.x>=getCoordTopLeft().x && vec.y>=getCoordTopLeft().y);
-			assert(vec.x<=getCoordBottomRight().x && vec.y<=getCoordBottomRight().y);
-
 			CoordVec newVec=vec-getCoordTopLeft();
-			return getHitMaskByTileOffset(newVec.x/CoordsPerTile, newVec.y/CoordsPerTile);
+			int tileXOffset=Util::floordiv(newVec.x, CoordsPerTile);
+			int tileYOffset=Util::floordiv(newVec.y, CoordsPerTile);
+
+			int deltaX=newVec.x-tileXOffset*CoordsPerTile;
+			int deltaY=newVec.y-tileYOffset*CoordsPerTile;
+			assert(deltaX>=0 && deltaX<CoordsPerTile);
+			assert(deltaY>=0 && deltaY<CoordsPerTile);
+
+			HitMask hitmaskTL=getHitMaskByTileOffset(tileXOffset, tileYOffset);
+			HitMask hitmaskTR=getHitMaskByTileOffset(tileXOffset+1, tileYOffset);
+			HitMask hitmaskBL=getHitMaskByTileOffset(tileXOffset, tileYOffset+1);
+			HitMask hitmaskBR=getHitMaskByTileOffset(tileXOffset+1, tileYOffset+1);
+
+			hitmaskTL.translateXY(-deltaX, -deltaY); // Left and up.
+			hitmaskTR.translateXY(8-deltaX, -deltaY); // Right and up.
+			hitmaskBL.translateXY(-deltaX, 8-deltaY); // Left and down.
+			hitmaskBR.translateXY(8-deltaX, 8-deltaY); // Right and down.
+
+			return hitmaskTL|hitmaskTR|hitmaskBL|hitmaskBR;
 		}
 
 		void MapObject::setAngle(CoordAngle gAngle) {

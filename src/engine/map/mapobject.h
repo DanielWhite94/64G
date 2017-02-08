@@ -27,7 +27,7 @@ namespace Engine {
 			CoordVec getCoordSize(void) const;
 			unsigned getTilesWide(void) const;
 			unsigned getTilesHigh(void) const;
-			HitMask getHitMaskByTileOffset(unsigned xOffset, unsigned yOffset) const;
+			HitMask getHitMaskByTileOffset(int xOffset, int yOffset) const;
 			HitMask getHitMaskByCoord(const CoordVec &vec) const;
 
 			void setAngle(CoordAngle angle);
@@ -37,8 +37,8 @@ namespace Engine {
 			CoordAngle angle;
 			CoordVec pos;
 			unsigned tilesWide, tilesHigh;
-
 			MapObjectTile **tileData;
+			HitMask emptyHitmask;
 		};
 	};
 };
