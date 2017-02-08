@@ -117,6 +117,10 @@ namespace Engine {
 		void Map::moveObject(MapObject *object, const CoordVec &newPos) {
 			assert(object!=NULL);
 
+			// No change?
+			if (newPos==object->getCoordTopLeft())
+				return;
+
 			// TODO: Add and removing to/from tiles can be improved by considering newPos-pos.
 
 			CoordVec vec, vec1, vec2;
