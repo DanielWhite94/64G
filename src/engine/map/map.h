@@ -23,6 +23,8 @@ namespace Engine {
 			Map();
 			~Map();
 
+			void tick(void);
+
 			MapTile *getTileAtCoordVec(const CoordVec &vec);
 			const MapTile *getTileAtCoordVec(const CoordVec &vec) const;
 			MapRegion *getRegionAtCoordVec(const CoordVec &vec);

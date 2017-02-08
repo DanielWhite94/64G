@@ -22,6 +22,13 @@ namespace Engine {
 					regions[i][j]=NULL;
 		}
 
+		void Map::tick(void) {
+			for(unsigned i=0; i<objects.size(); i++) {
+				CoordVec delta=objects[i]->tick();
+				moveObject(objects[i], objects[i]->getCoordTopLeft()+delta);
+			}
+		}
+
 		MapTile *Map::getTileAtCoordVec(const CoordVec &vec) {
 			MapRegion *region=getRegionAtCoordVec(vec);
 			if (region==NULL)

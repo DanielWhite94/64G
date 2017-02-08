@@ -25,9 +25,25 @@ namespace Engine {
 			unsigned i, max=getTilesWide()*getTilesHigh();
 			for(i=0; i<max; ++i)
 				tileData[i]=new MapObjectTile(); // TODO: do better
+
+			movementMode=MapObjectMovementMode::Static;
 		}
 
 		MapObject::~MapObject() {
+		}
+
+		CoordVec MapObject::tick(void) {
+			switch(movementMode) {
+				case MapObjectMovementMode::Static:
+					return CoordVec(0, 0);
+				break;
+				case MapObjectMovementMode::ConstantVelocity:
+					return movementData.constantVelocity.delta;
+				break;
+			}
+
+			assert(false);
+			return CoordVec(0, 0);
 		}
 
 		CoordAngle MapObject::getAngle(void) const {
@@ -101,6 +117,15 @@ namespace Engine {
 			assert(yOffset<getTilesHigh());
 
 			tileData[xOffset+yOffset*getTilesWide()]->hitmask=gHitmask;
+		}
+
+		void MapObject::setMovementModeStatic(void) {
+			movementMode=MapObjectMovementMode::Static;
+		}
+
+		void MapObject::setMovementModeConstantVelocity(const CoordVec &delta) {
+			movementMode=MapObjectMovementMode::ConstantVelocity;
+			movementData.constantVelocity.delta=delta;
 		}
 	};
 };

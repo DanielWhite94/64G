@@ -8,10 +8,20 @@ using namespace Engine::Physics;
 
 namespace Engine {
 	namespace Map {
+		enum class MapObjectMovementMode {
+			Static,
+			ConstantVelocity,
+		};
+
+		struct MapObjectMovementModeConstantVelocity {
+			CoordVec delta;
+		};
+
 		class MapObjectTile {
 		public:
 			MapObjectTile();
 			~MapObjectTile();
+
 			HitMask hitmask;
 		};
 
@@ -19,6 +29,8 @@ namespace Engine {
 		public:
 			MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh); // pos is top left corner
 			~MapObject();
+
+			CoordVec tick(void); // Returns movement delta for this tick.
 
 			CoordAngle getAngle(void) const;
 			CoordVec getCoordTopLeft(void) const;
@@ -33,11 +45,18 @@ namespace Engine {
 			void setAngle(CoordAngle angle);
 			void setPos(const CoordVec &pos);
 			void setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask hitmask);
+			void setMovementModeStatic(void);
+			void setMovementModeConstantVelocity(const CoordVec &delta);
 		private:
 			CoordAngle angle;
 			CoordVec pos;
 			unsigned tilesWide, tilesHigh;
 			MapObjectTile **tileData;
+			MapObjectMovementMode movementMode;
+			struct/*union*/ { // TODO: Fix this (constructor issue).
+				MapObjectMovementModeConstantVelocity constantVelocity;
+			} movementData;
+
 			HitMask emptyHitmask;
 		};
 	};

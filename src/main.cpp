@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
 		for(npcX=(8-npcW)/2; npcX<(8+npcW)/2; ++npcX)
 			npcHitmask.setXY(npcX, npcY, true);
 	objectNpc.setHitMaskByTileOffset(0, 0, npcHitmask);
+	objectNpc.setMovementModeConstantVelocity(CoordVec(2,-1)); // west north west
 	map->addObject(&objectNpc);
 
 	// Create renderer.
@@ -59,6 +60,8 @@ int main(int argc, char **argv) {
 	Camera camera(CoordVec(0,0), Zoom);
 
 	// Main loop.
+	const unsigned mapTickRate=8;
+
 	bool quit=false;
 	unsigned tick=0;
 	for(tick=0; !quit; ++tick) {
@@ -117,8 +120,9 @@ int main(int argc, char **argv) {
 
 		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta);
 
-		if (tick%8==0)
-			map->moveObject(&objectNpc, objectNpc.getCoordTopLeft()+CoordVec(2, -1)); // west north west
+		// Tick map every so often.
+		if (tick%mapTickRate==0)
+			map->tick();
 
 		// Delay
 		// TODO: Constant FPS to avoid character speed changes.
