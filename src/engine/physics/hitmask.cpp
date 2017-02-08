@@ -10,6 +10,10 @@ namespace Engine {
 			bitset=0;
 		}
 
+		HitMask::HitMask(uint64_t mask) {
+			bitset=mask;
+		}
+
 		HitMask::~HitMask() {
 		}
 
