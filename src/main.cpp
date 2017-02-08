@@ -60,7 +60,8 @@ int main(int argc, char **argv) {
 
 	// Main loop.
 	bool quit=false;
-	while(!quit) {
+	unsigned tick=0;
+	for(tick=0; !quit; ++tick) {
 		// Debugging.
 		printf("Main: tick (player position (%i,%i))\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y);
 
