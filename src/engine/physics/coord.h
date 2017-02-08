@@ -50,6 +50,10 @@ namespace Engine {
 				lhs-=rhs;
 				return lhs;
 			}
+
+			friend bool operator==(CoordVec lhs, const CoordVec &rhs) {
+				return (lhs.x==rhs.x && lhs.y==rhs.y);
+			}
 		};
 	};
 };
