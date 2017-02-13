@@ -3,7 +3,6 @@
 
 #include "map.h"
 
-using namespace Engine::Map;
 
 namespace Engine {
 	namespace Map {

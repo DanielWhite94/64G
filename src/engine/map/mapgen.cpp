@@ -8,7 +8,6 @@
 #include "../fbnnoise.h"
 
 using namespace Engine;
-using namespace Engine::Map;
 
 namespace Engine {
 	namespace Map {
