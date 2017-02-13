@@ -72,7 +72,7 @@ namespace Engine {
 
 		MapObject *MapGen::addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos) {
 			switch(builtin) {
-				case BuiltinObject::OldBeardMan:
+				case BuiltinObject::OldBeardMan: {
 					// Create hitmask.
 					const unsigned hitmaskW=4, hitmaskH=5;
 					HitMask hitmask;
@@ -89,7 +89,7 @@ namespace Engine {
 					map->addObject(object);
 
 					return object;
-				break;
+				} break;
 			}
 
 			assert(false);
