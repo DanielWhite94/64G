@@ -33,6 +33,11 @@ namespace Engine {
 				return lhs;
 			}
 
+			friend HitMask operator~(HitMask rhs) {
+				HitMask lhs(~rhs.bitset);
+				return lhs;
+			}
+
 		private:
 			static const uint64_t row0Mask=0x00000000000000FFllu;
 			static const uint64_t column0Mask=0x0101010101010101llu;
