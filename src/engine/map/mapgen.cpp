@@ -95,5 +95,18 @@ namespace Engine {
 			assert(false);
 			return NULL;
 		}
+
+		void MapGen::addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval) {
+			assert(map!=NULL);
+			assert(widthHeight.x>=0 && widthHeight.y>=0);
+			assert(interval.x>0 && interval.y>0);
+
+			CoordVec pos;
+			for(pos.y=topLeft.y; pos.y<topLeft.y+widthHeight.y; pos.y+=interval.y)
+				for(pos.x=topLeft.x; pos.x<topLeft.x+widthHeight.x; pos.x+=interval.x) {
+					CoordVec randomOffset=CoordVec(rand()%interval.x, rand()%interval.y); // TODO: ensure they do not overlap - i.e. take into account size of builtin object.
+					addBuiltinObject(map, builtin, CoordAngle0, pos+randomOffset);
+				}
+		}
 	};
 };

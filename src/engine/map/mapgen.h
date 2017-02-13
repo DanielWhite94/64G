@@ -20,6 +20,8 @@ namespace Engine {
 			unsigned width, height;
 
 			MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
+
+			void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);
 		};
 	};
 };
