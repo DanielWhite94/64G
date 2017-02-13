@@ -54,7 +54,8 @@ int main(int argc, char **argv) {
 	Renderer renderer(WindowWidth, WindowHeight);
 	renderer.drawTileGrid=true;
 	//renderer.drawCoordGrid=true;
-	renderer.drawHitMasks=true;
+	renderer.drawHitMasksActive=true;
+	//renderer.drawHitMasksInactive=true;
 
 	// Create camera variables.
 	Camera camera(CoordVec(0,0), Zoom);

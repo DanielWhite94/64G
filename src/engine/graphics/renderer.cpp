@@ -12,7 +12,8 @@ namespace Engine {
 			// Set parameters.
 			drawTileGrid=false;
 			drawCoordGrid=false;
-			drawHitMasks=false;
+			drawHitMasksActive=false;
+			drawHitMasksInactive=false;
 
 			// Init SDL.
 			SDL_Init(SDL_INIT_VIDEO);
@@ -118,13 +119,17 @@ namespace Engine {
 						const MapObject *object=tile->getObject(i);
 						assert(object!=NULL);
 
+						// Draw textures.
+						// TODO: this
+
 						// Draw hitmasks if needed.
-						if (drawHitMasks) {
-							HitMask hitmask=object->getHitMaskByCoord(vec);
-							renderHitMask(hitmask, sx, sy);
-						} else {
-							// Otherwise draw textures.
-							// TODO: this
+						if (drawHitMasksActive) {
+							HitMask activeHitmask=object->getHitMaskByCoord(vec);
+							renderHitMask(activeHitmask, sx, sy, 0);
+						}
+						if (drawHitMasksInactive) {
+							HitMask activeHitmask=object->getHitMaskByCoord(vec);
+							renderHitMask(~activeHitmask, sx, sy, 255);
 						}
 					}
 				}
@@ -159,14 +164,15 @@ namespace Engine {
 				SDL_RenderDrawLine(renderer, 0, sy, windowWidth, sy);
 		}
 
-		void Renderer::renderHitMask(HitMask hitmask, int sx, int sy) {
+		void Renderer::renderHitMask(HitMask hitmask, int sx, int sy, int c) {
 			int delta=camera->getZoom();
 			int tx, ty;
 			SDL_Rect rect;
 			rect.w=rect.h=delta;
 			for(ty=0,rect.y=sy; ty<8; ++ty,rect.y+=delta)
 				for(tx=0,rect.x=sx; tx<8; ++tx,rect.x+=delta) {
-					int c=(hitmask.getXY(tx, ty) ? 0 : 255);
+					if (!hitmask.getXY(tx, ty))
+						continue;
 					SDL_SetRenderDrawColor(renderer, c, c, c, SDL_ALPHA_OPAQUE);
 					SDL_RenderFillRect(renderer, &rect);
 				}

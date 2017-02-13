@@ -32,7 +32,8 @@ namespace Engine {
 		public:
 			bool drawTileGrid; // Draw a grid showing the tile structure.
 			bool drawCoordGrid; // Draw a grid showing the coordinate structure.
-			bool drawHitMasks; // Draw object hitmasks instead of textures.
+			bool drawHitMasksActive;
+			bool drawHitMasksInactive;
 
 			Renderer(unsigned windowWidth, unsigned windowHeight);
 			~Renderer();
@@ -52,7 +53,7 @@ namespace Engine {
 			Texture *textures[TextureIdNB];
 
 			void renderGrid(const CoordVec &coordDelta); // Set colour before calling.
-			void renderHitMask(Engine::Physics::HitMask hitmask, int sx, int sy);
+			void renderHitMask(Engine::Physics::HitMask hitmask, int sx, int sy, int c);
 		};
 	};
 };
