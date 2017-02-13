@@ -14,7 +14,13 @@ namespace Engine {
 
 			class Map *generate(void);
 		private:
+			enum class BuiltinObject {
+				OldBeardMan,
+			};
+
 			unsigned width, height;
+
+			MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 		};
 	};
 };

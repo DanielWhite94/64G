@@ -70,5 +70,31 @@ namespace Engine {
 
 			return map;
 		}
+
+		MapObject *MapGen::addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos) {
+			switch(builtin) {
+				case BuiltinObject::OldBeardMan:
+					// Create hitmask.
+					const unsigned hitmaskW=4, hitmaskH=5;
+					HitMask hitmask;
+					unsigned x, y;
+					for(y=(8-hitmaskH)/2; y<(8+hitmaskH)/2; ++y)
+						for(x=(8-hitmaskW)/2; x<(8+hitmaskW)/2; ++x)
+							hitmask.setXY(x, y, true);
+
+					// Create object.
+					MapObject *object=new MapObject(rotation, pos, 1, 1);
+					object->setHitMaskByTileOffset(0, 0, hitmask);
+
+					// Add object to map.
+					map->addObject(object);
+
+					return object;
+				break;
+			}
+
+			assert(false);
+			return NULL;
+		}
 	};
 };
