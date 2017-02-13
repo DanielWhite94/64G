@@ -64,6 +64,9 @@ namespace Engine {
 					printf("MapGen: creating map %f%%.\n", ((y+1)*100.0)/height); // TODO: this better
 			}
 
+			// Add objects.
+			MapObject *npc1=addBuiltinObject(map, BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
+			npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
 			// Tidy up.
 			free(heightArray);
 
