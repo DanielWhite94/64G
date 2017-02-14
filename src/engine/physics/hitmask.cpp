@@ -45,6 +45,10 @@ namespace Engine {
 			return (bitset>>shift)&1;
 		}
 
+		uint64_t HitMask::getBitset(void) const {
+			return bitset;
+		}
+
 		void HitMask::setColumn(int x, bool value) {
 			if (x<0 || x>=8)
 				return;

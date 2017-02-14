@@ -13,6 +13,7 @@ namespace Engine {
 			~HitMask();
 
 			bool getXY(unsigned x, unsigned y) const; // 0<=x,y<8
+			uint64_t getBitset(void) const;
 
 			void setColumn(int x, bool value);
 			void setRow(int y, bool value);
