@@ -33,7 +33,7 @@ namespace Engine {
 			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
 
 			bool addObject(MapObject *object);
-			void moveObject(MapObject *object, const CoordVec &newPos);
+			bool moveObject(MapObject *object, const CoordVec &newPos);
 		private:
 			MapRegion *regions[regionsHigh][regionsWide];
 
