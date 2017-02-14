@@ -33,6 +33,16 @@ namespace Engine {
 				return HitMask(bitset & hitMask.bitset);
 			}
 
+			HitMask &operator&=(const HitMask &rhs) {
+				this->bitset&=rhs.bitset;
+				return *this;
+			}
+
+			friend HitMask operator&(HitMask lhs, const HitMask &rhs) {
+				lhs&=rhs;
+				return lhs;
+			}
+
 			HitMask &operator|=(const HitMask &rhs) {
 				this->bitset|=rhs.bitset;
 				return *this;
