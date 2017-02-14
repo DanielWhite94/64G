@@ -94,7 +94,7 @@ namespace Engine {
 			region->setTileAtCoordVec(vec, tile);
 		}
 
-		void Map::addObject(MapObject *object) {
+		bool Map::addObject(MapObject *object) {
 			assert(object!=NULL);
 
 			// Compute dimensions.
@@ -106,6 +106,20 @@ namespace Engine {
 			vec2.x=Util::floordiv(vec2.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
 			vec2.y=Util::floordiv(vec2.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
 
+			// Test new object is not out-of-bounds nor intersects any existing objects.
+			int xOffset, yOffset;
+			for(vec.y=vec1.y,yOffset=0; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile,++yOffset)
+				for(vec.x=vec1.x,xOffset=0; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile,++xOffset) {
+					// Is there even a tile here?
+					MapTile *tile=getTileAtCoordVec(vec);
+					if (tile==NULL)
+						return false;
+
+					// Check for intersections.
+					if (tile->getHitMask(vec) & object->getHitMaskByCoord(vec))
+						return false;
+				}
+
 			// Add to object list.
 			objects.push_back(object);
 
@@ -113,6 +127,8 @@ namespace Engine {
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
 					getTileAtCoordVec(vec)->addObject(object);
+
+			return true;
 		}
 
 		void Map::moveObject(MapObject *object, const CoordVec &newPos) {
