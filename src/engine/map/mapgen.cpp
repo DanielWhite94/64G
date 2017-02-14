@@ -93,6 +93,28 @@ namespace Engine {
 
 					return object;
 				} break;
+				case BuiltinObject::Tree1: {
+					// Create hitmask.
+					const char *hitmaskStr=
+						"_____##_"
+						"_##_####"
+						"########"
+						"########"
+						"######__"
+						"___##___"
+						"_######_"
+						"_######_";
+					HitMask hitmask(hitmaskStr);
+
+					// Create object.
+					MapObject *object=new MapObject(rotation, pos, 1, 1);
+					object->setHitMaskByTileOffset(0, 0, hitmask);
+
+					// Add object to map.
+					map->addObject(object);
+
+					return object;
+				} break;
 			}
 
 			assert(false);
