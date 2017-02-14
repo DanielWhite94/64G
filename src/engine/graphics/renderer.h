@@ -54,7 +54,7 @@ namespace Engine {
 			Texture *textures[TextureIdNB];
 
 			void renderGrid(const CoordVec &coordDelta); // Set colour before calling.
-			void renderHitMask(Engine::Physics::HitMask hitmask, int sx, int sy, int c);
+			void renderHitMask(Engine::Physics::HitMask hitmask, int sx, int sy, int r, int g, int b);
 		};
 	};
 };

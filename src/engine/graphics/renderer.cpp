@@ -130,9 +130,9 @@ namespace Engine {
 							HitMask activeHitmask=object->getHitMaskByCoord(vec);
 
 							if (drawHitMasksActive)
-								renderHitMask(activeHitmask, sx, sy, 0);
+								renderHitMask(activeHitmask, sx, sy, 0, 0, 0);
 							if (drawHitMasksInactive)
-								renderHitMask(~activeHitmask, sx, sy, 255);
+								renderHitMask(~activeHitmask, sx, sy, 255, 255, 255);
 							if (drawHitMasksIntersections) {
 								intersectionBitset|=(totalBitset & activeHitmask.getBitset());
 								totalBitset|=activeHitmask.getBitset();
@@ -142,7 +142,7 @@ namespace Engine {
 
 					// Draw hitmask intersections if needed.
 					if (drawHitMasksIntersections)
-						renderHitMask(intersectionBitset, sx, sy, 148);
+						renderHitMask(intersectionBitset, sx, sy, 255, 0, 0);
 				}
 
 			// Draw grids (if needed).
@@ -175,7 +175,7 @@ namespace Engine {
 				SDL_RenderDrawLine(renderer, 0, sy, windowWidth, sy);
 		}
 
-		void Renderer::renderHitMask(HitMask hitmask, int sx, int sy, int c) {
+		void Renderer::renderHitMask(HitMask hitmask, int sx, int sy, int r, int g, int b) {
 			int delta=camera->getZoom();
 			int tx, ty;
 			SDL_Rect rect;
@@ -184,7 +184,7 @@ namespace Engine {
 				for(tx=0,rect.x=sx; tx<8; ++tx,rect.x+=delta) {
 					if (!hitmask.getXY(tx, ty))
 						continue;
-					SDL_SetRenderDrawColor(renderer, c, c, c, SDL_ALPHA_OPAQUE);
+					SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
 					SDL_RenderFillRect(renderer, &rect);
 				}
 		}
