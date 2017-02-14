@@ -92,7 +92,10 @@ namespace Engine {
 					object->setHitMaskByTileOffset(0, 0, hitmask);
 
 					// Add object to map.
-					map->addObject(object);
+					if (!map->addObject(object)) {
+						delete object;
+						return NULL;
+					}
 
 					return object;
 				} break;
@@ -114,7 +117,10 @@ namespace Engine {
 					object->setHitMaskByTileOffset(0, 0, hitmask);
 
 					// Add object to map.
-					map->addObject(object);
+					if (!map->addObject(object)) {
+						delete object;
+						return NULL;
+					}
 
 					return object;
 				} break;
@@ -132,8 +138,12 @@ namespace Engine {
 			CoordVec pos;
 			for(pos.y=topLeft.y; pos.y<topLeft.y+widthHeight.y; pos.y+=interval.y)
 				for(pos.x=topLeft.x; pos.x<topLeft.x+widthHeight.x; pos.x+=interval.x) {
-					CoordVec randomOffset=CoordVec(rand()%interval.x, rand()%interval.y); // TODO: ensure they do not overlap - i.e. take into account size of builtin object.
-					addBuiltinObject(map, builtin, CoordAngle0, pos+randomOffset);
+					unsigned i;
+					for(i=0; i<4; ++i) {
+						CoordVec randomOffset=CoordVec(rand()%interval.x, rand()%interval.y);
+						if (addBuiltinObject(map, builtin, CoordAngle0, pos+randomOffset)!=NULL)
+							break;
+					}
 				}
 		}
 	};
