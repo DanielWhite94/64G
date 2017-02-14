@@ -101,7 +101,7 @@ namespace Engine {
 				} break;
 				case BuiltinObject::Tree1: {
 					// Create hitmask.
-					const char *hitmaskStr=
+					const char hitmaskStr[64+1]=
 						"_____##_"
 						"_##_####"
 						"########"
