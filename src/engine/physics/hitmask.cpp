@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdlib>
 
 #include "hitmask.h"
@@ -12,6 +13,28 @@ namespace Engine {
 
 		HitMask::HitMask(uint64_t mask) {
 			bitset=mask;
+		}
+
+		HitMask::HitMask(const char *str) {
+			assert(str!=NULL);
+
+			bitset=0;
+
+			unsigned x=0, y=0;
+			const char *c;
+			for(c=str; *c!='\0'; ++c)
+				switch(*c) {
+					case '#':
+						setXY(x, y, true);
+						x=(x+1)%8;
+						y+=(x==0);
+					break;
+					case '_':
+						setXY(x, y, false);
+						x=(x+1)%8;
+						y+=(x==0);
+					break;
+				}
 		}
 
 		HitMask::~HitMask() {

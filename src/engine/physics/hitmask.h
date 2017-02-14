@@ -9,6 +9,7 @@ namespace Engine {
 		public:
 			HitMask();
 			HitMask(uint64_t mask);
+			HitMask(const char *str);
 			~HitMask();
 
 			bool getXY(unsigned x, unsigned y) const; // 0<=x,y<8
