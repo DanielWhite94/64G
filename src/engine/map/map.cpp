@@ -129,10 +129,10 @@ namespace Engine {
 			// Remove from tiles.
 			vec1=object->getCoordTopLeft();
 			vec2=object->getCoordBottomRight();
-			vec1.x=floor(vec1.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec1.y=floor(vec1.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.x=floor(vec2.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.y=floor(vec2.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.x=Util::floordiv(vec1.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.y=Util::floordiv(vec1.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.x=Util::floordiv(vec2.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.y=Util::floordiv(vec2.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
 
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
@@ -144,10 +144,10 @@ namespace Engine {
 			// Add to tiles.
 			vec1=object->getCoordTopLeft();
 			vec2=object->getCoordBottomRight();
-			vec1.x=floor(vec1.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec1.y=floor(vec1.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.x=floor(vec2.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.y=floor(vec2.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.x=Util::floordiv(vec1.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.y=Util::floordiv(vec1.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.x=Util::floordiv(vec2.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.y=Util::floordiv(vec2.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
 
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
