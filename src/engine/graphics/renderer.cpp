@@ -114,8 +114,7 @@ namespace Engine {
 						continue;
 
 					// Loop over all objects on this tile.
-					uint64_t intersectionBitset=0;
-					uint64_t totalBitset=0;
+					HitMask intersectionHitMask, totalHitMask;
 					unsigned i, max=tile->getObjectCount();
 					for(i=0; i<max; ++i) {
 						// Grab object.
@@ -134,15 +133,15 @@ namespace Engine {
 							if (drawHitMasksInactive)
 								renderHitMask(~activeHitmask, sx, sy, 255, 255, 255);
 							if (drawHitMasksIntersections) {
-								intersectionBitset|=(totalBitset & activeHitmask.getBitset());
-								totalBitset|=activeHitmask.getBitset();
+								intersectionHitMask|=(totalHitMask & activeHitmask);
+								totalHitMask|=activeHitmask;
 							}
 						}
 					}
 
 					// Draw hitmask intersections if needed.
 					if (drawHitMasksIntersections)
-						renderHitMask(intersectionBitset, sx, sy, 255, 0, 0);
+						renderHitMask(intersectionHitMask, sx, sy, 255, 0, 0);
 				}
 
 			// Draw grids (if needed).
