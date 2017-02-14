@@ -68,7 +68,9 @@ namespace Engine {
 			MapObject *npc1=addBuiltinObject(map, BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
 			npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
 
-			addBuiltinObjectForest(map, BuiltinObject::Tree1, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile/2, 3*Physics::CoordsPerTile/2));
+			addBuiltinObjectForest(map, BuiltinObject::Tree2, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile));
+
+			addBuiltinObjectForest(map, BuiltinObject::Tree1, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
 
 			// Tidy up.
 			free(heightArray);
