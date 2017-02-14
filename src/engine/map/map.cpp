@@ -107,9 +107,8 @@ namespace Engine {
 			vec2.y=Util::floordiv(vec2.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
 
 			// Test new object is not out-of-bounds nor intersects any existing objects.
-			int xOffset, yOffset;
-			for(vec.y=vec1.y,yOffset=0; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile,++yOffset)
-				for(vec.x=vec1.x,xOffset=0; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile,++xOffset) {
+			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
+				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile) {
 					// Is there even a tile here?
 					MapTile *tile=getTileAtCoordVec(vec);
 					if (tile==NULL)
