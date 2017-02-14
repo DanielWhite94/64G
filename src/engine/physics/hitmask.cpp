@@ -120,5 +120,14 @@ namespace Engine {
 			else
 				bitset>>=(8*n);
 		}
+
+		void HitMask::flipHorizontally(void) {
+			const uint64_t k1=0x5555555555555555llu;
+			const uint64_t k2=0x3333333333333333llu;
+			const uint64_t k4=0x0f0f0f0f0f0f0f0fllu;
+			bitset=((bitset>>1)&k1)|((bitset&k1)<<1);
+			bitset=((bitset>>2)&k2)|((bitset&k2)<<2);
+			bitset=((bitset>>4)&k4)|((bitset&k4)<<4);
+		}
 	};
 };

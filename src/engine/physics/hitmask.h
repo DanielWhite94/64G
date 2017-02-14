@@ -25,6 +25,8 @@ namespace Engine {
 			void translateRight(unsigned n);
 			void translateUp(unsigned n);
 
+			void flipHorizontally(void);
+
 			bool intersectsHitMask(const HitMask &hitMask) {
 				return (getIntersectionWithHitMask(hitMask).bitset!=0);
 			}
