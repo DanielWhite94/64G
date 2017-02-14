@@ -124,6 +124,65 @@ namespace Engine {
 
 					return object;
 				} break;
+				case BuiltinObject::Tree2: {
+					// TODO: In reality top two hitmasks should probably be 0 allowing player to pass behind.
+
+					// Create hitmasks.
+					const char hitmask0Str[64+1]=
+						"________"
+						"________"
+						"________"
+						"______##"
+						"____####"
+						"___#####"
+						"___#####"
+						"__######";
+					const char hitmask1Str[64+1]=
+						"__######"
+						"_#######"
+						"_#######"
+						"########"
+						"########"
+						"########"
+						"########"
+						"########";
+					const char hitmask2Str[64+1]=
+						"_#######"
+						"__######"
+						"___#####"
+						"_____###"
+						"_____###"
+						"_______#"
+						"________"
+						"________";
+					HitMask hitmask00(hitmask0Str);
+					HitMask hitmask01(hitmask1Str);
+					HitMask hitmask02(hitmask2Str);
+
+					HitMask hitmask10=hitmask00;
+					hitmask10.flipHorizontally();
+					HitMask hitmask11=hitmask01;
+					hitmask11.flipHorizontally();
+					HitMask hitmask12=hitmask02;
+					hitmask12.flipHorizontally();
+
+					// Create object.
+					MapObject *object=new MapObject(rotation, pos, 2, 3);
+					object->setHitMaskByTileOffset(0, 0, hitmask00);
+					object->setHitMaskByTileOffset(0, 1, hitmask01);
+					object->setHitMaskByTileOffset(0, 2, hitmask02);
+					object->setHitMaskByTileOffset(1, 0, hitmask10);
+					object->setHitMaskByTileOffset(1, 1, hitmask11);
+					object->setHitMaskByTileOffset(1, 2, hitmask12);
+
+					// Add object to map.
+					if (!map->addObject(object)) {
+						delete object;
+						return NULL;
+					}
+
+					return object;
+				} break;
 			}
 
 			assert(false);

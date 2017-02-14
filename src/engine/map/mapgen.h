@@ -16,6 +16,7 @@ namespace Engine {
 			enum class BuiltinObject {
 				OldBeardMan,
 				Tree1,
+				Tree2,
 			};
 
 			unsigned width, height;
