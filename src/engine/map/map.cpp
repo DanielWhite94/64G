@@ -96,19 +96,19 @@ namespace Engine {
 		void Map::addObject(MapObject *object) {
 			assert(object!=NULL);
 
-			// Add to object list.
-			objects.push_back(object);
-
-			// Update tiles.
+			// Compute dimensions.
 			CoordVec vec;
 			CoordVec vec1=object->getCoordTopLeft();
 			CoordVec vec2=object->getCoordBottomRight();
-			// TODO: verify below code
 			vec1.x=floor(vec1.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
 			vec1.y=floor(vec1.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
 			vec2.x=floor(vec2.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
 			vec2.y=floor(vec2.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
 
+			// Add to object list.
+			objects.push_back(object);
+
+			// Add to tiles.
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
 					getTileAtCoordVec(vec)->addObject(object);
