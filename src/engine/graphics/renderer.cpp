@@ -14,6 +14,7 @@ namespace Engine {
 			drawCoordGrid=false;
 			drawHitMasksActive=false;
 			drawHitMasksInactive=false;
+			drawHitMasksIntersections=false;
 
 			// Init SDL.
 			SDL_Init(SDL_INIT_VIDEO);
@@ -113,6 +114,8 @@ namespace Engine {
 						continue;
 
 					// Loop over all objects on this tile.
+					uint64_t intersectionBitset=0;
+					uint64_t totalBitset=0;
 					unsigned i, max=tile->getObjectCount();
 					for(i=0; i<max; ++i) {
 						// Grab object.
@@ -123,15 +126,23 @@ namespace Engine {
 						// TODO: this
 
 						// Draw hitmasks if needed.
-						if (drawHitMasksActive) {
+						if (drawHitMasksActive || drawHitMasksInactive || drawHitMasksIntersections) {
 							HitMask activeHitmask=object->getHitMaskByCoord(vec);
-							renderHitMask(activeHitmask, sx, sy, 0);
-						}
-						if (drawHitMasksInactive) {
-							HitMask activeHitmask=object->getHitMaskByCoord(vec);
-							renderHitMask(~activeHitmask, sx, sy, 255);
+
+							if (drawHitMasksActive)
+								renderHitMask(activeHitmask, sx, sy, 0);
+							if (drawHitMasksInactive)
+								renderHitMask(~activeHitmask, sx, sy, 255);
+							if (drawHitMasksIntersections) {
+								intersectionBitset|=(totalBitset & activeHitmask.getBitset());
+								totalBitset|=activeHitmask.getBitset();
+							}
 						}
 					}
+
+					// Draw hitmask intersections if needed.
+					if (drawHitMasksIntersections)
+						renderHitMask(intersectionBitset, sx, sy, 148);
 				}
 
 			// Draw grids (if needed).

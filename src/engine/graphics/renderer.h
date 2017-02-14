@@ -34,6 +34,7 @@ namespace Engine {
 			bool drawCoordGrid; // Draw a grid showing the coordinate structure.
 			bool drawHitMasksActive;
 			bool drawHitMasksInactive;
+			bool drawHitMasksIntersections;
 
 			Renderer(unsigned windowWidth, unsigned windowHeight);
 			~Renderer();

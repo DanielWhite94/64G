@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
 	//renderer.drawCoordGrid=true;
 	renderer.drawHitMasksActive=true;
 	//renderer.drawHitMasksInactive=true;
+	renderer.drawHitMasksIntersections=true;
 
 	// Create camera variables.
 	Camera camera(CoordVec(0,0), Zoom);
