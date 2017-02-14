@@ -58,6 +58,10 @@ namespace Engine {
 				return lhs;
 			}
 
+			explicit operator bool() const {
+				return (bitset!=0);
+			}
+
 		private:
 			static const uint64_t row0Mask=0x00000000000000FFllu;
 			static const uint64_t column0Mask=0x0101010101010101llu;
