@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
 	objectPlayer.setHitMaskByTileOffset(0, 0, playerHitmask);
 	map->addObject(&objectPlayer);
 	CoordVec playerDelta(0, 0);
+	bool playerRunning=false;
 
 	// Create renderer.
 	Renderer renderer(WindowWidth, WindowHeight);
@@ -64,7 +65,6 @@ int main(int argc, char **argv) {
 		renderer.refresh(&camera, map);
 
 		// Check keyboard and events and move camera.
-		const int moveSpeed=Physics::CoordsPerTile/2;
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
 			switch (event.type) {
@@ -74,16 +74,19 @@ int main(int argc, char **argv) {
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym) {
 						case SDLK_LEFT:
-							playerDelta.x=-moveSpeed;
+							playerDelta.x=-1;
 						break;
 						case SDLK_RIGHT:
-							playerDelta.x=moveSpeed;
+							playerDelta.x=1;
 						break;
 						case SDLK_UP:
-							playerDelta.y=-moveSpeed;
+							playerDelta.y=-1;
 						break;
 						case SDLK_DOWN:
-							playerDelta.y=moveSpeed;
+							playerDelta.y=1;
+						break;
+						case SDLK_SPACE:
+							playerRunning=true;
 						break;
 					}
 				break;
@@ -105,11 +108,15 @@ int main(int argc, char **argv) {
 							if (playerDelta.y>0)
 								playerDelta.y=0;
 						break;
+						case SDLK_SPACE:
+							playerRunning=false;
+						break;
 					}
 				break;
 			}
 
-		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta);
+		const int moveSpeed=(playerRunning ? Physics::CoordsPerTile/2 : 1);
+		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta*moveSpeed);
 
 		// Tick map every so often.
 		if (tick%mapTickRate==0)
