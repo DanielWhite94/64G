@@ -2,6 +2,7 @@
 #define ENGINE_GRAPHICS_MAPTILE_H
 
 #include "mapobject.h"
+#include "../physics/hitmask.h"
 
 namespace Engine {
 	namespace Map {
@@ -21,6 +22,8 @@ namespace Engine {
 			const MapTileLayer *getLayer(unsigned z) const;
 			const MapObject *getObject(unsigned n) const;
 			unsigned getObjectCount(void) const;
+
+			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
 			void addObject(MapObject *object);
 			void removeObject(MapObject *object);

@@ -44,6 +44,14 @@ namespace Engine {
 			return objectsNext;
 		}
 
+		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
+			HitMask hitMask;
+			unsigned i, max=getObjectCount();
+			for(i=0; i<max; ++i)
+				hitMask|=getObject(i)->getHitMaskByCoord(tilePos);
+			return hitMask;
+		}
+
 		void MapTile::addObject(MapObject *object) {
 			assert(object!=NULL);
 			assert(objectsNext<objectsMax);
