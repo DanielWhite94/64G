@@ -39,7 +39,6 @@ int main(int argc, char **argv) {
 	map->addObject(&objectPlayer);
 	CoordVec playerDelta(0, 0);
 
-
 	// Create renderer.
 	Renderer renderer(WindowWidth, WindowHeight);
 	renderer.drawTileGrid=true;
