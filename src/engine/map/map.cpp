@@ -2,6 +2,7 @@
 
 #include "map.h"
 #include "../graphics/renderer.h"
+#include "../util.h"
 
 using namespace Engine::Graphics;
 
@@ -100,10 +101,10 @@ namespace Engine {
 			CoordVec vec;
 			CoordVec vec1=object->getCoordTopLeft();
 			CoordVec vec2=object->getCoordBottomRight();
-			vec1.x=floor(vec1.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec1.y=floor(vec1.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.x=floor(vec2.x/Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.y=floor(vec2.y/Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.x=Util::floordiv(vec1.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec1.y=Util::floordiv(vec1.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.x=Util::floordiv(vec2.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			vec2.y=Util::floordiv(vec2.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
 
 			// Add to object list.
 			objects.push_back(object);
