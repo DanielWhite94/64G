@@ -114,7 +114,6 @@ namespace Engine {
 						continue;
 
 					// Loop over all objects on this tile.
-					HitMask intersectionHitMask, totalHitMask;
 					unsigned i, max=tile->getObjectCount();
 					for(i=0; i<max; ++i) {
 						// Grab object.
@@ -123,9 +122,27 @@ namespace Engine {
 
 						// Draw textures.
 						// TODO: this
+					}
+				}
 
-						// Draw hitmasks if needed.
-						if (drawHitMasksActive || drawHitMasksInactive || drawHitMasksIntersections) {
+			// Draw object hitmasks (if needed).
+			if (drawHitMasksActive || drawHitMasksInactive || drawHitMasksIntersections) {
+				for(vec.y=topLeft.y,sy=syTopLeft; vec.y<=bottomRight.y; vec.y+=CoordsPerTile,sy+=delta)
+					for(vec.x=topLeft.x,sx=sxTopLeft; vec.x<=bottomRight.x; vec.x+=CoordsPerTile,sx+=delta) {
+						// Find tile at this (x,y).
+						const MapTile *tile=map->getTileAtCoordVec(vec);
+						if (tile==NULL)
+							continue;
+
+						// Loop over all objects on this tile.
+						HitMask intersectionHitMask, totalHitMask;
+						unsigned i, max=tile->getObjectCount();
+						for(i=0; i<max; ++i) {
+							// Grab object.
+							const MapObject *object=tile->getObject(i);
+							assert(object!=NULL);
+
+							// Draw hitmasks.
 							HitMask activeHitmask=object->getHitMaskByCoord(vec);
 
 							if (drawHitMasksActive)
@@ -137,12 +154,12 @@ namespace Engine {
 								totalHitMask|=activeHitmask;
 							}
 						}
-					}
 
-					// Draw hitmask intersections if needed.
-					if (drawHitMasksIntersections)
-						renderHitMask(intersectionHitMask, sx, sy, 255, 0, 0);
-				}
+						// Draw hitmask intersections if needed.
+						if (drawHitMasksIntersections)
+							renderHitMask(intersectionHitMask, sx, sy, 255, 0, 0);
+					}
+			}
 
 			// Draw grids (if needed).
 			if (drawCoordGrid) {
