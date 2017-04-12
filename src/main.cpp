@@ -15,13 +15,13 @@ using namespace Engine;
 using namespace Engine::Graphics;
 using namespace Engine::Map;
 
-#define Zoom 4
-#define TilesWide 24
-#define TilesHigh 18
-#define WindowWidth (TilesWide*Physics::CoordsPerTile*Zoom)
-#define WindowHeight (TilesHigh*Physics::CoordsPerTile*Zoom)
-
 int main(int argc, char **argv) {
+	const int Zoom=4;
+	const int TilesWide=24;
+	const int TilesHigh=18;
+	const int WindowWidth=(TilesWide*Physics::CoordsPerTile*Zoom);
+	const int WindowHeight=(TilesHigh*Physics::CoordsPerTile*Zoom);
+
 	// Create map.
 	MapGen::MapGen gen(1024, 1024);
 	class Map *map=gen.generate();
