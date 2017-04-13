@@ -181,13 +181,13 @@ namespace Engine {
 			// Draw vertical lines.
 			int x;
 			int sx=camera->coordXToScreenXOffset(topLeft.x)+windowWidth/2;
-			for(x=topLeft.x; x<=bottomRight.x; x+=coordDelta.x,sx+=sDelta.x)
+			for(x=topLeft.x; x<=bottomRight.x+CoordsPerTile; x+=coordDelta.x,sx+=sDelta.x)
 				SDL_RenderDrawLine(renderer, sx, 0, sx, windowHeight);
 
 			// Draw horizontal lines.
 			int y;
 			int sy=camera->coordYToScreenYOffset(topLeft.y)+windowHeight/2;
-			for(y=topLeft.y; y<=bottomRight.y; y+=coordDelta.y,sy+=sDelta.y)
+			for(y=topLeft.y; y<=bottomRight.y+CoordsPerTile; y+=coordDelta.y,sy+=sDelta.y)
 				SDL_RenderDrawLine(renderer, 0, sy, windowWidth, sy);
 		}
 
