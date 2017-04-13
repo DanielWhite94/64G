@@ -20,9 +20,11 @@ int main(int argc, char **argv) {
 	const int defaultZoom=4;
 	const int TilesWide=24;
 	const int TilesHigh=18;
+	const double fps=120.0;
+
 	const int WindowWidth=(TilesWide*Physics::CoordsPerTile*defaultZoom);
 	const int WindowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
-
+	const int fpsDelay=1000.0/fps;
 
 	// Create map.
 	MapGen::MapGen gen(1024, 1024);
@@ -57,8 +59,8 @@ int main(int argc, char **argv) {
 	bool quit=false;
 	unsigned tick=0;
 	for(tick=0; !quit; ++tick) {
-		// Debugging.
-		printf("Main: tick (player position (%i,%i))\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y);
+		// Note tick start time to maintain constant FPS later.
+		unsigned startTime=SDL_GetTicks();
 
 		// Redraw screen.
 		camera.setVec(objectPlayer.getCoordTopLeft());
@@ -136,9 +138,18 @@ int main(int argc, char **argv) {
 		if (tick%mapTickRate==0)
 			map->tick();
 
-		// Delay
-		// TODO: Constant FPS to avoid character speed changes.
-		SDL_Delay(1000/32);
+		// Delay to maintain a constant FPS.
+		unsigned endTime=SDL_GetTicks();
+		unsigned deltaTime=endTime-startTime;
+		int delay=fpsDelay-deltaTime;
+		if (delay>0)
+			SDL_Delay(delay);
+
+		// Debugging.
+		if (delay>0)
+			printf("Main: tick (player position (%i,%i)). render took %u.%03us (delaying for %u.%03us)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000, delay/1000, delay%1000);
+		else
+			printf("Main: tick (player position (%i,%i)). render took %u.%03us (no delay)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000);
 	}
 
 	return EXIT_SUCCESS;
