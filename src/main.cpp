@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 	// Create map.
 	MapGen::MapGen gen(1024, 1024);
 	class Map *map=gen.generate();
-	assert(map!=NULL);
+	assert(map!=NULL); // FIXME: clearly suboptimal error handling...
 
 	// Add objects.
 	MapObject objectPlayer(CoordAngle0, CoordVec(205*Physics::CoordsPerTile, 521*Physics::CoordsPerTile), 1, 1);
