@@ -16,11 +16,13 @@ using namespace Engine::Graphics;
 using namespace Engine::Map;
 
 int main(int argc, char **argv) {
-	const int Zoom=4;
+	const int maxZoom=8;
+	const int defaultZoom=4;
 	const int TilesWide=24;
 	const int TilesHigh=18;
-	const int WindowWidth=(TilesWide*Physics::CoordsPerTile*Zoom);
-	const int WindowHeight=(TilesHigh*Physics::CoordsPerTile*Zoom);
+	const int WindowWidth=(TilesWide*Physics::CoordsPerTile*defaultZoom);
+	const int WindowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
+
 
 	// Create map.
 	MapGen::MapGen gen(1024, 1024);
@@ -49,7 +51,7 @@ int main(int argc, char **argv) {
 	renderer.drawHitMasksIntersections=true;
 
 	// Create camera variables.
-	Camera camera(CoordVec(0,0), Zoom);
+	Camera camera(CoordVec(0,0), defaultZoom);
 
 	// Main loop.
 	const unsigned mapTickRate=8;
@@ -88,6 +90,11 @@ int main(int argc, char **argv) {
 						case SDLK_SPACE:
 							playerRunning=true;
 						break;
+						case SDLK_TAB: {
+							int oldZoom=camera.getZoom();
+							int newZoom=(oldZoom<=1 ? maxZoom : oldZoom-1);
+							camera.setZoom(newZoom);
+						} break;
 					}
 				break;
 				case SDL_KEYUP:
