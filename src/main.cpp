@@ -44,8 +44,6 @@ int main(int argc, char **argv) {
 
 	// Create renderer.
 	Renderer renderer(WindowWidth, WindowHeight);
-	renderer.drawTileGrid=true;
-	//renderer.drawCoordGrid=true;
 	renderer.drawHitMasksActive=true;
 	//renderer.drawHitMasksInactive=true;
 	renderer.drawHitMasksIntersections=true;
@@ -95,6 +93,15 @@ int main(int argc, char **argv) {
 							int newZoom=(oldZoom<=1 ? maxZoom : oldZoom-1);
 							camera.setZoom(newZoom);
 						} break;
+						case SDLK_g:
+							if (renderer.drawCoordGrid) {
+								renderer.drawTileGrid=false;
+								renderer.drawCoordGrid=false;
+							} else if (renderer.drawTileGrid)
+								renderer.drawCoordGrid=true;
+							else
+								renderer.drawTileGrid=true;
+						break;
 					}
 				break;
 				case SDL_KEYUP:
