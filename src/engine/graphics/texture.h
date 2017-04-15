@@ -12,8 +12,12 @@ namespace Engine {
 			~Texture();
 
 			const SDL_Texture *getTexture(void) const;
+			const int getWidth(void) const;
+			const int getHeight(void) const;
 		private:
 			SDL_Texture *texture;
+
+			int width, height;
 		};
 	};
 };
