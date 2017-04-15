@@ -62,7 +62,7 @@ namespace Engine {
 				[TextureIdWater]=1,
 				[TextureIdTree1]=4,
 				[TextureIdTree2]=4,
-				[TextureIdMan1]=1,
+				[TextureIdMan1]=4,
 			};
 			unsigned i;
 			for(i=1; i<TextureIdNB; ++i)
