@@ -126,7 +126,9 @@ namespace Engine {
 				}
 
 			// Draw objects.
-			for(vec.y=topLeft.y,sy=syTopLeft; vec.y<=bottomRight.y; vec.y+=CoordsPerTile,sy+=delta)
+			bool moreObjectsToRender=false;
+			for(vec.y=topLeft.y,sy=syTopLeft; (vec.y<=bottomRight.y || moreObjectsToRender); vec.y+=CoordsPerTile,sy+=delta) {
+				moreObjectsToRender=false;
 				for(vec.x=topLeft.x,sx=sxTopLeft; vec.x<=bottomRight.x; vec.x+=CoordsPerTile,sx+=delta) {
 					// Find tile at this (x,y).
 					const MapTile *tile=map->getTileAtCoordVec(vec);
@@ -142,8 +144,11 @@ namespace Engine {
 
 						// We wait to draw a whole vertical slice once we reach the lowest tile in a column - is this such a tile?
 						CoordVec objectCoordBottomRight=object->getCoordBottomRight();
-						if (objectCoordBottomRight.y<vec.y || objectCoordBottomRight.y>=vec.y+CoordsPerTile)
+						if (objectCoordBottomRight.y>=vec.y+CoordsPerTile) {
+							moreObjectsToRender=true; // FIXME: Technically this could cause us to loop over MANY more rows than is necesarry.
+
 							continue;
+						}
 
 						// Compute which part of the object we are drawing for this vertical slice.
 						CoordVec objectCoordTopLeft=object->getCoordTopLeft();
@@ -193,10 +198,9 @@ namespace Engine {
 							SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
 							SDL_RenderFillRect(renderer, &rect);
 						}
-
-						// FIXME: Tall objects just off the bottom of the screen will not be drawn.
 					}
 				}
+			}
 
 			// Draw object hitmasks (if needed).
 			if (drawHitMasksActive || drawHitMasksInactive || drawHitMasksIntersections) {
