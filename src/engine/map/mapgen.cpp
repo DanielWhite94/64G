@@ -117,6 +117,7 @@ namespace Engine {
 					// Create object.
 					MapObject *object=new MapObject(rotation, pos, 1, 1);
 					object->setHitMaskByTileOffset(0, 0, hitmask);
+					object->tempSetTextureId(12);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
@@ -176,6 +177,7 @@ namespace Engine {
 					object->setHitMaskByTileOffset(1, 0, hitmask10);
 					object->setHitMaskByTileOffset(1, 1, hitmask11);
 					object->setHitMaskByTileOffset(1, 2, hitmask12);
+					object->tempSetTextureId(13);
 
 					// Add object to map.
 					if (!map->addObject(object)) {

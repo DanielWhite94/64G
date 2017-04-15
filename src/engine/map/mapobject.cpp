@@ -27,6 +27,8 @@ namespace Engine {
 				tileData[i]=new MapObjectTile(); // TODO: do better
 
 			movementMode=MapObjectMovementMode::Static;
+
+			tempTextureId=0;
 		}
 
 		MapObject::~MapObject() {
@@ -104,6 +106,10 @@ namespace Engine {
 			return hitmaskTL|hitmaskTR|hitmaskBL|hitmaskBR;
 		}
 
+		unsigned MapObject::tempGetTextureId(void) const {
+			return tempTextureId;
+		}
+
 		void MapObject::setAngle(CoordAngle gAngle) {
 			angle=gAngle;
 		}
@@ -126,6 +132,10 @@ namespace Engine {
 		void MapObject::setMovementModeConstantVelocity(const CoordVec &delta) {
 			movementMode=MapObjectMovementMode::ConstantVelocity;
 			movementData.constantVelocity.delta=delta;
+		}
+
+		void MapObject::tempSetTextureId(unsigned textureId) {
+			tempTextureId=textureId;
 		}
 	};
 };
