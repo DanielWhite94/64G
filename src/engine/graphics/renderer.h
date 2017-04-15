@@ -24,7 +24,8 @@ const unsigned TextureIdDock=10;
 const unsigned TextureIdWater=11;
 const unsigned TextureIdTree1=12;
 const unsigned TextureIdTree2=13;
-const unsigned TextureIdNB=14;
+const unsigned TextureIdMan1=14;
+const unsigned TextureIdNB=15;
 
 using namespace Engine::Map;
 

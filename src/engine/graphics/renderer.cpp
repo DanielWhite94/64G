@@ -46,6 +46,7 @@ namespace Engine {
 				[TextureIdWater]="./images/tiles/water.png",
 				[TextureIdTree1]="./images/objects/tree1.png",
 				[TextureIdTree2]="./images/objects/tree2.png",
+				[TextureIdMan1]="./images/objects/man1.png",
 			};
 			unsigned i;
 			for(i=1; i<TextureIdNB; ++i)
