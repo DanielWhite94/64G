@@ -32,7 +32,7 @@ namespace Engine {
 			renderer=SDL_CreateRenderer(window, -1, 0); // TODO: Check return.
 
 			// Load textures.
-			const char *paths[TextureIdNB]={
+			const char *texturePaths[TextureIdNB]={
 				[TextureIdGrass0]="./images/tiles/grass0.png",
 				[TextureIdGrass1]="./images/tiles/grass1.png",
 				[TextureIdGrass2]="./images/tiles/grass2.png",
@@ -48,9 +48,25 @@ namespace Engine {
 				[TextureIdTree2]="./images/objects/tree2.png",
 				[TextureIdMan1]="./images/objects/man1.png",
 			};
+			const int textureScales[TextureIdNB]={
+				[TextureIdGrass0]=1,
+				[TextureIdGrass1]=1,
+				[TextureIdGrass2]=1,
+				[TextureIdGrass3]=1,
+				[TextureIdGrass4]=1,
+				[TextureIdGrass5]=1,
+				[TextureIdGrass6]=1,
+				[TextureIdBrickPath]=1,
+				[TextureIdDirt]=1,
+				[TextureIdDock]=1,
+				[TextureIdWater]=1,
+				[TextureIdTree1]=4,
+				[TextureIdTree2]=4,
+				[TextureIdMan1]=1,
+			};
 			unsigned i;
 			for(i=1; i<TextureIdNB; ++i)
-				textures[i]=new Texture(renderer, paths[i]); // TODO: call delete
+				textures[i]=new Texture(renderer, texturePaths[i], textureScales[i]); // TODO: call delete
 		}
 
 		Renderer::~Renderer() {
@@ -158,11 +174,12 @@ namespace Engine {
 						const unsigned objectTextureId=object->tempGetTextureId();
 						if (objectTextureId>0) {
 							const Texture *texture=textures[objectTextureId];
+							const int scale=texture->getScale();
 
-							assert(texture->getWidth()==coordObjectSize.x);
-							assert(texture->getHeight()==coordObjectSize.y);
+							assert(texture->getWidth()/scale==coordObjectSize.x);
+							assert(texture->getHeight()/scale==coordObjectSize.y);
 
-							SDL_Rect srcRect={.x=textureCoordOffsetX, .y=textureCoordOffsetY, .w=textureCoordOffsetW, .h=textureCoordOffsetH};
+							SDL_Rect srcRect={.x=textureCoordOffsetX*scale, .y=textureCoordOffsetY*scale, .w=textureCoordOffsetW*scale, .h=textureCoordOffsetH*scale};
 							SDL_Rect destRect={.x=sliceScreenX1, .y=sliceScreenY1, .w=sliceScreenW, .h=sliceScreenH};
 							SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), &srcRect, &destRect);
 						} else {

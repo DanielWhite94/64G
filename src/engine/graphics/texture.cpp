@@ -1,8 +1,12 @@
+#include <cassert>
+
 #include "texture.h"
 
 namespace Engine {
 	namespace Graphics {
-		Texture::Texture(SDL_Renderer *renderer, const char *path) {
+		Texture::Texture(SDL_Renderer *renderer, const char *path, int gScale) {
+			assert(gScale>=1);
+
 			SDL_Surface *image=IMG_Load(path);
 			texture=SDL_CreateTextureFromSurface(renderer, image);
 			SDL_FreeSurface(image);
@@ -11,6 +15,8 @@ namespace Engine {
 			int access;
 			width=height=0;
 			SDL_QueryTexture(texture, &format, &access, &width, &height);
+
+			scale=gScale;
 		}
 
 		Texture::~Texture() {
@@ -27,6 +33,10 @@ namespace Engine {
 
 		const int Texture::getHeight(void) const {
 			return height;
+		}
+
+		const int Texture::getScale(void) const {
+			return scale;
 		}
 	};
 };
