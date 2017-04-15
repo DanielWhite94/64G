@@ -149,7 +149,7 @@ namespace Engine {
 						CoordVec objectCoordTopLeft=object->getCoordTopLeft();
 
 						const int sliceCoordX1=std::max(objectCoordTopLeft.x, vec.x);
-						const int sliceCoordX2=std::min(objectCoordBottomRight.x, vec.x+CoordsPerTile)+1;
+						const int sliceCoordX2=std::min(objectCoordBottomRight.x+1, vec.x+CoordsPerTile);
 
 						const int sliceCoordY1=objectCoordTopLeft.y;
 						const int sliceCoordY2=objectCoordBottomRight.y+1;
