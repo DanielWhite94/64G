@@ -128,27 +128,24 @@ namespace Engine {
 					return object;
 				} break;
 				case BuiltinObject::Tree2: {
-					// TODO: In reality top two hitmasks should probably be 0 allowing player to pass behind.
-
-					// Create hitmasks.
 					const char hitmask0Str[64+1]=
 						"________"
 						"________"
 						"________"
-						"______##"
-						"____####"
-						"___#####"
-						"___#####"
-						"__######";
+						"________"
+						"________"
+						"________"
+						"________"
+						"________";
 					const char hitmask1Str[64+1]=
-						"__######"
-						"_#######"
-						"_#######"
-						"########"
-						"########"
-						"########"
-						"########"
-						"########";
+						"________"
+						"________"
+						"________"
+						"________"
+						"________"
+						"________"
+						"________"
+						"________";
 					const char hitmask2Str[64+1]=
 						"_#######"
 						"__######"
