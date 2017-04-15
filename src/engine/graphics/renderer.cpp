@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 
 #include "renderer.h"
@@ -122,8 +123,60 @@ namespace Engine {
 						const MapObject *object=tile->getObject(i);
 						assert(object!=NULL);
 
-						// Draw textures.
-						// TODO: this
+						// We wait to draw a whole vertical slice once we reach the lowest tile in a column - is this such a tile?
+						CoordVec objectCoordBottomRight=object->getCoordBottomRight();
+						if (objectCoordBottomRight.y<vec.y || objectCoordBottomRight.y>=vec.y+CoordsPerTile)
+							continue;
+
+						// Compute which part of the object we are drawing for this vertical slice.
+						CoordVec objectCoordTopLeft=object->getCoordTopLeft();
+
+						const int sliceCoordX1=std::max(objectCoordTopLeft.x, vec.x);
+						const int sliceCoordX2=std::min(objectCoordBottomRight.x, vec.x+CoordsPerTile)+1;
+
+						const int sliceCoordY1=objectCoordTopLeft.y;
+						const int sliceCoordY2=objectCoordBottomRight.y+1;
+
+						// Covert grid coordinates into screen coordinates.
+						const int sliceScreenX1=windowWidth/2+camera->coordXToScreenXOffset(sliceCoordX1);
+						const int sliceScreenY1=windowHeight/2+camera->coordYToScreenYOffset(sliceCoordY1);
+
+						const int sliceScreenW=camera->coordLengthToScreenLength(sliceCoordX2-sliceCoordX1);
+						const int sliceScreenH=camera->coordLengthToScreenLength(sliceCoordY2-sliceCoordY1);
+
+						// Compute which part of the object's texture we require.
+						const CoordVec coordObjectSize=object->getCoordSize();
+
+						const int textureCoordOffsetX=sliceCoordX1-objectCoordTopLeft.x;
+						const int textureCoordOffsetW=sliceCoordX2-sliceCoordX1;
+
+						const int textureCoordOffsetY=0;
+						const int textureCoordOffsetH=coordObjectSize.y;
+
+						// Draw slice of texture for this x-offset.
+						const unsigned objectTextureId=object->tempGetTextureId();
+						if (objectTextureId>0) {
+							const Texture *texture=textures[objectTextureId];
+
+							assert(texture->getWidth()==coordObjectSize.x);
+							assert(texture->getHeight()==coordObjectSize.y);
+
+							SDL_Rect srcRect={.x=textureCoordOffsetX, .y=textureCoordOffsetY, .w=textureCoordOffsetW, .h=textureCoordOffsetH};
+							SDL_Rect destRect={.x=sliceScreenX1, .y=sliceScreenY1, .w=sliceScreenW, .h=sliceScreenH};
+							SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), &srcRect, &destRect);
+						} else {
+							// TEMP
+
+							SDL_Rect rect;
+							rect.x=sliceScreenX1;
+							rect.y=sliceScreenY1;
+							rect.w=sliceScreenW;
+							rect.h=sliceScreenH;
+							SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+							SDL_RenderFillRect(renderer, &rect);
+						}
+
+						// FIXME: Tall objects just off the bottom of the screen will not be drawn.
 					}
 				}
 
