@@ -185,6 +185,32 @@ namespace Engine {
 
 					return object;
 				} break;
+				case BuiltinObject::Bush: {
+					// Create hitmask.
+					const char hitmaskStr[64+1]=
+						"________"
+						"________"
+						"________"
+						"________"
+						"________"
+						"________"
+						"________"
+						"________";
+					HitMask hitmask(hitmaskStr);
+
+					// Create object.
+					MapObject *object=new MapObject(rotation, pos, 1, 1);
+					object->setHitMaskByTileOffset(0, 0, hitmask);
+					object->tempSetTextureId(6);
+
+					// Add object to map.
+					if (!map->addObject(object)) {
+						delete object;
+						return NULL;
+					}
+
+					return object;
+				} break;
 			}
 
 			assert(false);

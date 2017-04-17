@@ -17,6 +17,7 @@ namespace Engine {
 				OldBeardMan,
 				Tree1,
 				Tree2,
+				Bush,
 			};
 
 			unsigned width, height;
