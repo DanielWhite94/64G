@@ -54,7 +54,7 @@ namespace Engine {
 			heightArrayPtr=heightArray;
 			for(y=0;y<height;++y) {
 				for(x=0;x<width;++x,++heightArrayPtr) {
-					MapTile tile(*heightArrayPtr>=0.0 ? ((rand()%2+1)*(rand()%3+1)) : 10); // TODO: Do not hardcode texture ids.
+					MapTile tile(*heightArrayPtr>=0.0 ? rand()%5+1 : 10); // TODO: Do not hardcode texture ids.
 					CoordVec vec(x*Physics::CoordsPerTile, y*Physics::CoordsPerTile);
 					map->setTileAtCoordVec(vec, tile);
 				}
@@ -68,9 +68,11 @@ namespace Engine {
 			MapObject *npc1=addBuiltinObject(map, BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
 			npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
 
-			addBuiltinObjectForest(map, BuiltinObject::Tree2, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile));
+			addBuiltinObjectForest(map, BuiltinObject::Bush, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
 
-			addBuiltinObjectForest(map, BuiltinObject::Tree1, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
+			addBuiltinObjectForest(map, BuiltinObject::Tree2, CoordVec(220*Physics::CoordsPerTile, 547*Physics::CoordsPerTile), CoordVec(40*Physics::CoordsPerTile, 12*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile));
+
+			addBuiltinObjectForest(map, BuiltinObject::Tree1, CoordVec(210*Physics::CoordsPerTile, 537*Physics::CoordsPerTile), CoordVec(60*Physics::CoordsPerTile, 18*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
 
 			// Tidy up.
 			free(heightArray);
