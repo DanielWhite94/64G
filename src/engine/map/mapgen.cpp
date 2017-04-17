@@ -54,7 +54,7 @@ namespace Engine {
 			heightArrayPtr=heightArray;
 			for(y=0;y<height;++y) {
 				for(x=0;x<width;++x,++heightArrayPtr) {
-					MapTile tile(*heightArrayPtr>=0.0 ? 1 : 11); // TODO: Do not hardcode texture ids.
+					MapTile tile(*heightArrayPtr>=0.0 ? ((rand()%2+1)*(rand()%3+1)) : 10); // TODO: Do not hardcode texture ids.
 					CoordVec vec(x*Physics::CoordsPerTile, y*Physics::CoordsPerTile);
 					map->setTileAtCoordVec(vec, tile);
 				}
@@ -92,7 +92,7 @@ namespace Engine {
 					// Create object.
 					MapObject *object=new MapObject(rotation, pos, 1, 1);
 					object->setHitMaskByTileOffset(0, 0, hitmask);
-					object->tempSetTextureId(14);
+					object->tempSetTextureId(13);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
@@ -118,7 +118,7 @@ namespace Engine {
 					// Create object.
 					MapObject *object=new MapObject(rotation, pos, 1, 1);
 					object->setHitMaskByTileOffset(0, 0, hitmask);
-					object->tempSetTextureId(12);
+					object->tempSetTextureId(11);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
@@ -175,7 +175,7 @@ namespace Engine {
 					object->setHitMaskByTileOffset(1, 0, hitmask10);
 					object->setHitMaskByTileOffset(1, 1, hitmask11);
 					object->setHitMaskByTileOffset(1, 2, hitmask12);
-					object->tempSetTextureId(13);
+					object->tempSetTextureId(12);
 
 					// Add object to map.
 					if (!map->addObject(object)) {

@@ -17,15 +17,14 @@ const unsigned TextureIdGrass2=3;
 const unsigned TextureIdGrass3=4;
 const unsigned TextureIdGrass4=5;
 const unsigned TextureIdGrass5=6;
-const unsigned TextureIdGrass6=7;
-const unsigned TextureIdBrickPath=8;
-const unsigned TextureIdDirt=9;
-const unsigned TextureIdDock=10;
-const unsigned TextureIdWater=11;
-const unsigned TextureIdTree1=12;
-const unsigned TextureIdTree2=13;
-const unsigned TextureIdMan1=14;
-const unsigned TextureIdNB=15;
+const unsigned TextureIdBrickPath=7;
+const unsigned TextureIdDirt=8;
+const unsigned TextureIdDock=9;
+const unsigned TextureIdWater=10;
+const unsigned TextureIdTree1=11;
+const unsigned TextureIdTree2=12;
+const unsigned TextureIdMan1=13;
+const unsigned TextureIdNB=14;
 
 using namespace Engine::Map;
 
