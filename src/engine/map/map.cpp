@@ -1,4 +1,6 @@
 #include <cassert>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "map.h"
 #include "../graphics/renderer.h"
@@ -20,6 +22,88 @@ namespace Engine {
 			for(i=0; i<regionsHigh; ++i)
 				for(j=0; j<regionsWide; ++j)
 					regions[i][j]=NULL;
+		}
+
+		bool Map::save(const char *dirPath, const char *mapName) const {
+			assert(dirPath!=NULL);
+			assert(mapName!=NULL);
+
+			// TODO: In each case where we fail, tidy up and free anything as required.
+			// TODO: Better error reporting.
+
+			// Create base directory for the map.
+			size_t dirPathLen=strlen(dirPath);
+			size_t mapNameLen=strlen(mapName);
+			size_t mapBaseDirPathLen=dirPathLen+1+mapNameLen; // +1 is for '/'
+			char *mapBaseDirPath=(char *)malloc(mapBaseDirPathLen+1); // +1 for null temrinator. TODO: Check return.
+			sprintf(mapBaseDirPath, "%s/%s", dirPath, mapName);
+			if (mkdir(mapBaseDirPath, 0777)!=0) {
+				printf("error: could not make base dir at '%s'\n", mapBaseDirPath);
+				return false;
+			}
+
+			// Create 'regions' and 'textures' directories.
+			const char *regionsDirName="regions";
+			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
+			char *regionsDirPath=(char *)malloc(regionsDirPathLen+1); // TODO: check return
+			sprintf(regionsDirPath, "%s/%s", mapBaseDirPath, regionsDirName);
+			if (mkdir(regionsDirPath, 0777)!=0) {
+				printf("error: could not make regions dir at '%s'\n", regionsDirPath);
+				return false;
+			}
+
+			const char *texturesDirName="textures";
+			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
+			char *texturesDirPath=(char *)malloc(texturesDirPathLen+1); // TODO: check return
+			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
+			if (mkdir(texturesDirPath, 0777)!=0) {
+				printf("error: could not make textures dir at '%s'\n", texturesDirPath);
+				return false;
+			}
+
+			// Save all regions.
+			unsigned regionX, regionY;
+			for(regionY=0; regionY<regionsHigh; ++regionY)
+				for(regionX=0; regionX<regionsWide; ++regionX) {
+					// Grab region.
+					const MapRegion *region=getRegionAtOffset(regionX, regionY);
+					if (region==NULL)
+						continue;
+
+					// Create file.
+					char regionFilePath[1024]; // TODO: Prevent overflows.
+					sprintf(regionFilePath, "%s/%u,%u", regionsDirPath, regionX, regionY);
+					FILE *regionFile=fopen(regionFilePath, "w");
+
+					// Save all tiles.
+					unsigned tileX, tileY;
+					for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
+						for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
+							// Grab tile.
+							const MapTile *tile=region->getTileAtOffset(tileX, tileY);
+
+							// Save all layers.
+							unsigned z;
+							for(z=0; z<MapTile::layersMax; ++z) {
+								// Grab layer.
+								const MapTileLayer *layer=tile->getLayer(z);
+
+								// Save texture.
+								fwrite(&layer->textureId, sizeof(layer->textureId), 1, regionFile); // TODO: Check return.
+
+							}
+						}
+
+					// Close file.
+					fclose(regionFile);
+				}
+
+			// Tidy up.
+			free(mapBaseDirPath);
+			free(regionsDirPath);
+			free(texturesDirPath);
+
+			return true;
 		}
 
 		void Map::tick(void) {

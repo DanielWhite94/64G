@@ -23,6 +23,8 @@ namespace Engine {
 			Map();
 			~Map();
 
+			bool save(const char *dirPath, const char *mapName) const;
+
 			void tick(void);
 
 			MapTile *getTileAtCoordVec(const CoordVec &vec);
