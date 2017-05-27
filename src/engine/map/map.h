@@ -29,6 +29,8 @@ namespace Engine {
 			const MapTile *getTileAtCoordVec(const CoordVec &vec) const;
 			MapRegion *getRegionAtCoordVec(const CoordVec &vec);
 			const MapRegion *getRegionAtCoordVec(const CoordVec &vec) const;
+			MapRegion *getRegionAtOffset(unsigned regionX, unsigned regionY);
+			const MapRegion *getRegionAtOffset(unsigned regionX, unsigned regionY) const;
 
 			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
 

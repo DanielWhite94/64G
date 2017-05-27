@@ -54,10 +54,7 @@ namespace Engine {
 			CoordComponent regionX=tileX/MapRegion::tilesWide;
 			CoordComponent regionY=tileY/MapRegion::tilesHigh;
 
-			if (regionX>=regionsWide || regionY>=regionsHigh)
-				return NULL;
-
-			return regions[regionY][regionX];
+			return getRegionAtOffset(regionX, regionY);
 		}
 
 		const MapRegion *Map::getRegionAtCoordVec(const CoordVec &vec) const {
@@ -69,6 +66,17 @@ namespace Engine {
 			CoordComponent regionX=tileX/MapRegion::tilesWide;
 			CoordComponent regionY=tileY/MapRegion::tilesHigh;
 
+			return getRegionAtOffset(regionX, regionY);
+		}
+
+		MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY) {
+			if (regionX>=regionsWide || regionY>=regionsHigh)
+				return NULL;
+
+			return regions[regionY][regionX];
+		}
+
+		const MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY) const {
 			if (regionX>=regionsWide || regionY>=regionsHigh)
 				return NULL;
 
