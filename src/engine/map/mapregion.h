@@ -21,6 +21,8 @@ namespace Engine {
 
 			MapTile *getTileAtCoordVec(const CoordVec &vec);
 			const MapTile *getTileAtCoordVec(const CoordVec &vec) const ;
+			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY);
+			const MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY) const ;
 
 			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
 		private:
