@@ -443,7 +443,21 @@ namespace Engine {
 					getTileAtCoordVec(vec)->removeObject(object);
 
 			// Move object.
+			double angle=(180.0/M_PI)*Util::angleFromXYToXY(object->getCoordTopLeft().x, object->getCoordTopLeft().y, newPos.x, newPos.y);
+
 			object->setPos(newPos);
+
+			assert(angle>=-180.0 && angle<=180.0);
+			if (angle<-135.0 || angle>=135.0)
+				object->setAngle(CoordAngle90);
+			else if (angle>=-135.0 && angle<-45.0)
+				object->setAngle(CoordAngle0);
+			else if (angle>=-45.0 && angle<45.0)
+				object->setAngle(CoordAngle270);
+			else if (angle>=45.0 && angle<135.0)
+				object->setAngle(CoordAngle180);
+			else
+				assert(false);
 
 			// Compute new dimensions.
 			CoordVec newVec1, newVec2;
