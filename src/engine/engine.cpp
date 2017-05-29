@@ -5,11 +5,11 @@
 
 #include <SDL2/SDL.h>
 
-#include "./engine/graphics/camera.h"
-#include "./engine/graphics/renderer.h"
-#include "./engine/map/map.h"
-#include "./engine/map/mapgen.h"
-#include "./engine/map/mapobject.h"
+#include "./graphics/camera.h"
+#include "./graphics/renderer.h"
+#include "./map/map.h"
+#include "./map/mapgen.h"
+#include "./map/mapobject.h"
 
 using namespace Engine;
 using namespace Engine::Graphics;
