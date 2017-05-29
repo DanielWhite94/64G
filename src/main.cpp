@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	class Map *map=gen.generate();
 	assert(map!=NULL); // FIXME: clearly suboptimal error handling...
 
-	// Add objects.
+	// Add player object.
 	MapObject objectPlayer(CoordAngle0, CoordVec(205*Physics::CoordsPerTile, 521*Physics::CoordsPerTile), 1, 1);
 	HitMask playerHitmask;
 	const unsigned playerW=4, playerH=6;
@@ -42,6 +42,16 @@ int main(int argc, char **argv) {
 	objectPlayer.setHitMaskByTileOffset(0, 0, playerHitmask);
 	objectPlayer.tempSetTextureId(13);
 	map->addObject(&objectPlayer);
+
+	// Add other objects.
+	MapObject *npc1=MapGen::addBuiltinObject(map, MapGen::BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
+	npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
+
+	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Bush, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
+
+	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree2, CoordVec(220*Physics::CoordsPerTile, 547*Physics::CoordsPerTile), CoordVec(40*Physics::CoordsPerTile, 12*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile));
+
+	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree1, CoordVec(210*Physics::CoordsPerTile, 537*Physics::CoordsPerTile), CoordVec(60*Physics::CoordsPerTile, 18*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
 	CoordVec playerDelta(0, 0);
 	bool playerRunning=false;
 
