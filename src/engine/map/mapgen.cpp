@@ -123,7 +123,6 @@ namespace Engine {
 		}
 
 		class Map *MapGen::generate(void) {
-
 			// Create Map.
 			printf("MapGen: creating map...\n");
 			class Map *map=new Map();
