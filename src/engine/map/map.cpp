@@ -264,34 +264,8 @@ namespace Engine {
 				if (texture==NULL)
 					continue;
 
-				// Copy image file.
-				const char *extension="png"; // TODO: Avoid hardcoding this.
-				char outPath[4096]; // TODO: This better.
-				sprintf(outPath, "%s/%us%u.%s", texturesDirPath, textureId, texture->getScale(), extension);
-
-				int inFd=open(texture->getImagePath(), O_RDONLY); // TODO: Check return.
-				int outFd=open(outPath, O_WRONLY|O_CREAT, 0777); // TODO: Check return.
-
-				if (inFd!=-1 && outFd!=-1) {
-					off_t remaining=lseek(inFd, 0, SEEK_END);
-					off_t offset=0;
-					while(remaining>0) {
-						ssize_t written=sendfile(outFd, inFd, &offset, remaining); // TODO: Check return.
-
-						if (written>0)
-							remaining-=written;
-						else if (written==-1)
-							break;
-						else
-							sleep(1);
-
-						// TODO: This is all bad...
-					}
-				} else
-					printf("error: could not open out file for texture %u at '%s'\n", textureId, outPath);
-
-				close(outFd);
-				close(inFd);
+				// Save texture.
+				texture->save(texturesDirPath); // TODO: Check return.
 			}
 
 			// Tidy up.

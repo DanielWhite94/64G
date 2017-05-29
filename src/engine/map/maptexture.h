@@ -10,6 +10,8 @@ namespace Engine {
 			MapTexture(unsigned id, const char *path, unsigned scale);
 			~MapTexture();
 
+			bool save(const char *texturesDirPath) const;
+
 			unsigned getId(void) const;
 			const char *getImagePath(void) const;
 			unsigned getScale(void) const;
