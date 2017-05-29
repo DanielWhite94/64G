@@ -21,6 +21,8 @@ namespace Engine {
 		public:
 			static const unsigned regionsWide=256, regionsHigh=256;
 
+			bool initialized;
+
 			Map();
 			Map(const char *mapBaseDirPath);
 			~Map();

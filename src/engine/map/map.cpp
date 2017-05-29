@@ -23,6 +23,8 @@ namespace Engine {
 
 			for(i=0; i<MapTexture::IdMax; ++i)
 				textures[i]=NULL;
+
+			initialized=true;
 		}
 
 		Map::Map(const char *mapBaseDirPath) {
@@ -34,6 +36,8 @@ namespace Engine {
 			struct dirent *dirEntry;
 
 			// Set Map to clean state.
+			initialized=false;
+
 			unsigned i, j;
 			for(i=0; i<regionsHigh; ++i)
 				for(j=0; j<regionsWide; ++j)
@@ -167,7 +171,10 @@ namespace Engine {
 			// Tidy up.
 			free(regionsDirPath);
 			free(texturesDirPath);
+
+			initialized=true;
 		}
+
 		Map::~Map() {
 			unsigned i, j;
 			for(i=0; i<regionsHigh; ++i)
@@ -176,6 +183,8 @@ namespace Engine {
 
 			for(i=0; i<MapTexture::IdMax; ++i)
 				textures[i]=NULL;
+
+			initialized=false;
 		}
 
 		bool Map::save(const char *dirPath, const char *mapName) const {
