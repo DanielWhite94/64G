@@ -20,6 +20,54 @@ namespace Engine {
 		};
 
 		class Map *MapGen::generate(void) {
+			const unsigned TextureIdNone=0;
+			const unsigned TextureIdGrass0=1;
+			const unsigned TextureIdGrass1=2;
+			const unsigned TextureIdGrass2=3;
+			const unsigned TextureIdGrass3=4;
+			const unsigned TextureIdGrass4=5;
+			const unsigned TextureIdGrass5=6;
+			const unsigned TextureIdBrickPath=7;
+			const unsigned TextureIdDirt=8;
+			const unsigned TextureIdDock=9;
+			const unsigned TextureIdWater=10;
+			const unsigned TextureIdTree1=11;
+			const unsigned TextureIdTree2=12;
+			const unsigned TextureIdMan1=13;
+			const unsigned TextureIdNB=14;
+			const char *texturePaths[TextureIdNB]={
+				[TextureIdNone]=NULL, // Implies no tile.
+				[TextureIdGrass0]="./images/tiles/grass0.png",
+				[TextureIdGrass1]="./images/tiles/grass1.png",
+				[TextureIdGrass2]="./images/tiles/grass2.png",
+				[TextureIdGrass3]="./images/tiles/grass3.png",
+				[TextureIdGrass4]="./images/tiles/grass4.png",
+				[TextureIdGrass5]="./images/tiles/grass5.png",
+				[TextureIdBrickPath]="./images/tiles/tile.png",
+				[TextureIdDirt]="./images/tiles/dirt.png",
+				[TextureIdDock]="./images/tiles/dock.png",
+				[TextureIdWater]="./images/tiles/water.png",
+				[TextureIdTree1]="./images/objects/tree1.png",
+				[TextureIdTree2]="./images/objects/tree2.png",
+				[TextureIdMan1]="./images/objects/man1.png",
+			};
+			const int textureScales[TextureIdNB]={
+				[TextureIdNone]=1,
+				[TextureIdGrass0]=4,
+				[TextureIdGrass1]=4,
+				[TextureIdGrass2]=4,
+				[TextureIdGrass3]=4,
+				[TextureIdGrass4]=4,
+				[TextureIdGrass5]=4,
+				[TextureIdBrickPath]=4,
+				[TextureIdDirt]=4,
+				[TextureIdDock]=4,
+				[TextureIdWater]=4,
+				[TextureIdTree1]=4,
+				[TextureIdTree2]=4,
+				[TextureIdMan1]=4,
+			};
+
 			// Choose parameters.
 			const double cellWidth=1.0;
 			const double cellHeight=1.0;
@@ -52,6 +100,14 @@ namespace Engine {
 			// Create Map.
 			printf("MapGen: creating map...\n");
 			class Map *map=new Map();
+
+			// Create textures.
+			printf("MapGen: creating textures...\n");
+			bool textureError=false;
+			unsigned textureId;
+			for(textureId=1; textureId<TextureIdNB; ++textureId)
+				textureError|=!map->addTexture(new MapTexture(textureId, texturePaths[textureId], textureScales[textureId]));
+
 			// Create base tile layer - water/grass.
 			printf("MapGen: creating water/land tiles...\n");
 			heightArrayPtr=heightArray;

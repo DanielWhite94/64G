@@ -31,45 +31,17 @@ namespace Engine {
 			// Create renderer.
 			renderer=SDL_CreateRenderer(window, -1, 0); // TODO: Check return.
 
-			// Load textures.
-			const char *texturePaths[TextureIdNB]={
-				[TextureIdGrass0]="./images/tiles/grass0.png",
-				[TextureIdGrass1]="./images/tiles/grass1.png",
-				[TextureIdGrass2]="./images/tiles/grass2.png",
-				[TextureIdGrass3]="./images/tiles/grass3.png",
-				[TextureIdGrass4]="./images/tiles/grass4.png",
-				[TextureIdGrass5]="./images/tiles/grass5.png",
-				[TextureIdBrickPath]="./images/tiles/tile.png",
-				[TextureIdDirt]="./images/tiles/dirt.png",
-				[TextureIdDock]="./images/tiles/dock.png",
-				[TextureIdWater]="./images/tiles/water.png",
-				[TextureIdTree1]="./images/objects/tree1.png",
-				[TextureIdTree2]="./images/objects/tree2.png",
-				[TextureIdMan1]="./images/objects/man1.png",
-			};
-			const int textureScales[TextureIdNB]={
-				[TextureIdGrass0]=4,
-				[TextureIdGrass1]=4,
-				[TextureIdGrass2]=4,
-				[TextureIdGrass3]=4,
-				[TextureIdGrass4]=4,
-				[TextureIdGrass5]=4,
-				[TextureIdBrickPath]=4,
-				[TextureIdDirt]=4,
-				[TextureIdDock]=4,
-				[TextureIdWater]=4,
-				[TextureIdTree1]=4,
-				[TextureIdTree2]=4,
-				[TextureIdMan1]=4,
-			};
+			// Set textures array initially empty.
 			unsigned i;
-			for(i=1; i<TextureIdNB; ++i)
-				textures[i]=new Texture(renderer, texturePaths[i], textureScales[i]); // TODO: call delete
+			for(i=0; i<MapTexture::IdMax; ++i)
+				textures[i]=NULL;
 		}
 
 		Renderer::~Renderer() {
 			SDL_DestroyRenderer(renderer);
 			SDL_DestroyWindow(window);
+
+			// TODO: Call delete on textures.
 
 			IMG_Quit();
 			SDL_Quit();
@@ -114,12 +86,17 @@ namespace Engine {
 						const MapTileLayer *layer=tile->getLayer(z);
 						assert(layer!=NULL);
 
-						if (layer->textureId==TextureIdNone)
+						if (layer->textureId==0)
 							continue;
 
-						// Draw layer.
+						// Grab texture.
+						const Texture *texture=getTexture(*map, layer->textureId);
+						if (texture==NULL)
+							continue;
+
+						// Draw texture.
 						SDL_Rect rect={.x=sx, .y=sy, .w=delta, .h=delta};
-						SDL_RenderCopy(renderer, (SDL_Texture *)textures[layer->textureId]->getTexture(), NULL, &rect);
+						SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), NULL, &rect);
 					}
 				}
 
@@ -176,7 +153,12 @@ namespace Engine {
 						// Draw slice of texture for this x-offset.
 						const unsigned objectTextureId=object->tempGetTextureId();
 						if (objectTextureId>0) {
-							const Texture *texture=textures[objectTextureId];
+							// Grab texture.
+							const Texture *texture=getTexture(*map, objectTextureId);
+							if (texture==NULL)
+								continue;
+
+							// Draw texture slice.
 							const int scale=texture->getScale();
 
 							assert(texture->getWidth()/scale==coordObjectSize.x);
@@ -278,6 +260,19 @@ namespace Engine {
 					SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
 					SDL_RenderFillRect(renderer, &rect);
 				}
+		}
+
+		const Texture *Renderer::getTexture(const class Map &map, unsigned textureId) {
+			assert(textureId<MapTexture::IdMax);
+
+			// If this texture is not loaded attempt to now.
+			if (textures[textureId]==NULL) {
+				const MapTexture *mapTexture=map.getTexture(textureId);
+				if (mapTexture!=NULL)
+					textures[textureId]=new Texture(renderer, mapTexture->getImagePath(), mapTexture->getScale());
+			}
+
+			return textures[textureId];
 		}
 	};
 };

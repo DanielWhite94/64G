@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 		for(playerX=(8-playerW)/2; playerX<(8+playerW)/2; ++playerX)
 			playerHitmask.setXY(playerX, playerY, true);
 	objectPlayer.setHitMaskByTileOffset(0, 0, playerHitmask);
-	objectPlayer.tempSetTextureId(TextureIdMan1);
+	objectPlayer.tempSetTextureId(13);
 	map->addObject(&objectPlayer);
 	CoordVec playerDelta(0, 0);
 	bool playerRunning=false;
