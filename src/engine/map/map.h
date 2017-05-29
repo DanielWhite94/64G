@@ -27,7 +27,10 @@ namespace Engine {
 			Map(const char *mapBaseDirPath);
 			~Map();
 
-			bool save(const char *mapBaseDirPath) const;
+			bool save(const char *mapBaseDirPath) const; // Saves everything recursively.
+			bool saveMetadata(const char *mapBaseDirPath) const; // Creates directories.
+			bool saveTextures(const char *mapBaseDirPath) const; // Only saves list of textures (requires directory exists).
+			bool saveRegions(const char *mapBaseDirPath) const; // Only saves regions (requires directory exists).
 
 			void tick(void);
 
@@ -52,6 +55,9 @@ namespace Engine {
 			vector<MapObject *> objects;
 
 			MapTexture *textures[MapTexture::IdMax];
+
+			static char *saveBaseDirToRegionsDir(const char *mapBaseDirPath);
+			static char *saveBaseDirToTexturesDir(const char *mapBaseDirPath);
 		};
 	};
 };

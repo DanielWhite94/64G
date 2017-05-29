@@ -193,33 +193,77 @@ namespace Engine {
 			// TODO: In each case where we fail, tidy up and free anything as required.
 			// TODO: Better error reporting.
 
+			// Save 'metadata' (create directories).
+			saveMetadata(mapBaseDirPath); // TODO: Check return.
+
+			// Save all regions.
+			saveRegions(mapBaseDirPath); // TODO: Check return.
+
+			// Save all textures.
+			saveTextures(mapBaseDirPath); // TODO: Check return.
+
+			return true;
+		}
+
+		bool Map::saveMetadata(const char *mapBaseDirPath) const {
+			assert(mapBaseDirPath!=NULL);
+
 			// Create base directory for the map.
-			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 			if (mkdir(mapBaseDirPath, 0777)!=0) {
-				printf("error: could not make base dir at '%s'\n", mapBaseDirPath);
+				fprintf(stderr, "error: could not create map base dir at '%s'\n", mapBaseDirPath);
 				return false;
 			}
 
 			// Create 'regions' and 'textures' directories.
-			const char *regionsDirName="regions";
-			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
-			char *regionsDirPath=(char *)malloc(regionsDirPathLen+1); // TODO: check return
-			sprintf(regionsDirPath, "%s/%s", mapBaseDirPath, regionsDirName);
-			if (mkdir(regionsDirPath, 0777)!=0) {
-				printf("error: could not make regions dir at '%s'\n", regionsDirPath);
+			int mkdirResult;
+
+			char *regionsDirPath=saveBaseDirToRegionsDir(mapBaseDirPath); // TODO: check return
+			mkdirResult=mkdir(regionsDirPath, 0777);
+			free(regionsDirPath);
+			if (mkdirResult!=0) {
+				fprintf(stderr,"error: could not create map regions dir at '%s'\n", regionsDirPath);
 				return false;
 			}
 
-			const char *texturesDirName="textures";
-			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
-			char *texturesDirPath=(char *)malloc(texturesDirPathLen+1); // TODO: check return
-			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
-			if (mkdir(texturesDirPath, 0777)!=0) {
-				printf("error: could not make textures dir at '%s'\n", texturesDirPath);
+			char *texturesDirPath=saveBaseDirToTexturesDir(mapBaseDirPath); // TODO: check return
+			mkdirResult=mkdir(texturesDirPath, 0777);
+			free(texturesDirPath);
+			if (mkdirResult!=0) {
+				fprintf(stderr,"error: could not create map textures dir at '%s'\n", texturesDirPath);
 				return false;
 			}
+
+			return true;
+		}
+
+		bool Map::saveTextures(const char *mapBaseDirPath) const {
+			assert(mapBaseDirPath!=NULL);
+
+			// Save all textures.
+			char *texturesDirPath=saveBaseDirToTexturesDir(mapBaseDirPath); // TODO: check return
+
+			unsigned textureId;
+			for(textureId=1; textureId<MapTexture::IdMax; ++textureId) {
+				// Grab texture.
+				const MapTexture *texture=getTexture(textureId);
+				if (texture==NULL)
+					continue;
+
+				// Save texture.
+				texture->save(texturesDirPath); // TODO: Check return.
+			}
+
+			free(texturesDirPath);
+
+			return true;
+		}
+
+		bool Map::saveRegions(const char *mapBaseDirPath) const {
+			assert(mapBaseDirPath!=NULL);
 
 			// Save all regions.
+			char *regionsDirPath=saveBaseDirToRegionsDir(mapBaseDirPath); // TODO: check return
+
 			unsigned regionX, regionY;
 			for(regionY=0; regionY<regionsHigh; ++regionY)
 				for(regionX=0; regionX<regionsWide; ++regionX) {
@@ -256,21 +300,7 @@ namespace Engine {
 					fclose(regionFile);
 				}
 
-			// Save all textures.
-			unsigned textureId;
-			for(textureId=1; textureId<MapTexture::IdMax; ++textureId) {
-				// Grab texture.
-				const MapTexture *texture=getTexture(textureId);
-				if (texture==NULL)
-					continue;
-
-				// Save texture.
-				texture->save(texturesDirPath); // TODO: Check return.
-			}
-
-			// Tidy up.
 			free(regionsDirPath);
-			free(texturesDirPath);
 
 			return true;
 		}
@@ -517,6 +547,32 @@ namespace Engine {
 			assert(id<MapTexture::IdMax);
 
 			return textures[id];
+		}
+
+		char *Map::saveBaseDirToRegionsDir(const char *mapBaseDirPath) {
+			assert(mapBaseDirPath!=NULL);
+
+			const char *regionsDirName="regions";
+
+			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
+			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
+			char *regionsDirPath=(char *)malloc(regionsDirPathLen+1); // TODO: Check return
+			sprintf(regionsDirPath, "%s/%s", mapBaseDirPath, regionsDirName);
+
+			return regionsDirPath;
+		}
+
+		char *Map::saveBaseDirToTexturesDir(const char *mapBaseDirPath) {
+			assert(mapBaseDirPath!=NULL);
+
+			const char *texturesDirName="textures";
+
+			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
+			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
+			char *texturesDirPath=(char *)malloc(texturesDirPathLen+1); // TODO: Check return
+			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
+
+			return texturesDirPath;
 		}
 	};
 };
