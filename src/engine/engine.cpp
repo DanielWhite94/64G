@@ -16,6 +16,12 @@ using namespace Engine::Graphics;
 using namespace Engine::Map;
 
 int main(int argc, char **argv) {
+	// Parse arguments.
+	if (argc!=2) {
+		printf("Usage: %s mapfile\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+
 	// Set various constants/parameters.
 	const int maxZoom=8;
 	const int defaultZoom=4;
@@ -30,32 +36,13 @@ int main(int argc, char **argv) {
 	CoordVec playerDelta(0, 0);
 	bool playerRunning=false;
 
-	class Map *map=NULL;
-	if (argc<2) {
-		printf("No map file given - generating one...\n");
-
-		// Otherwise generate a map.
-		MapGen::MapGen gen(1024, 1024);
-		map=gen.generate();
-
-		if (map==NULL || !map->initialized) {
-			printf("Could not generate a map.\n");
-			return 0;
-		}
-	} else {
-		// Find path.
-		const char *path=argv[1];
-
-		// Log.
-		printf("Loading map at '%s'.\n", path);
-
-		// Load map.
-		map=new class Map(path);
-
-		if (map==NULL || !map->initialized) {
-			printf("Could not load map.\n");
-			return 0;
-		}
+	// Load map.
+	const char *path=argv[1];
+	printf("Loading map at '%s'.\n", path);
+	class Map *map=new class Map(path);
+	if (map==NULL || !map->initialized) {
+		printf("Could not load map.\n");
+		return EXIT_FAILURE;
 	}
 
 	// Add player object.
