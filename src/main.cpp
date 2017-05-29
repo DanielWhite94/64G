@@ -27,10 +27,36 @@ int main(int argc, char **argv) {
 	const int WindowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
 	const int fpsDelay=1000.0/fps;
 
-	// Create map.
-	MapGen::MapGen gen(1024, 1024);
-	class Map *map=gen.generate();
-	assert(map!=NULL); // FIXME: clearly suboptimal error handling...
+	CoordVec playerDelta(0, 0);
+	bool playerRunning=false;
+
+	class Map *map=NULL;
+	if (argc<2) {
+		printf("No map file given - generating one...\n");
+
+		// Otherwise generate a map.
+		MapGen::MapGen gen(1024, 1024);
+		map=gen.generate();
+
+		if (map==NULL || !map->initialized) {
+			printf("Could not generate a map.\n");
+			return 0;
+		}
+	} else {
+		// Find path.
+		const char *path=argv[1];
+
+		// Log.
+		printf("Loading map at '%s'.\n", path);
+
+		// Load map.
+		map=new class Map(path);
+
+		if (map==NULL || !map->initialized) {
+			printf("Could not load map.\n");
+			return 0;
+		}
+	}
 
 	// Add player object.
 	MapObject objectPlayer(CoordAngle0, CoordVec(205*Physics::CoordsPerTile, 521*Physics::CoordsPerTile), 1, 1);
@@ -46,15 +72,14 @@ int main(int argc, char **argv) {
 
 	// Add other objects.
 	MapObject *npc1=MapGen::addBuiltinObject(map, MapGen::BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
-	npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
+	if (npc1!=NULL)
+		npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
 
 	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Bush, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
 
 	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree2, CoordVec(220*Physics::CoordsPerTile, 547*Physics::CoordsPerTile), CoordVec(40*Physics::CoordsPerTile, 12*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile));
 
 	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree1, CoordVec(210*Physics::CoordsPerTile, 537*Physics::CoordsPerTile), CoordVec(60*Physics::CoordsPerTile, 18*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
-	CoordVec playerDelta(0, 0);
-	bool playerRunning=false;
 
 	// Create renderer.
 	Renderer renderer(WindowWidth, WindowHeight);
