@@ -79,9 +79,10 @@ namespace Engine {
 		}
 
 		HitMask MapObject::getHitMaskByTileOffset(int xOffset, int yOffset) const {
-			if (xOffset<0 || xOffset>=getTilesWide() || yOffset<0 || yOffset>=getTilesHigh())
-				return emptyHitmask;
-			else
+			if (xOffset<0 || xOffset>=getTilesWide() || yOffset<0 || yOffset>=getTilesHigh()) {
+				HitMask emptyMask;
+				return emptyMask;
+			} else
 				return tileData[xOffset+yOffset*getTilesWide()]->hitmask;
 		}
 

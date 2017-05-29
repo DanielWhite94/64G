@@ -60,8 +60,6 @@ namespace Engine {
 				MapObjectMovementModeConstantVelocity constantVelocity;
 			} movementData;
 
-			HitMask emptyHitmask;
-
 			unsigned textureIds[CoordAngleNB];
 		};
 	};
