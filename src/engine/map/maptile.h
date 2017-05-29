@@ -26,6 +26,8 @@ namespace Engine {
 
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
+			void setLayer(unsigned z, const MapTileLayer &layer);
+
 			void addObject(MapObject *object);
 			void removeObject(MapObject *object);
 		private:

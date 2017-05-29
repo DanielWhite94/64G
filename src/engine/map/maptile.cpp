@@ -64,6 +64,12 @@ namespace Engine {
 			return hitMask;
 		}
 
+		void MapTile::setLayer(unsigned z, const MapTileLayer &layer) {
+			assert(z<layersMax);
+
+			layers[z]=layer;
+		}
+
 		void MapTile::addObject(MapObject *object) {
 			assert(object!=NULL);
 			assert(objectsNext<objectsMax);
