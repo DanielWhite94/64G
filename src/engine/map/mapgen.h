@@ -8,11 +8,6 @@ namespace Engine {
 	namespace Map {
 		class MapGen {
 		public:
-			MapGen(unsigned width, unsigned height);
-			~MapGen();
-
-			class Map *generate(void);
-		private:
 			enum class BuiltinObject {
 				OldBeardMan,
 				Tree1,
@@ -20,11 +15,16 @@ namespace Engine {
 				Bush,
 			};
 
-			unsigned width, height;
+			MapGen(unsigned width, unsigned height);
+			~MapGen();
+
+			class Map *generate(void);
 
 			MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 
 			void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);
+		private:
+			unsigned width, height;
 		};
 	};
 };
