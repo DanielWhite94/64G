@@ -16,6 +16,7 @@ using namespace Engine::Graphics;
 using namespace Engine::Map;
 
 int main(int argc, char **argv) {
+	// Set various constants/parameters.
 	const int maxZoom=8;
 	const int defaultZoom=4;
 	const int TilesWide=24;
