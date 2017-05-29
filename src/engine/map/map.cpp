@@ -272,32 +272,8 @@ namespace Engine {
 					if (region==NULL)
 						continue;
 
-					// Create file.
-					char regionFilePath[1024]; // TODO: Prevent overflows.
-					sprintf(regionFilePath, "%s/%u,%u", regionsDirPath, regionX, regionY);
-					FILE *regionFile=fopen(regionFilePath, "w");
-
-					// Save all tiles.
-					unsigned tileX, tileY;
-					for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
-						for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
-							// Grab tile.
-							const MapTile *tile=region->getTileAtOffset(tileX, tileY);
-
-							// Save all layers.
-							unsigned z;
-							for(z=0; z<MapTile::layersMax; ++z) {
-								// Grab layer.
-								const MapTileLayer *layer=tile->getLayer(z);
-
-								// Save texture.
-								fwrite(&layer->textureId, sizeof(layer->textureId), 1, regionFile); // TODO: Check return.
-
-							}
-						}
-
-					// Close file.
-					fclose(regionFile);
+					// Save region.
+					region->save(regionsDirPath, regionX, regionY); // TODO: Check return.
 				}
 
 			free(regionsDirPath);

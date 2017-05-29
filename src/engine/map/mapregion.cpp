@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdlib>
+#include <cstdio>
 
 #include "mapregion.h"
 
@@ -11,6 +12,40 @@ namespace Engine {
 	}
 
 	MapRegion::~MapRegion() {
+	}
+
+	bool MapRegion::save(const char *regionsDirPath, unsigned regionX, unsigned regionY) const {
+		assert(regionsDirPath!=NULL);
+
+		// Create file.
+		char regionFilePath[1024]; // TODO: Prevent overflows.
+		sprintf(regionFilePath, "%s/%u,%u", regionsDirPath, regionX, regionY);
+		FILE *regionFile=fopen(regionFilePath, "w");
+
+		// Save all tiles.
+		unsigned tileX, tileY;
+		size_t written=0, target=0;
+		for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
+			for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
+				// Grab tile.
+				const MapTile *tile=getTileAtOffset(tileX, tileY);
+
+				// Save all layers.
+				unsigned z;
+				for(z=0; z<MapTile::layersMax; ++z) {
+					// Grab layer.
+					const MapTileLayer *layer=tile->getLayer(z);
+
+					// Save texture.
+					written+=sizeof(layer->textureId)*fwrite(&layer->textureId, sizeof(layer->textureId), 1, regionFile);
+					target+=sizeof(layer->textureId)*1;
+				}
+			}
+
+		// Close file.
+		fclose(regionFile);
+
+		return (written==target);
 	}
 
 	MapTile *MapRegion::getTileAtCoordVec(const CoordVec &vec) {

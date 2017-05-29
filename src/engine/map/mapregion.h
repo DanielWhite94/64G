@@ -16,6 +16,8 @@ namespace Engine {
 			MapRegion();
 			~MapRegion();
 
+			bool save(const char *regionsDirPath, unsigned regionX, unsigned regionY) const;
+
 			static unsigned coordXToRegionXBase(CoordComponent x);
 			static unsigned coordXToRegionXOffset(CoordComponent x);
 
