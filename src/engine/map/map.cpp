@@ -1,11 +1,8 @@
 #include <cassert>
 #include <dirent.h>
-#include <fcntl.h>
 #include <cstdio>
-#include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #include "map.h"
 #include "../graphics/renderer.h"
