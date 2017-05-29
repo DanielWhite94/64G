@@ -182,7 +182,7 @@ namespace Engine {
 					regions[i][j]=NULL;
 
 			for(i=0; i<MapTexture::IdMax; ++i)
-				textures[i]=NULL;
+				removeTexture(i);
 
 			initialized=false;
 		}
