@@ -9,7 +9,14 @@ namespace Engine {
 
 			MapTexture(unsigned id, const char *path, unsigned scale);
 			~MapTexture();
+
+			unsigned getId(void) const;
+			const char *getImagePath(void) const;
+			unsigned getScale(void) const;
 		private:
+			unsigned id;
+			char *path;
+			unsigned scale;
 		};
 	};
 };
