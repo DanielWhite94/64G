@@ -122,21 +122,6 @@ namespace Engine {
 			return true;
 		}
 
-		class Map *MapGen::generate(void) {
-			// Create Map.
-			printf("MapGen: creating map...\n");
-			class Map *map=new Map();
-
-			// Add textures.
-			printf("MapGen: creating textures...\n");
-			addBaseTextures(map); // TODO: Check return.
-
-			// Create base tile layer - water/grass.
-			generateWaterLand(map, 0, 0, width, height, TextureIdWater, TextureIdGrass0, 0); // TODO: Check return.
-
-			return map;
-		}
-
 		MapObject *MapGen::addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos) {
 			switch(builtin) {
 				case BuiltinObject::OldBeardMan: {

@@ -41,15 +41,27 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	// Generate a map.
-	MapGen::MapGen gen(width, height);
-	class Map *map=gen.generate();
-
+	// Create Map.
+	printf("Creating map...\n");
+	class Map *map=new class Map();
 	if (map==NULL || !map->initialized) {
-		printf("Could not generate a base map.\n");
+		printf("Could not create a map.\n");
 		return EXIT_FAILURE;
 	}
-	printf("Base map generated.\n");
+
+	// Add textures.
+	printf("Creating textures...\n");
+	if (!MapGen::addBaseTextures(map)) {
+		printf("Could not add base textures.\n");
+		return EXIT_FAILURE;
+	}
+
+	// Create base tile layer - water/grass.
+	printf("Creating land/water...\n");
+	if (!MapGen::generateWaterLand(map, 0, 0, width, height, MapGen::TextureIdWater, MapGen::TextureIdGrass0, 0)) {
+		printf("Could not generate land/water.\n");
+		return EXIT_FAILURE;
+	}
 
 	// Add a test NPC.
 	printf("Adding an NPC...\n");
