@@ -179,7 +179,7 @@ namespace Engine {
 			unsigned i, j;
 			for(i=0; i<regionsHigh; ++i)
 				for(j=0; j<regionsWide; ++j)
-					regions[i][j]=NULL;
+					regions[i][j]=NULL; // TODO: Free these properly.
 
 			for(i=0; i<MapTexture::IdMax; ++i)
 				removeTexture(i);
