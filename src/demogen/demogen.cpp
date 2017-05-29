@@ -31,10 +31,25 @@ int main(int argc, char **argv) {
 	class Map *map=gen.generate();
 
 	if (map==NULL || !map->initialized) {
-		printf("Could not generate a map.\n");
+		printf("Could not generate a base map.\n");
 		return EXIT_FAILURE;
 	}
-	printf("Map generated.\n");
+	printf("Base map generated.\n");
+
+	// Add a test NPC.
+	printf("Adding an NPC...\n");
+	MapObject *npc1=MapGen::addBuiltinObject(map, MapGen::BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
+	if (npc1!=NULL)
+		npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
+
+	// Add a test forest.
+	printf("Adding a forest..\n");
+
+	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Bush, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
+
+	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree2, CoordVec(220*Physics::CoordsPerTile, 547*Physics::CoordsPerTile), CoordVec(40*Physics::CoordsPerTile, 12*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile));
+
+	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree1, CoordVec(210*Physics::CoordsPerTile, 537*Physics::CoordsPerTile), CoordVec(60*Physics::CoordsPerTile, 18*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
 
 	// Save map.
 	if (!map->save(outputPath)) {
