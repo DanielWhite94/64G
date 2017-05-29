@@ -3,7 +3,6 @@
 
 #include "map.h"
 
-
 namespace Engine {
 	namespace Map {
 		class MapGen {
