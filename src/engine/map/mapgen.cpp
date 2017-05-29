@@ -20,21 +20,6 @@ namespace Engine {
 		};
 
 		class Map *MapGen::generate(void) {
-			const unsigned TextureIdNone=0;
-			const unsigned TextureIdGrass0=1;
-			const unsigned TextureIdGrass1=2;
-			const unsigned TextureIdGrass2=3;
-			const unsigned TextureIdGrass3=4;
-			const unsigned TextureIdGrass4=5;
-			const unsigned TextureIdGrass5=6;
-			const unsigned TextureIdBrickPath=7;
-			const unsigned TextureIdDirt=8;
-			const unsigned TextureIdDock=9;
-			const unsigned TextureIdWater=10;
-			const unsigned TextureIdTree1=11;
-			const unsigned TextureIdTree2=12;
-			const unsigned TextureIdMan1=13;
-			const unsigned TextureIdNB=14;
 			const char *texturePaths[TextureIdNB]={
 				[TextureIdNone]=NULL, // Implies no tile.
 				[TextureIdGrass0]="../images/tiles/grass0.png",
@@ -50,6 +35,10 @@ namespace Engine {
 				[TextureIdTree1]="../images/objects/tree1.png",
 				[TextureIdTree2]="../images/objects/tree2.png",
 				[TextureIdMan1]="../images/objects/man1.png",
+				[TextureIdOldManN]="../images/npcs/oldbeardman/north.png",
+				[TextureIdOldManE]="../images/npcs/oldbeardman/east.png",
+				[TextureIdOldManS]="../images/npcs/oldbeardman/south.png",
+				[TextureIdOldManW]="../images/npcs/oldbeardman/west.png",
 			};
 			const int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -66,6 +55,10 @@ namespace Engine {
 				[TextureIdTree1]=4,
 				[TextureIdTree2]=4,
 				[TextureIdMan1]=4,
+				[TextureIdOldManN]=4,
+				[TextureIdOldManE]=4,
+				[TextureIdOldManS]=4,
+				[TextureIdOldManW]=4,
 			};
 
 			// Choose parameters.
