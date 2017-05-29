@@ -30,6 +30,7 @@ namespace Engine {
 
 			void addObject(MapObject *object);
 			void removeObject(MapObject *object);
+			bool isObjectsFull(void) const;
 		private:
 			MapTileLayer layers[layersMax];
 

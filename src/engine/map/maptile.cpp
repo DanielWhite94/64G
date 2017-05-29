@@ -92,5 +92,9 @@ namespace Engine {
 			// Object not found.
 			assert(false);
 		}
+
+		bool MapTile::isObjectsFull(void) const {
+			return (objectsNext>=objectsMax);
+		}
 	};
 };
