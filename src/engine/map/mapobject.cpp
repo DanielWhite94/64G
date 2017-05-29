@@ -4,6 +4,7 @@
 #include "../util.h"
 
 #include "mapobject.h"
+#include "maptexture.h"
 
 namespace Engine {
 	namespace Map {
@@ -28,7 +29,8 @@ namespace Engine {
 
 			movementMode=MapObjectMovementMode::Static;
 
-			tempTextureId=0;
+			for(i=0; i<CoordAngleNB; ++i)
+				textureIds[i]=0;
 		}
 
 		MapObject::~MapObject() {
@@ -106,8 +108,14 @@ namespace Engine {
 			return hitmaskTL|hitmaskTR|hitmaskBL|hitmaskBR;
 		}
 
-		unsigned MapObject::tempGetTextureId(void) const {
-			return tempTextureId;
+		unsigned MapObject::getTextureIdCurrent(void) const {
+			return getTextureIdForAngle(getAngle());
+		}
+
+		unsigned MapObject::getTextureIdForAngle(CoordAngle angle) const {
+			assert(angle<CoordAngleNB);
+
+			return textureIds[angle];
 		}
 
 		void MapObject::setAngle(CoordAngle gAngle) {
@@ -134,8 +142,11 @@ namespace Engine {
 			movementData.constantVelocity.delta=delta;
 		}
 
-		void MapObject::tempSetTextureId(unsigned textureId) {
-			tempTextureId=textureId;
+		void MapObject::setTextureIdForAngle(CoordAngle angle, unsigned textureId) {
+			assert(angle<CoordAngleNB);
+			assert(textureId<MapTexture::IdMax);
+
+			textureIds[angle]=textureId;
 		}
 	};
 };

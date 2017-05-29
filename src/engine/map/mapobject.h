@@ -41,14 +41,15 @@ namespace Engine {
 			unsigned getTilesHigh(void) const;
 			HitMask getHitMaskByTileOffset(int xOffset, int yOffset) const;
 			HitMask getHitMaskByCoord(const CoordVec &vec) const;
-			unsigned tempGetTextureId(void) const;
+			unsigned getTextureIdCurrent(void) const;
+			unsigned getTextureIdForAngle(CoordAngle angle) const;
 
 			void setAngle(CoordAngle angle);
 			void setPos(const CoordVec &pos);
 			void setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask hitmask);
 			void setMovementModeStatic(void);
 			void setMovementModeConstantVelocity(const CoordVec &delta);
-			void tempSetTextureId(unsigned textureId);
+			void setTextureIdForAngle(CoordAngle angle, unsigned textureId);
 		private:
 			CoordAngle angle;
 			CoordVec pos;
@@ -61,7 +62,7 @@ namespace Engine {
 
 			HitMask emptyHitmask;
 
-			unsigned tempTextureId;
+			unsigned textureIds[CoordAngleNB];
 		};
 	};
 };

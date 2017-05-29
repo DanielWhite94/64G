@@ -136,7 +136,10 @@ namespace Engine {
 					// Create object.
 					MapObject *object=new MapObject(rotation, pos, 1, 1);
 					object->setHitMaskByTileOffset(0, 0, hitmask);
-					object->tempSetTextureId(13);
+					object->setTextureIdForAngle(CoordAngle0, TextureIdOldManS);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdOldManW);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdOldManN);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdOldManE);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
@@ -162,7 +165,10 @@ namespace Engine {
 					// Create object.
 					MapObject *object=new MapObject(rotation, pos, 1, 1);
 					object->setHitMaskByTileOffset(0, 0, hitmask);
-					object->tempSetTextureId(11);
+					object->setTextureIdForAngle(CoordAngle0, TextureIdTree1);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdTree1);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdTree1);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdTree1);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
@@ -219,7 +225,10 @@ namespace Engine {
 					object->setHitMaskByTileOffset(1, 0, hitmask10);
 					object->setHitMaskByTileOffset(1, 1, hitmask11);
 					object->setHitMaskByTileOffset(1, 2, hitmask12);
-					object->tempSetTextureId(12);
+					object->setTextureIdForAngle(CoordAngle0, TextureIdTree2);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdTree2);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdTree2);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdTree2);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
@@ -245,7 +254,10 @@ namespace Engine {
 					// Create object.
 					MapObject *object=new MapObject(rotation, pos, 1, 1);
 					object->setHitMaskByTileOffset(0, 0, hitmask);
-					object->tempSetTextureId(6);
+					object->setTextureIdForAngle(CoordAngle0, TextureIdGrass5);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdGrass5);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdGrass5);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdGrass5);
 
 					// Add object to map.
 					if (!map->addObject(object)) {

@@ -151,7 +151,7 @@ namespace Engine {
 						const int textureCoordOffsetH=coordObjectSize.y;
 
 						// Draw slice of texture for this x-offset.
-						const unsigned objectTextureId=object->tempGetTextureId();
+						const unsigned objectTextureId=object->getTextureIdCurrent();
 						if (objectTextureId>0) {
 							// Grab texture.
 							const Texture *texture=getTexture(*map, objectTextureId);
