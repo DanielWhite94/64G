@@ -5,6 +5,7 @@
 
 #include "mapobject.h"
 #include "mapregion.h"
+#include "maptexture.h"
 #include "maptile.h"
 #include "../physics/coord.h"
 
@@ -38,10 +39,16 @@ namespace Engine {
 
 			bool addObject(MapObject *object);
 			bool moveObject(MapObject *object, const CoordVec &newPos);
+
+			bool addTexture(MapTexture *texture); // These functions will free texture later.
+			void removeTexture(unsigned id);
+			const MapTexture *getTexture(unsigned id) const;
 		private:
 			MapRegion *regions[regionsHigh][regionsWide];
 
 			vector<MapObject *> objects;
+
+			MapTexture *textures[MapTexture::IdMax];
 		};
 	};
 };

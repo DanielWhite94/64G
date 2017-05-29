@@ -296,5 +296,34 @@ namespace Engine {
 
 			return result;
 		}
+
+		bool Map::addTexture(MapTexture *texture) {
+			assert(texture!=NULL);
+
+			// Ensure this id is free.
+			if (textures[texture->getId()]!=NULL)
+				return false;
+
+			// Create texture and add to array.
+			textures[texture->getId()]=texture;
+
+			return (textures[texture->getId()]!=NULL);
+		}
+
+		void Map::removeTexture(unsigned id) {
+			assert(id<MapTexture::IdMax);
+
+			// If there is a texture here, free it and set entry to NULL.
+			if (textures[id]!=NULL) {
+				delete textures[id];
+				textures[id]=NULL;
+			}
+		}
+
+		const MapTexture *Map::getTexture(unsigned id) const {
+			assert(id<MapTexture::IdMax);
+
+			return textures[id];
+		}
 	};
 };
