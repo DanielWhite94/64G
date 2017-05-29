@@ -10,6 +10,21 @@
 using namespace Engine;
 using namespace Engine::Map;
 
+bool demogenForestTestFunctorIsLand(const class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
+	assert(map!=NULL);
+	assert(userData==NULL);
+
+	const MapTile *tile=map->getTileAtCoordVec(position);
+	if (tile==NULL)
+		return false;
+
+	const MapTileLayer *layer=tile->getLayer(0);
+	if (layer==NULL)
+		return false;
+
+	return (layer->textureId!=MapGen::TextureIdWater);
+}
+
 int main(int argc, char **argv) {
 	// Grab arguments.
 	if (argc!=4) {
@@ -45,11 +60,11 @@ int main(int argc, char **argv) {
 	// Add a test forest.
 	printf("Adding a forest..\n");
 
-	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Bush, CoordVec(200*Physics::CoordsPerTile, 535*Physics::CoordsPerTile), CoordVec(80*Physics::CoordsPerTile, 23*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Bush, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
 
-	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree2, CoordVec(220*Physics::CoordsPerTile, 547*Physics::CoordsPerTile), CoordVec(40*Physics::CoordsPerTile, 12*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile));
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree2, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
 
-	MapGen::addBuiltinObjectForest(map, MapGen::BuiltinObject::Tree1, CoordVec(210*Physics::CoordsPerTile, 537*Physics::CoordsPerTile), CoordVec(60*Physics::CoordsPerTile, 18*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile));
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
 
 	// Save map.
 	if (!map->save(outputPath)) {
