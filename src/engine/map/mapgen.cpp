@@ -69,7 +69,9 @@ namespace Engine {
 			return success;
 		};
 
-		class Map *MapGen::generate(void) {
+		bool MapGen::generateWaterLand(class Map *map, unsigned xOffset, unsigned yOffset, unsigned width, unsigned height, unsigned waterTextureId, unsigned landTextureId, unsigned tileLayer) {
+			assert(map!=NULL);
+
 			// Choose parameters.
 			const double cellWidth=1.0;
 			const double cellHeight=1.0;
@@ -96,8 +98,31 @@ namespace Engine {
 
 				// Update progress (if needed).
 				if (y%yProgressDelta==yProgressDelta-1)
-					printf("MapGen: base generation %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
+					printf("MapGen: generating height noise %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
 			}
+
+			// Create base tile layer - water/land.
+			printf("MapGen: creating water/land tiles...\n");
+			heightArrayPtr=heightArray;
+			for(y=0;y<height;++y) {
+				for(x=0;x<width;++x,++heightArrayPtr) {
+					MapTile tile(*heightArrayPtr>=0.0 ? landTextureId : waterTextureId);
+					CoordVec vec((xOffset+x)*Physics::CoordsPerTile, (yOffset+y)*Physics::CoordsPerTile);
+					map->setTileAtCoordVec(vec, tile);
+				}
+
+				// Update progress (if needed).
+				if (y%yProgressDelta==yProgressDelta-1)
+					printf("MapGen: creating tiles %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
+			}
+
+			// Tidy up.
+			free(heightArray);
+
+			return true;
+		}
+
+		class Map *MapGen::generate(void) {
 
 			// Create Map.
 			printf("MapGen: creating map...\n");
@@ -108,22 +133,7 @@ namespace Engine {
 			addBaseTextures(map); // TODO: Check return.
 
 			// Create base tile layer - water/grass.
-			printf("MapGen: creating water/land tiles...\n");
-			heightArrayPtr=heightArray;
-			for(y=0;y<height;++y) {
-				for(x=0;x<width;++x,++heightArrayPtr) {
-					MapTile tile(*heightArrayPtr>=0.0 ? rand()%5+1 : TextureIdWater); // TODO: Do not hardcode texture ids.
-					CoordVec vec(x*Physics::CoordsPerTile, y*Physics::CoordsPerTile);
-					map->setTileAtCoordVec(vec, tile);
-				}
-
-				// Update progress (if needed).
-				if (y%yProgressDelta==yProgressDelta-1)
-					printf("MapGen: creating map %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
-			}
-
-			// Tidy up.
-			free(heightArray);
+			generateWaterLand(map, 0, 0, width, height, TextureIdWater, TextureIdGrass0, 0); // TODO: Check return.
 
 			return map;
 		}
