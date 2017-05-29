@@ -16,7 +16,8 @@ namespace Engine {
 			static const unsigned objectsMax=16;
 
 			MapTile();
-			MapTile(unsigned temp); // TODO: Remove this.
+			MapTile(unsigned textureId);
+			MapTile(unsigned textureId, unsigned layer);
 			~MapTile();
 
 			const MapTileLayer *getLayer(unsigned z) const;

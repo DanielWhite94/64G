@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 
+#include "maptexture.h"
 #include "maptile.h"
 
 using namespace Engine;
@@ -10,18 +11,29 @@ using namespace Engine::Map;
 namespace Engine {
 	namespace Map {
 		MapTile::MapTile() {
-			unsigned i;
-			for(i=0; i<layersMax; ++i)
+			for(unsigned i=0; i<layersMax; ++i)
 				layers[i].textureId=0;
 
 			objectsNext=0;
 		}
 
-		MapTile::MapTile(unsigned temp) {
-			layers[0].textureId=temp;
-			unsigned i;
-			for(i=1; i<layersMax; ++i)
+		MapTile::MapTile(unsigned textureId) {
+			assert(textureId<MapTexture::IdMax);
+
+			for(unsigned i=0; i<layersMax; ++i)
 				layers[i].textureId=0;
+			layers[0].textureId=textureId;
+
+			objectsNext=0;
+		}
+
+		MapTile::MapTile(unsigned textureId, unsigned layer) {
+			assert(textureId<MapTexture::IdMax);
+			assert(layer<layersMax);
+
+			for(unsigned i=0; i<layersMax; ++i)
+				layers[i].textureId=0;
+			layers[layer].textureId=textureId;
 
 			objectsNext=0;
 		}
