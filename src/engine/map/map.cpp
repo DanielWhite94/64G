@@ -30,6 +30,9 @@ namespace Engine {
 
 			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 
+			DIR *dirFd;
+			struct dirent *dirEntry;
+
 			// Set Map to clean state.
 			unsigned i, j;
 			for(i=0; i<regionsHigh; ++i)
@@ -45,13 +48,12 @@ namespace Engine {
 			char *texturesDirPath=(char *)malloc(texturesDirPathLen+1); // TODO: check return
 			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
 
-			DIR *dirFd=opendir(texturesDirPath);
+			dirFd=opendir(texturesDirPath);
 			if (dirFd==NULL) {
 				fprintf(stderr, "Can't open map texture dir at '%s'\n", texturesDirPath);
 				return; // TODO: Handle better.
 			}
 
-			struct dirent *dirEntry;
 			while((dirEntry=readdir(dirFd))!=NULL) {
 				char dirEntryFileName[1024]; // TODO: this better
 				sprintf(dirEntryFileName , "%s/%s", texturesDirPath, dirEntry->d_name);
@@ -88,7 +90,82 @@ namespace Engine {
 
 			closedir(dirFd);
 
+			// Load regions.
+			const char *regionsDirName="regions";
+			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
+			char *regionsDirPath=(char *)malloc(regionsDirPathLen+1); // TODO: check return
+			sprintf(regionsDirPath, "%s/%s", mapBaseDirPath, regionsDirName);
+
+			dirFd=opendir(regionsDirPath);
+			if (dirFd==NULL) {
+				fprintf(stderr, "Can't open map regions dir at '%s'\n", regionsDirPath);
+				return; // TODO: Handle better.
+			}
+
+			while((dirEntry=readdir(dirFd))!=NULL) {
+				char dirEntryFileName[1024]; // TODO: this better
+				sprintf(dirEntryFileName , "%s/%s", regionsDirPath, dirEntry->d_name);
+
+				struct stat stbuf;
+				if (stat(dirEntryFileName,&stbuf)==-1)
+					continue;
+
+				// Skip non-regular files.
+				if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
+					continue;
+
+				// Attempt to decode filename as a region.
+				char *namePtr=strrchr(dirEntryFileName, '/');
+				if (namePtr!=NULL)
+					namePtr++;
+				else
+					namePtr=dirEntryFileName;
+
+				unsigned regionX=0, regionY=0;
+				if (sscanf(namePtr, "%u,%u", &regionX, &regionY)!=2)
+					// TODO: error msg
+					continue;
+				if (regionX>=regionsWide || regionY>=regionsHigh)
+					// TODO: error msg
+					continue;
+
+				// Open region file.
+				FILE *regionFile=fopen(dirEntryFileName, "r");
+				if (regionFile==NULL)
+					// TODO: error msg
+					continue;
+
+				// Read tile data.
+				unsigned tileX, tileY;
+				for(tileX=0,tileY=0; tileX<256 && tileY<256; tileX=(tileX+1)%256,tileY+=(tileX==0)) {
+					// Read layers in.
+					unsigned textureIdArray[MapTile::layersMax];
+					if (fread(&textureIdArray, sizeof(unsigned), MapTile::layersMax, regionFile)!=MapTile::layersMax) {
+						printf("skipping...\n"); // TODO: better
+						break;
+					}
+
+					// Create tile.
+					MapTile tile;
+					for(unsigned z=0; z<MapTile::layersMax; ++z) {
+						MapTileLayer layer;
+						layer.textureId=textureIdArray[z];
+						tile.setLayer(z, layer);
+					}
+
+					// Set tile in region.
+					CoordVec vec((tileX+regionX*MapRegion::tilesWide)*Physics::CoordsPerTile, (tileY+regionY*MapRegion::tilesHigh)*Physics::CoordsPerTile);
+					setTileAtCoordVec(vec, tile);
+				}
+
+				// Close region file.
+				fclose(regionFile);
+			}
+
+			closedir(dirFd);
+
 			// Tidy up.
+			free(regionsDirPath);
 			free(texturesDirPath);
 		}
 		Map::~Map() {
