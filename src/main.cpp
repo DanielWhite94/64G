@@ -138,6 +138,9 @@ int main(int argc, char **argv) {
 							else
 								renderer.drawTileGrid=true;
 						break;
+						case SDLK_q:
+							quit=true;
+						break;
 					}
 				break;
 				case SDL_KEYUP:
