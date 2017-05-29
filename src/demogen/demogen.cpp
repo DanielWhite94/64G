@@ -70,13 +70,15 @@ int main(int argc, char **argv) {
 		npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
 
 	// Add a test forest.
-	printf("Adding a forest..\n");
+	/*
+	printf("Adding a few forests...\n");
 
 	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Bush, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
 
 	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree2, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
 
 	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
+	*/
 
 	// Save map.
 	if (!map->save(outputPath)) {
