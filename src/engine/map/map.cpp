@@ -1,5 +1,7 @@
 #include <cassert>
+#include <dirent.h>
 #include <fcntl.h>
+#include <cstdio>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -23,6 +25,72 @@ namespace Engine {
 				textures[i]=NULL;
 		}
 
+		Map::Map(const char *mapBaseDirPath) {
+			assert(mapBaseDirPath!=NULL);
+
+			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
+
+			// Set Map to clean state.
+			unsigned i, j;
+			for(i=0; i<regionsHigh; ++i)
+				for(j=0; j<regionsWide; ++j)
+					regions[i][j]=NULL;
+
+			for(i=0; i<MapTexture::IdMax; ++i)
+				textures[i]=NULL;
+
+			// Load textures
+			const char *texturesDirName="textures";
+			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
+			char *texturesDirPath=(char *)malloc(texturesDirPathLen+1); // TODO: check return
+			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
+
+			DIR *dirFd=opendir(texturesDirPath);
+			if (dirFd==NULL) {
+				fprintf(stderr, "Can't open map texture dir at '%s'\n", texturesDirPath);
+				return; // TODO: Handle better.
+			}
+
+			struct dirent *dirEntry;
+			while((dirEntry=readdir(dirFd))!=NULL) {
+				char dirEntryFileName[1024]; // TODO: this better
+				sprintf(dirEntryFileName , "%s/%s", texturesDirPath, dirEntry->d_name);
+
+				struct stat stbuf;
+				if (stat(dirEntryFileName,&stbuf)==-1)
+					continue;
+
+				// Skip non-regular files.
+				if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
+					continue;
+
+				// Attempt to decode filename as a texture.
+				char *namePtr=strrchr(dirEntryFileName, '/');
+				if (namePtr!=NULL)
+					namePtr++;
+				else
+					namePtr=dirEntryFileName;
+
+				unsigned textureId=0, textureScale=0;
+				if (sscanf(namePtr, "%us%u.", &textureId, &textureScale)!=2) {
+					// TODO: error msg
+					continue;
+				}
+				if (textureId==0 || textureScale==0) {
+					// TODO: error msg
+					continue;
+				}
+
+				// Add texture.
+				MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale);
+				addTexture(texture); // TODO: Check return.
+			}
+
+			closedir(dirFd);
+
+			// Tidy up.
+			free(texturesDirPath);
+		}
 		Map::~Map() {
 			unsigned i, j;
 			for(i=0; i<regionsHigh; ++i)
