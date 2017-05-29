@@ -106,7 +106,7 @@ namespace Engine {
 			heightArrayPtr=heightArray;
 			for(y=0;y<height;++y) {
 				for(x=0;x<width;++x,++heightArrayPtr) {
-					MapTile tile(*heightArrayPtr>=0.0 ? rand()%5+1 : 10); // TODO: Do not hardcode texture ids.
+					MapTile tile(*heightArrayPtr>=0.0 ? rand()%5+1 : TextureIdWater); // TODO: Do not hardcode texture ids.
 					CoordVec vec(x*Physics::CoordsPerTile, y*Physics::CoordsPerTile);
 					map->setTileAtCoordVec(vec, tile);
 				}
