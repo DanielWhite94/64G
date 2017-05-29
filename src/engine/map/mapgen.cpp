@@ -50,7 +50,10 @@ namespace Engine {
 			}
 
 			// Create Map.
+			printf("MapGen: creating map...\n");
 			class Map *map=new Map();
+			// Create base tile layer - water/grass.
+			printf("MapGen: creating water/land tiles...\n");
 			heightArrayPtr=heightArray;
 			for(y=0;y<height;++y) {
 				for(x=0;x<width;++x,++heightArrayPtr) {
@@ -61,7 +64,7 @@ namespace Engine {
 
 				// Update progress (if needed).
 				if (y%yProgressDelta==yProgressDelta-1)
-					printf("MapGen: creating map %f%%.\n", ((y+1)*100.0)/height); // TODO: this better
+					printf("MapGen: creating map %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
 			}
 
 			// Add objects.
