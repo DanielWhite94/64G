@@ -1,6 +1,6 @@
 CPP = clang++
 CFLAGS = -Wall -std=c++11
-LFLAGS = -lSDL2 -lSDL2_image
+LFLAGS = -lSDL2 -lSDL2_image -lm
 
 OBJS = ./graphics/camera.o ./graphics/renderer.o ./graphics/texture.o ./map/map.o ./map/mapgen.o ./map/mapobject.o ./map/mapregion.o ./map/maptexture.o ./map/maptile.o ./physics/hitmask.o ./physics/coord.o ./fbnnoise.o ./opensimplexnoise.o ./util.o engine.o
 
