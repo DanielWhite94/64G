@@ -18,6 +18,9 @@ namespace Engine {
 			for(i=0; i<regionsHigh; ++i)
 				for(j=0; j<regionsWide; ++j)
 					regions[i][j]=NULL;
+
+			for(i=0; i<MapTexture::IdMax; ++i)
+				textures[i]=NULL;
 		}
 
 		Map::~Map() {
@@ -25,6 +28,9 @@ namespace Engine {
 			for(i=0; i<regionsHigh; ++i)
 				for(j=0; j<regionsWide; ++j)
 					regions[i][j]=NULL;
+
+			for(i=0; i<MapTexture::IdMax; ++i)
+				textures[i]=NULL;
 		}
 
 		bool Map::save(const char *dirPath, const char *mapName) const {
