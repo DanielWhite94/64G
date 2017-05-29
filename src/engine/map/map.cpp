@@ -187,19 +187,14 @@ namespace Engine {
 			initialized=false;
 		}
 
-		bool Map::save(const char *dirPath, const char *mapName) const {
-			assert(dirPath!=NULL);
-			assert(mapName!=NULL);
+		bool Map::save(const char *mapBaseDirPath) const {
+			assert(mapBaseDirPath!=NULL);
 
 			// TODO: In each case where we fail, tidy up and free anything as required.
 			// TODO: Better error reporting.
 
 			// Create base directory for the map.
-			size_t dirPathLen=strlen(dirPath);
-			size_t mapNameLen=strlen(mapName);
-			size_t mapBaseDirPathLen=dirPathLen+1+mapNameLen; // +1 is for '/'
-			char *mapBaseDirPath=(char *)malloc(mapBaseDirPathLen+1); // +1 for null temrinator. TODO: Check return.
-			sprintf(mapBaseDirPath, "%s/%s", dirPath, mapName);
+			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 			if (mkdir(mapBaseDirPath, 0777)!=0) {
 				printf("error: could not make base dir at '%s'\n", mapBaseDirPath);
 				return false;
@@ -300,7 +295,6 @@ namespace Engine {
 			}
 
 			// Tidy up.
-			free(mapBaseDirPath);
 			free(regionsDirPath);
 			free(texturesDirPath);
 

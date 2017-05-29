@@ -27,7 +27,7 @@ namespace Engine {
 			Map(const char *mapBaseDirPath);
 			~Map();
 
-			bool save(const char *dirPath, const char *mapName) const;
+			bool save(const char *mapBaseDirPath) const;
 
 			void tick(void);
 
