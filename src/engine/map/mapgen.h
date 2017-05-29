@@ -34,6 +34,8 @@ namespace Engine {
 				Bush,
 			};
 
+			typedef bool (MapGenAddBuiltinObjectForestTestFunctor)(const class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);
+
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
 
@@ -41,6 +43,7 @@ namespace Engine {
 
 			static MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 			static void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);
+			static void addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, MapGenAddBuiltinObjectForestTestFunctor *testFunctor, void *testFunctorUserData);
 		private:
 			unsigned width, height;
 		};

@@ -278,13 +278,32 @@ namespace Engine {
 			assert(widthHeight.x>=0 && widthHeight.y>=0);
 			assert(interval.x>0 && interval.y>0);
 
+			// Simply call addBuiltinObjectForestWithTestFunctor with NULL test functor.
+			addBuiltinObjectForestWithTestFunctor(map, builtin, topLeft, widthHeight, interval, NULL, NULL);
+		}
+
+		void MapGen::addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, MapGenAddBuiltinObjectForestTestFunctor *testFunctor, void *testFunctorUserData) {
+			assert(map!=NULL);
+			assert(widthHeight.x>=0 && widthHeight.y>=0);
+			assert(interval.x>0 && interval.y>0);
+
+			// Loop over rectangular region.
 			CoordVec pos;
 			for(pos.y=topLeft.y; pos.y<topLeft.y+widthHeight.y; pos.y+=interval.y)
 				for(pos.x=topLeft.x; pos.x<topLeft.x+widthHeight.x; pos.x+=interval.x) {
+					// Attempt to place object in this region.
 					unsigned i;
 					for(i=0; i<4; ++i) {
+						// Calculate exact position.
 						CoordVec randomOffset=CoordVec(rand()%interval.x, rand()%interval.y);
-						if (addBuiltinObject(map, builtin, CoordAngle0, pos+randomOffset)!=NULL)
+						CoordVec exactPosition=pos=randomOffset;
+
+						// Run test functor.
+						if (testFunctor!=NULL && !testFunctor(map, builtin, exactPosition, testFunctorUserData))
+							continue;
+
+						// Add object.
+						if (addBuiltinObject(map, builtin, CoordAngle0, exactPosition)!=NULL)
 							break;
 					}
 				}
