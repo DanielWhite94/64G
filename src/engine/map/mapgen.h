@@ -39,6 +39,8 @@ namespace Engine {
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
 
+			static bool addBaseTextures(class Map *map);
+
 			class Map *generate(void);
 
 			static MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);

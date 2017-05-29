@@ -19,7 +19,7 @@ namespace Engine {
 		MapGen::~MapGen() {
 		};
 
-		class Map *MapGen::generate(void) {
+		bool MapGen::addBaseTextures(class Map *map) {
 			const char *texturePaths[TextureIdNB]={
 				[TextureIdNone]=NULL, // Implies no tile.
 				[TextureIdGrass0]="../images/tiles/grass0.png",
@@ -61,6 +61,15 @@ namespace Engine {
 				[TextureIdOldManW]=4,
 			};
 
+			bool success=true;
+			unsigned textureId;
+			for(textureId=1; textureId<TextureIdNB; ++textureId)
+				success&=map->addTexture(new MapTexture(textureId, texturePaths[textureId], textureScales[textureId]));
+
+			return success;
+		};
+
+		class Map *MapGen::generate(void) {
 			// Choose parameters.
 			const double cellWidth=1.0;
 			const double cellHeight=1.0;
@@ -94,12 +103,9 @@ namespace Engine {
 			printf("MapGen: creating map...\n");
 			class Map *map=new Map();
 
-			// Create textures.
+			// Add textures.
 			printf("MapGen: creating textures...\n");
-			bool textureError=false;
-			unsigned textureId;
-			for(textureId=1; textureId<TextureIdNB; ++textureId)
-				textureError|=!map->addTexture(new MapTexture(textureId, texturePaths[textureId], textureScales[textureId]));
+			addBaseTextures(map); // TODO: Check return.
 
 			// Create base tile layer - water/grass.
 			printf("MapGen: creating water/land tiles...\n");
