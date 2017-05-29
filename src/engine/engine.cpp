@@ -58,7 +58,11 @@ int main(int argc, char **argv) {
 	objectPlayer.setTextureIdForAngle(CoordAngle90, MapGen::TextureIdOldManW);
 	objectPlayer.setTextureIdForAngle(CoordAngle180, MapGen::TextureIdOldManN);
 	objectPlayer.setTextureIdForAngle(CoordAngle270, MapGen::TextureIdOldManE);
-	map->addObject(&objectPlayer);
+
+	if (!map->addObject(&objectPlayer)) {
+		printf("Could not add player object.\n");
+		return EXIT_FAILURE;
+	}
 
 	// Create renderer.
 	Renderer renderer(WindowWidth, WindowHeight);

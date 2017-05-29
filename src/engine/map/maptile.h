@@ -28,7 +28,7 @@ namespace Engine {
 
 			void setLayer(unsigned z, const MapTileLayer &layer);
 
-			void addObject(MapObject *object);
+			bool addObject(MapObject *object);
 			void removeObject(MapObject *object);
 			bool isObjectsFull(void) const;
 		private:

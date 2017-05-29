@@ -70,11 +70,17 @@ namespace Engine {
 			layers[z]=layer;
 		}
 
-		void MapTile::addObject(MapObject *object) {
+		bool MapTile::addObject(MapObject *object) {
 			assert(object!=NULL);
-			assert(objectsNext<objectsMax);
 
+			// Already full?
+			if (isObjectsFull())
+				return false;
+
+			// Add object.
 			objects[objectsNext++]=object;
+
+			return true;
 		}
 
 		void MapTile::removeObject(MapObject *object) {

@@ -400,6 +400,10 @@ namespace Engine {
 					if (tile==NULL)
 						return false;
 
+					// Tile too full?
+					if (tile->isObjectsFull())
+						return false;
+
 					// Check for intersections.
 					if (tile->getHitMask(vec) & object->getHitMaskByCoord(vec))
 						return false;
@@ -475,6 +479,12 @@ namespace Engine {
 					// Is there even a tile here?
 					MapTile *tile=getTileAtCoordVec(vec);
 					if (tile==NULL) {
+						result=false;
+						break;
+					}
+
+					// Tile too full?
+					if (tile->isObjectsFull()) {
 						result=false;
 						break;
 					}
