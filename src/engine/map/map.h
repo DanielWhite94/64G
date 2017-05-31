@@ -32,6 +32,8 @@ namespace Engine {
 			bool saveTextures(const char *mapBaseDirPath) const; // Only saves list of textures (requires directory exists).
 			bool saveRegions(const char *mapBaseDirPath) const; // Only saves regions (requires directory exists).
 
+			bool loadRegion(const char *regionPath);
+
 			void tick(void);
 
 			MapTile *getTileAtCoordVec(const CoordVec &vec);

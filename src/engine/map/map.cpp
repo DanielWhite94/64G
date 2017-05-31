@@ -115,52 +115,8 @@ namespace Engine {
 				if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
 					continue;
 
-				// Attempt to decode filename as a region.
-				char *namePtr=strrchr(dirEntryFileName, '/');
-				if (namePtr!=NULL)
-					namePtr++;
-				else
-					namePtr=dirEntryFileName;
-
-				unsigned regionX=0, regionY=0;
-				if (sscanf(namePtr, "%u,%u", &regionX, &regionY)!=2)
-					// TODO: error msg
-					continue;
-				if (regionX>=regionsWide || regionY>=regionsHigh)
-					// TODO: error msg
-					continue;
-
-				// Open region file.
-				FILE *regionFile=fopen(dirEntryFileName, "r");
-				if (regionFile==NULL)
-					// TODO: error msg
-					continue;
-
-				// Read tile data.
-				unsigned tileX, tileY;
-				for(tileX=0,tileY=0; tileX<256 && tileY<256; tileX=(tileX+1)%256,tileY+=(tileX==0)) {
-					// Read layers in.
-					unsigned textureIdArray[MapTile::layersMax];
-					if (fread(&textureIdArray, sizeof(unsigned), MapTile::layersMax, regionFile)!=MapTile::layersMax) {
-						printf("skipping...\n"); // TODO: better
-						break;
-					}
-
-					// Create tile.
-					MapTile tile;
-					for(unsigned z=0; z<MapTile::layersMax; ++z) {
-						MapTileLayer layer;
-						layer.textureId=textureIdArray[z];
-						tile.setLayer(z, layer);
-					}
-
-					// Set tile in region.
-					CoordVec vec((tileX+regionX*MapRegion::tilesWide)*Physics::CoordsPerTile, (tileY+regionY*MapRegion::tilesHigh)*Physics::CoordsPerTile);
-					setTileAtCoordVec(vec, tile);
-				}
-
-				// Close region file.
-				fclose(regionFile);
+				// Load region.
+				loadRegion(dirEntryFileName); // TODO: Check return.
 			}
 
 			closedir(dirFd);
@@ -274,6 +230,59 @@ namespace Engine {
 				}
 
 			free(regionsDirPath);
+
+			return true;
+		}
+
+		bool Map::loadRegion(const char *regionPath) {
+			assert(regionPath!=NULL);
+
+			// Attempt to decode filename as a region.
+			const char *namePtr=strrchr(regionPath, '/');
+			if (namePtr!=NULL)
+				namePtr++;
+			else
+				namePtr=regionPath;
+
+			unsigned regionX=0, regionY=0;
+			if (sscanf(namePtr, "%u,%u", &regionX, &regionY)!=2)
+				// TODO: error msg
+				return false;
+			if (regionX>=regionsWide || regionY>=regionsHigh)
+				// TODO: error msg
+				return false;
+
+			// Open region file.
+			FILE *regionFile=fopen(regionPath, "r");
+			if (regionFile==NULL)
+				// TODO: error msg
+				return false;
+
+			// Read tile data.
+			unsigned tileX, tileY;
+			for(tileX=0,tileY=0; tileX<256 && tileY<256; tileX=(tileX+1)%256,tileY+=(tileX==0)) {
+				// Read layers in.
+				unsigned textureIdArray[MapTile::layersMax];
+				if (fread(&textureIdArray, sizeof(unsigned), MapTile::layersMax, regionFile)!=MapTile::layersMax) {
+					printf("skipping...\n"); // TODO: better
+					break;
+				}
+
+				// Create tile.
+				MapTile tile;
+				for(unsigned z=0; z<MapTile::layersMax; ++z) {
+					MapTileLayer layer;
+					layer.textureId=textureIdArray[z];
+					tile.setLayer(z, layer);
+				}
+
+				// Set tile in region.
+				CoordVec vec((tileX+regionX*MapRegion::tilesWide)*Physics::CoordsPerTile, (tileY+regionY*MapRegion::tilesHigh)*Physics::CoordsPerTile);
+				setTileAtCoordVec(vec, tile);
+			}
+
+			// Close region file.
+			fclose(regionFile);
 
 			return true;
 		}
