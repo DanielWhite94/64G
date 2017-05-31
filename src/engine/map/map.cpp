@@ -335,16 +335,26 @@ namespace Engine {
 		void Map::setTileAtCoordVec(const CoordVec &vec, const MapTile &tile) {
 			MapRegion *region=getRegionAtCoordVec(vec);
 			if (region==NULL) {
+				// Do we need to free a region to allocate this one?
+				assert(regionsByIndexNext<regionsLoadedMax); // TODO: better (i.e. unload oldest)
+
+				// Create new blank region.
 				region=new MapRegion();
 				if (region==NULL)
 					return;
 
+				// Calculate region position.
 				CoordComponent tileX=vec.x/Physics::CoordsPerTile;
 				CoordComponent tileY=vec.y/Physics::CoordsPerTile;
 				CoordComponent regionX=tileX/MapRegion::tilesWide;
 				CoordComponent regionY=tileY/MapRegion::tilesHigh;
 
-				regions[regionY][regionX]=region;
+				regionsByOffset[regionY][regionX].ptr=region;
+				regionsByOffset[regionY][regionX].index=regionsByIndexNext;
+				regionsByOffset[regionY][regionX].offsetX=regionX;
+				regionsByOffset[regionY][regionX].offsetY=regionY;
+				regionsByIndex[regionsByIndexNext]=&(regionsByOffset[regionY][regionX]);
+				regionsByIndexNext++;
 			}
 
 			region->setTileAtCoordVec(vec, tile);
