@@ -1,6 +1,7 @@
 #include <cassert>
 #include <dirent.h>
 #include <cstdio>
+#include <cstdlib>
 #include <sys/stat.h>
 #include <sys/types.h>
 
