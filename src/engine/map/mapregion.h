@@ -16,7 +16,7 @@ namespace Engine {
 			MapRegion();
 			~MapRegion();
 
-			bool save(const char *regionsDirPath, unsigned regionX, unsigned regionY) const;
+			bool save(const char *regionsDirPath, unsigned regionX, unsigned regionY);
 
 			static unsigned coordXToRegionXBase(CoordComponent x);
 			static unsigned coordXToRegionXOffset(CoordComponent x);
@@ -26,8 +26,12 @@ namespace Engine {
 			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY);
 			const MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY) const ;
 
+			bool getIsDirty(void) const;
+
 			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
 		private:
+			bool isDirty;
+
 			MapTile tiles[tilesHigh][tilesWide];
 		};
 	};

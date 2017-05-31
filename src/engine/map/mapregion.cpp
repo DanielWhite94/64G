@@ -9,12 +9,13 @@ using namespace Engine::Physics;
 
 namespace Engine {
 	MapRegion::MapRegion() {
+		isDirty=false;
 	}
 
 	MapRegion::~MapRegion() {
 	}
 
-	bool MapRegion::save(const char *regionsDirPath, unsigned regionX, unsigned regionY) const {
+	bool MapRegion::save(const char *regionsDirPath, unsigned regionX, unsigned regionY) {
 		assert(regionsDirPath!=NULL);
 
 		// Create file.
@@ -45,7 +46,14 @@ namespace Engine {
 		// Close file.
 		fclose(regionFile);
 
-		return (written==target);
+		// Success?
+		bool success=(written==target);
+
+		// Potentially update 'isDirty' flag.
+		if (success)
+			isDirty=false;
+
+		return success;
 	}
 
 	MapTile *MapRegion::getTileAtCoordVec(const CoordVec &vec) {
@@ -84,6 +92,10 @@ namespace Engine {
 		return &tiles[offsetY][offsetX];
 	}
 
+	bool MapRegion::getIsDirty(void) const {
+		return isDirty;
+	}
+
 	void MapRegion::setTileAtCoordVec(const CoordVec &vec, const MapTile &tile) {
 		CoordComponent tileX=vec.x/CoordsPerTile;
 		CoordComponent tileY=vec.y/CoordsPerTile;
@@ -92,6 +104,10 @@ namespace Engine {
 		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
 		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
 
+		// Update.
 		tiles[offsetY][offsetX]=tile;
+
+		// Set dirty flag.
+		isDirty=true;
 	}
 };
