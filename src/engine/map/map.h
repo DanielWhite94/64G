@@ -52,11 +52,23 @@ namespace Engine {
 			void removeTexture(unsigned id);
 			const MapTexture *getTexture(unsigned id) const;
 		private:
-			MapRegion *regions[regionsHigh][regionsWide];
+			static const unsigned regionsLoadedMax=9;
+
+			struct RegionData {
+				MapRegion *ptr; // Pointer to region itself.
+				unsigned index; // Index into regionsByIndex array.
+				unsigned offsetX, offsetY; // Indicies into regionsByOffset array.
+			};
+
+			unsigned regionsByIndexNext;
+			RegionData *regionsByIndex[regionsLoadedMax]; // These are pointers into regionsByOffset array.
+			RegionData regionsByOffset[regionsHigh][regionsWide];
 
 			vector<MapObject *> objects;
 
 			MapTexture *textures[MapTexture::IdMax];
+
+			void initclean(void);
 
 			static char *saveBaseDirToRegionsDir(const char *mapBaseDirPath);
 			static char *saveBaseDirToTexturesDir(const char *mapBaseDirPath);

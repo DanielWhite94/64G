@@ -13,15 +13,6 @@ using namespace Engine::Graphics;
 namespace Engine {
 	namespace Map {
 		Map::Map() {
-			unsigned i, j;
-			for(i=0; i<regionsHigh; ++i)
-				for(j=0; j<regionsWide; ++j)
-					regions[i][j]=NULL;
-
-			for(i=0; i<MapTexture::IdMax; ++i)
-				textures[i]=NULL;
-
-			initialized=true;
 		}
 
 		Map::Map(const char *mapBaseDirPath) {
@@ -33,15 +24,8 @@ namespace Engine {
 			struct dirent *dirEntry;
 
 			// Set Map to clean state.
-			initialized=false;
-
-			unsigned i, j;
-			for(i=0; i<regionsHigh; ++i)
-				for(j=0; j<regionsWide; ++j)
-					regions[i][j]=NULL;
-
-			for(i=0; i<MapTexture::IdMax; ++i)
-				textures[i]=NULL;
+			initclean();
+			initialized=false; // Needed as initclean sets this to true.
 
 			// Load textures
 			const char *texturesDirName="textures";
@@ -555,6 +539,25 @@ namespace Engine {
 			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
 
 			return texturesDirPath;
+		}
+
+		void Map::initclean(void) {
+			unsigned i, j;
+
+			// Clear regions data structures.
+			regionsByIndexNext=0;
+			for(i=0; i<regionsLoadedMax; ++i)
+				regionsByIndex[i]=NULL;
+			for(i=0; i<regionsHigh; ++i)
+				for(j=0; j<regionsWide; ++j)
+					regionsByOffset[i][j].ptr=NULL;
+
+			// Clear textures array.
+			for(i=0; i<MapTexture::IdMax; ++i)
+				textures[i]=NULL;
+
+			// Set initialized flag.
+			initialized=true;
 		}
 	};
 };
