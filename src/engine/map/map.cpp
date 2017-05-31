@@ -201,17 +201,17 @@ namespace Engine {
 			// Save all regions.
 			char *regionsDirPath=saveBaseDirToRegionsDir(mapBaseDirPath); // TODO: check return
 
-			unsigned regionX, regionY;
-			for(regionY=0; regionY<regionsHigh; ++regionY)
-				for(regionX=0; regionX<regionsWide; ++regionX) {
-					// Grab region.
-					MapRegion *region=getRegionAtOffset(regionX, regionY);
-					if (region==NULL)
-						continue;
+			for(unsigned i=0; i<regionsLoadedMax; ++i) {
+				// Grab region.
+				MapRegion *region=regionsByIndex[i]->ptr;
 
-					// Save region.
-					region->save(regionsDirPath, regionX, regionY); // TODO: Check return.
-				}
+				// Is the region even dirty?
+				if (!region->getIsDirty())
+					continue;
+
+				// Save region.
+				region->save(regionsDirPath, regionsByIndex[i]->offsetX, regionsByIndex[i]->offsetY); // TODO: Check return.
+			}
 
 			free(regionsDirPath);
 
