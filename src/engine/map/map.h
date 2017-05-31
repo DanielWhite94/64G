@@ -27,10 +27,10 @@ namespace Engine {
 			Map(const char *mapBaseDirPath);
 			~Map();
 
-			bool save(const char *mapBaseDirPath) const; // Saves everything recursively.
+			bool save(const char *mapBaseDirPath); // Saves everything recursively.
 			bool saveMetadata(const char *mapBaseDirPath) const; // Creates directories.
 			bool saveTextures(const char *mapBaseDirPath) const; // Only saves list of textures (requires directory exists).
-			bool saveRegions(const char *mapBaseDirPath) const; // Only saves regions (requires directory exists).
+			bool saveRegions(const char *mapBaseDirPath); // Only saves regions (requires directory exists).
 
 			bool loadRegion(const char *regionPath);
 

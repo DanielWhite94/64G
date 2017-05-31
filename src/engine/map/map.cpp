@@ -140,7 +140,7 @@ namespace Engine {
 			initialized=false;
 		}
 
-		bool Map::save(const char *mapBaseDirPath) const {
+		bool Map::save(const char *mapBaseDirPath) {
 			assert(mapBaseDirPath!=NULL);
 
 			// TODO: In each case where we fail, tidy up and free anything as required.
@@ -211,7 +211,7 @@ namespace Engine {
 			return true;
 		}
 
-		bool Map::saveRegions(const char *mapBaseDirPath) const {
+		bool Map::saveRegions(const char *mapBaseDirPath) {
 			assert(mapBaseDirPath!=NULL);
 
 			// Save all regions.
@@ -221,7 +221,7 @@ namespace Engine {
 			for(regionY=0; regionY<regionsHigh; ++regionY)
 				for(regionX=0; regionX<regionsWide; ++regionX) {
 					// Grab region.
-					const MapRegion *region=getRegionAtOffset(regionX, regionY);
+					MapRegion *region=getRegionAtOffset(regionX, regionY);
 					if (region==NULL)
 						continue;
 
