@@ -14,6 +14,7 @@ using namespace Engine::Graphics;
 namespace Engine {
 	namespace Map {
 		Map::Map() {
+			initclean();
 		}
 
 		Map::Map(const char *mapBaseDirPath) {
