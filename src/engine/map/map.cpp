@@ -113,14 +113,19 @@ namespace Engine {
 		}
 
 		Map::~Map() {
-			unsigned i, j;
-			for(i=0; i<regionsHigh; ++i)
-				for(j=0; j<regionsWide; ++j)
-					regions[i][j]=NULL; // TODO: Free these properly.
+			unsigned i;
 
+			// Remove regions.
+			for(i=0; i<regionsLoadedMax; ++i) {
+				MapRegion *region=regionsByIndex[i]->ptr;
+				delete region;
+			}
+
+			// Remove textures.
 			for(i=0; i<MapTexture::IdMax; ++i)
 				removeTexture(i);
 
+			// Clear initialized flag to be safe.
 			initialized=false;
 		}
 
