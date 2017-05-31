@@ -322,14 +322,14 @@ namespace Engine {
 			if (regionX>=regionsWide || regionY>=regionsHigh)
 				return NULL;
 
-			return regions[regionY][regionX];
+			return regionsByOffset[regionY][regionX].ptr;
 		}
 
 		const MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY) const {
 			if (regionX>=regionsWide || regionY>=regionsHigh)
 				return NULL;
 
-			return regions[regionY][regionX];
+			return regionsByOffset[regionY][regionX].ptr;
 		}
 
 		void Map::setTileAtCoordVec(const CoordVec &vec, const MapTile &tile) {
