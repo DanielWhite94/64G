@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 	const char *outputPath=argv[3];
 
 	if (width<=0 || height<=0) {
-		printf("Usage: Bad width or height (%i and %i)", width, height);
+		printf("Bad width or height (%i and %i)", width, height);
 		return EXIT_FAILURE;
 	}
 
