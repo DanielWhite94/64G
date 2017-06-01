@@ -52,7 +52,7 @@ namespace Engine {
 			void removeTexture(unsigned id);
 			const MapTexture *getTexture(unsigned id) const;
 		private:
-			static const unsigned regionsLoadedMax=9;
+			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 
 			struct RegionData {
 				MapRegion *ptr; // Pointer to region itself.
