@@ -47,7 +47,7 @@ namespace Engine {
 			SDL_Quit();
 		}
 
-		void Renderer::refresh(const Camera *gCamera, const class Map *gMap) {
+		void Renderer::refresh(const Camera *gCamera, class Map *gMap) {
 			assert(gCamera!=NULL);
 			assert(gMap!=NULL);
 

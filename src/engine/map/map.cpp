@@ -293,14 +293,6 @@ namespace Engine {
 			return region->getTileAtCoordVec(vec);
 		}
 
-		const MapTile *Map::getTileAtCoordVec(const CoordVec &vec) const {
-			const MapRegion *region=getRegionAtCoordVec(vec);
-			if (region==NULL)
-				return NULL;
-
-			return region->getTileAtCoordVec(vec);
-		}
-
 		MapRegion *Map::getRegionAtCoordVec(const CoordVec &vec) {
 			if (vec.x<0 || vec.y<0)
 				return NULL;
@@ -313,26 +305,8 @@ namespace Engine {
 			return getRegionAtOffset(regionX, regionY);
 		}
 
-		const MapRegion *Map::getRegionAtCoordVec(const CoordVec &vec) const {
-			if (vec.x<0 || vec.y<0)
-				return NULL;
-
-			CoordComponent tileX=vec.x/Physics::CoordsPerTile;
-			CoordComponent tileY=vec.y/Physics::CoordsPerTile;
-			CoordComponent regionX=tileX/MapRegion::tilesWide;
-			CoordComponent regionY=tileY/MapRegion::tilesHigh;
-
-			return getRegionAtOffset(regionX, regionY);
-		}
-
 		MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY) {
-			if (regionX>=regionsWide || regionY>=regionsHigh)
-				return NULL;
-
-			return regionsByOffset[regionY][regionX].ptr;
-		}
-
-		const MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY) const {
+			// Out of bounds?
 			if (regionX>=regionsWide || regionY>=regionsHigh)
 				return NULL;
 

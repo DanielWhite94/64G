@@ -25,7 +25,7 @@ namespace Engine {
 			Renderer(unsigned windowWidth, unsigned windowHeight);
 			~Renderer();
 
-			void refresh(const Engine::Graphics::Camera *camera, const class Map *map);
+			void refresh(const Engine::Graphics::Camera *camera, class Map *map);
 		private:
 			int windowWidth, windowHeight;
 
@@ -35,7 +35,7 @@ namespace Engine {
 			CoordVec topLeft, bottomRight;
 
 			const Camera *camera;
-			const class Map *map;
+			class Map *map;
 
 			Texture *textures[MapTexture::IdMax];
 

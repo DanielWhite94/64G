@@ -10,7 +10,7 @@
 using namespace Engine;
 using namespace Engine::Map;
 
-bool demogenForestTestFunctorIsLand(const class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
+bool demogenForestTestFunctorIsLand(class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
 	assert(map!=NULL);
 	assert(userData==NULL);
 
