@@ -69,6 +69,8 @@ namespace Engine {
 
 			static char *saveBaseDirToRegionsDir(const char *mapBaseDirPath);
 			static char *saveBaseDirToTexturesDir(const char *mapBaseDirPath);
+
+			bool createBlankRegion(unsigned regionX, unsigned regionY);
 		};
 	};
 };

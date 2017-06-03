@@ -550,5 +550,28 @@ namespace Engine {
 			// Set initialized flag.
 			initialized=true;
 		}
+
+		bool Map::createBlankRegion(unsigned regionX, unsigned regionY) {
+			assert(regionX<regionsWide && regionY<regionsHigh);
+			assert(regionsByOffset[regionX][regionY].ptr==NULL);
+
+			// Do we need to free a region to allocate this one?
+			assert(regionsByIndexNext<regionsLoadedMax); // TODO: better (i.e. unload oldest)
+
+			// Create new blank region.
+			MapRegion *region=new MapRegion();
+			if (region==NULL)
+				return false;
+
+			// Add region.
+			regionsByOffset[regionY][regionX].ptr=region;
+			regionsByOffset[regionY][regionX].index=regionsByIndexNext;
+			regionsByOffset[regionY][regionX].offsetX=regionX;
+			regionsByOffset[regionY][regionX].offsetY=regionY;
+			regionsByIndex[regionsByIndexNext]=&(regionsByOffset[regionY][regionX]);
+			regionsByIndexNext++;
+
+			return true;
+		}
 	};
 };
