@@ -56,7 +56,7 @@ namespace Engine {
 			// Load textures
 			dirFd=opendir(getTexturesDir());
 			if (dirFd==NULL) {
-				fprintf(stderr, "Can't open map texture dir at '%s'\n", getTexturesDir());
+				fprintf(stderr, "Can't open map texture dir at '%s'.\n", getTexturesDir());
 			} else {
 				while((dirEntry=readdir(dirFd))!=NULL) {
 					char dirEntryFileName[1024]; // TODO: this better
