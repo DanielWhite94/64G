@@ -23,16 +23,15 @@ namespace Engine {
 
 			bool initialized;
 
-			Map();
 			Map(const char *mapBaseDirPath);
 			~Map();
 
-			bool save(const char *mapBaseDirPath); // Saves everything recursively.
-			bool saveMetadata(const char *mapBaseDirPath) const; // Creates directories.
-			bool saveTextures(const char *mapBaseDirPath) const; // Only saves list of textures (requires directory exists).
-			bool saveRegions(const char *mapBaseDirPath); // Only saves regions (requires directory exists).
+			bool save(void); // Saves everything recursively.
+			bool saveMetadata(void) const; // Creates directories.
+			bool saveTextures(void) const; // Only saves list of textures (requires directory exists).
+			bool saveRegions(void); // Only saves regions (requires directory exists).
 
-			bool loadRegion(const char *regionPath);
+			bool loadRegion(unsigned regionX, unsigned regionY, const char *regionPath);
 
 			void tick(void);
 
@@ -51,6 +50,10 @@ namespace Engine {
 		private:
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 
+			char *baseDir;
+			char *texturesDir;
+			char *regionsDir;
+
 			struct RegionData {
 				MapRegion *ptr; // Pointer to region itself.
 				unsigned index; // Index into regionsByIndex array.
@@ -67,8 +70,9 @@ namespace Engine {
 
 			void initclean(void);
 
-			static char *saveBaseDirToRegionsDir(const char *mapBaseDirPath);
-			static char *saveBaseDirToTexturesDir(const char *mapBaseDirPath);
+			const char *getBaseDir(void) const;
+			const char *getRegionsDir(void) const;
+			const char *getTexturesDir(void) const;
 
 			bool createBlankRegion(unsigned regionX, unsigned regionY);
 		};

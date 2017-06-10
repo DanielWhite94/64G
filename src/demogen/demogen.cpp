@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
 	// Create Map.
 	printf("Creating map...\n");
-	class Map *map=new class Map();
+	class Map *map=new class Map(outputPath);
 	if (map==NULL || !map->initialized) {
 		printf("Could not create a map.\n");
 		return EXIT_FAILURE;
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 	*/
 
 	// Save map.
-	if (!map->save(outputPath)) {
+	if (!map->save()) {
 		printf("Could not save map to '%s'.\n", outputPath);
 		return EXIT_FAILURE;
 	}

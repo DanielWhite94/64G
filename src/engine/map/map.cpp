@@ -13,103 +13,89 @@ using namespace Engine::Graphics;
 
 namespace Engine {
 	namespace Map {
-		Map::Map() {
-			initclean();
-		}
-
 		Map::Map(const char *mapBaseDirPath) {
 			assert(mapBaseDirPath!=NULL);
-
-			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 
 			DIR *dirFd;
 			struct dirent *dirEntry;
 
 			// Set Map to clean state.
-			initclean();
+			unsigned i, j;
+
+			baseDir=NULL;
+			texturesDir=NULL;
+			regionsDir=NULL;
+
+			regionsByIndexNext=0;
+			for(i=0; i<regionsLoadedMax; ++i)
+				regionsByIndex[i]=NULL;
+			for(i=0; i<regionsHigh; ++i)
+				for(j=0; j<regionsWide; ++j)
+					regionsByOffset[i][j].ptr=NULL;
+
+			for(i=0; i<MapTexture::IdMax; ++i)
+				textures[i]=NULL;
+
 			initialized=false; // Needed as initclean sets this to true.
 
-			// Load textures
+			// Create directory strings.
+			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
+			baseDir=(char *)malloc(mapBaseDirPathLen+1); // TODO: Check return.
+			strcpy(baseDir, mapBaseDirPath);
+
 			const char *texturesDirName="textures";
 			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
-			char *texturesDirPath=(char *)malloc(texturesDirPathLen+1); // TODO: check return
-			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
+			texturesDir=(char *)malloc(texturesDirPathLen+1); // TODO: check return
+			sprintf(texturesDir, "%s/%s", mapBaseDirPath, texturesDirName);
 
-			dirFd=opendir(texturesDirPath);
-			if (dirFd==NULL) {
-				fprintf(stderr, "Can't open map texture dir at '%s'\n", texturesDirPath);
-				return; // TODO: Handle better.
-			}
-
-			while((dirEntry=readdir(dirFd))!=NULL) {
-				char dirEntryFileName[1024]; // TODO: this better
-				sprintf(dirEntryFileName , "%s/%s", texturesDirPath, dirEntry->d_name);
-
-				struct stat stbuf;
-				if (stat(dirEntryFileName,&stbuf)==-1)
-					continue;
-
-				// Skip non-regular files.
-				if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
-					continue;
-
-				// Attempt to decode filename as a texture.
-				char *namePtr=strrchr(dirEntryFileName, '/');
-				if (namePtr!=NULL)
-					namePtr++;
-				else
-					namePtr=dirEntryFileName;
-
-				unsigned textureId=0, textureScale=0;
-				if (sscanf(namePtr, "%us%u.", &textureId, &textureScale)!=2) {
-					// TODO: error msg
-					continue;
-				}
-				if (textureId==0 || textureScale==0) {
-					// TODO: error msg
-					continue;
-				}
-
-				// Add texture.
-				MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale);
-				addTexture(texture); // TODO: Check return.
-			}
-
-			closedir(dirFd);
-
-			// Load regions.
 			const char *regionsDirName="regions";
 			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
-			char *regionsDirPath=(char *)malloc(regionsDirPathLen+1); // TODO: check return
-			sprintf(regionsDirPath, "%s/%s", mapBaseDirPath, regionsDirName);
+			regionsDir=(char *)malloc(regionsDirPathLen+1); // TODO: check return
+			sprintf(regionsDir, "%s/%s", mapBaseDirPath, regionsDirName);
 
-			dirFd=opendir(regionsDirPath);
+			// Load textures
+			dirFd=opendir(getTexturesDir());
 			if (dirFd==NULL) {
-				fprintf(stderr, "Can't open map regions dir at '%s'\n", regionsDirPath);
-				return; // TODO: Handle better.
+				fprintf(stderr, "Can't open map texture dir at '%s'\n", getTexturesDir());
+			} else {
+				while((dirEntry=readdir(dirFd))!=NULL) {
+					char dirEntryFileName[1024]; // TODO: this better
+					sprintf(dirEntryFileName , "%s/%s", getTexturesDir(), dirEntry->d_name);
+
+					struct stat stbuf;
+					if (stat(dirEntryFileName,&stbuf)==-1)
+						continue;
+
+					// Skip non-regular files.
+					if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
+						continue;
+
+					// Attempt to decode filename as a texture.
+					char *namePtr=strrchr(dirEntryFileName, '/');
+					if (namePtr!=NULL)
+						namePtr++;
+					else
+						namePtr=dirEntryFileName;
+
+					unsigned textureId=0, textureScale=0;
+					if (sscanf(namePtr, "%us%u.", &textureId, &textureScale)!=2) {
+						// TODO: error msg
+						continue;
+					}
+					if (textureId==0 || textureScale==0) {
+						// TODO: error msg
+						continue;
+					}
+
+					// Add texture.
+					MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale);
+					addTexture(texture); // TODO: Check return.
+				}
+
+				closedir(dirFd);
 			}
 
-			while((dirEntry=readdir(dirFd))!=NULL) {
-				char dirEntryFileName[1024]; // TODO: this better
-				sprintf(dirEntryFileName , "%s/%s", regionsDirPath, dirEntry->d_name);
-
-				struct stat stbuf;
-				if (stat(dirEntryFileName,&stbuf)==-1)
-					continue;
-
-				// Skip non-regular files.
-				if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
-					continue;
-
-				// Load region.
-				loadRegion(dirEntryFileName); // TODO: Check return.
-			}
-
-			closedir(dirFd);
-
-			// Tidy up.
-			free(regionsDirPath);
-			free(texturesDirPath);
+			// Note: Regions are loaded on demand.
 
 			initialized=true;
 		}
@@ -127,52 +113,51 @@ namespace Engine {
 			for(i=0; i<MapTexture::IdMax; ++i)
 				removeTexture(i);
 
+			// Free paths.
+			free(baseDir);
+			free(texturesDir);
+			free(regionsDir);
+
 			// Clear initialized flag to be safe.
 			initialized=false;
 		}
 
-		bool Map::save(const char *mapBaseDirPath) {
-			assert(mapBaseDirPath!=NULL);
-
+		bool Map::save(void) {
 			// TODO: In each case where we fail, tidy up and free anything as required.
 			// TODO: Better error reporting.
 
 			// Save 'metadata' (create directories).
-			saveMetadata(mapBaseDirPath); // TODO: Check return.
+			if (!saveMetadata())
+				return false;
 
 			// Save all regions.
-			saveRegions(mapBaseDirPath); // TODO: Check return.
+			if (!saveRegions())
+				return false;
 
 			// Save all textures.
-			saveTextures(mapBaseDirPath); // TODO: Check return.
+			if (!saveTextures())
+				return false;
 
 			return true;
 		}
 
-		bool Map::saveMetadata(const char *mapBaseDirPath) const {
-			assert(mapBaseDirPath!=NULL);
-
+		bool Map::saveMetadata(void) const {
 			// Create base directory for the map.
+			const char *mapBaseDirPath=getBaseDir();
 			if (mkdir(mapBaseDirPath, 0777)!=0) {
 				fprintf(stderr, "error: could not create map base dir at '%s'\n", mapBaseDirPath);
 				return false;
 			}
 
 			// Create 'regions' and 'textures' directories.
-			int mkdirResult;
-
-			char *regionsDirPath=saveBaseDirToRegionsDir(mapBaseDirPath); // TODO: check return
-			mkdirResult=mkdir(regionsDirPath, 0777);
-			free(regionsDirPath);
-			if (mkdirResult!=0) {
+			const char *regionsDirPath=getRegionsDir();
+			if (mkdir(regionsDirPath, 0777)!=0) {
 				fprintf(stderr,"error: could not create map regions dir at '%s'\n", regionsDirPath);
 				return false;
 			}
 
-			char *texturesDirPath=saveBaseDirToTexturesDir(mapBaseDirPath); // TODO: check return
-			mkdirResult=mkdir(texturesDirPath, 0777);
-			free(texturesDirPath);
-			if (mkdirResult!=0) {
+			const char *texturesDirPath=getTexturesDir();
+			if (mkdir(texturesDirPath, 0777)!=0) {
 				fprintf(stderr,"error: could not create map textures dir at '%s'\n", texturesDirPath);
 				return false;
 			}
@@ -180,11 +165,9 @@ namespace Engine {
 			return true;
 		}
 
-		bool Map::saveTextures(const char *mapBaseDirPath) const {
-			assert(mapBaseDirPath!=NULL);
-
+		bool Map::saveTextures(void) const {
 			// Save all textures.
-			char *texturesDirPath=saveBaseDirToTexturesDir(mapBaseDirPath); // TODO: check return
+			const char *texturesDirPath=getTexturesDir();
 
 			unsigned textureId;
 			for(textureId=1; textureId<MapTexture::IdMax; ++textureId) {
@@ -197,16 +180,12 @@ namespace Engine {
 				texture->save(texturesDirPath); // TODO: Check return.
 			}
 
-			free(texturesDirPath);
-
 			return true;
 		}
 
-		bool Map::saveRegions(const char *mapBaseDirPath) {
-			assert(mapBaseDirPath!=NULL);
-
+		bool Map::saveRegions(void) {
 			// Save all regions.
-			char *regionsDirPath=saveBaseDirToRegionsDir(mapBaseDirPath); // TODO: check return
+			const char *regionsDirPath=getRegionsDir();
 
 			for(unsigned i=0; i<regionsLoadedMax; ++i) {
 				// Grab region.
@@ -220,27 +199,16 @@ namespace Engine {
 				region->save(regionsDirPath, regionsByIndex[i]->offsetX, regionsByIndex[i]->offsetY); // TODO: Check return.
 			}
 
-			free(regionsDirPath);
-
 			return true;
 		}
 
-		bool Map::loadRegion(const char *regionPath) {
+		bool Map::loadRegion(unsigned regionX, unsigned regionY, const char *regionPath) {
+			assert(regionX<regionsWide && regionY<regionsHigh);
 			assert(regionPath!=NULL);
+			assert(regionsByOffset[regionY][regionX].ptr==NULL);
 
-			// Attempt to decode filename as a region.
-			const char *namePtr=strrchr(regionPath, '/');
-			if (namePtr!=NULL)
-				namePtr++;
-			else
-				namePtr=regionPath;
-
-			unsigned regionX=0, regionY=0;
-			if (sscanf(namePtr, "%u,%u", &regionX, &regionY)!=2)
-				// TODO: error msg
-				return false;
-			if (regionX>=regionsWide || regionY>=regionsHigh)
-				// TODO: error msg
+			// Create empty region to add to.
+			if (!createBlankRegion(regionX, regionY))
 				return false;
 
 			// Open region file.
@@ -310,33 +278,28 @@ namespace Engine {
 			if (regionX>=regionsWide || regionY>=regionsHigh)
 				return NULL;
 
+			// Region not loaded?
+			if (regionsByOffset[regionY][regionX].ptr==NULL) {
+				// Do we need to free a region to allocate this one?
+				assert(regionsByIndexNext<regionsLoadedMax); // TODO: better (i.e. unload oldest)
+
+				// Create path.
+				const char *regionsDirPath=getRegionsDir();
+				char regionPath[4096]; // TODO: this better
+				sprintf(regionPath, "%s/%u,%u", regionsDirPath, regionX, regionY); // TODO: Check return.
+
+				// Attempt to load region (on failure to load this also attempts to create a new blank region instead).
+				loadRegion(regionX, regionY, regionPath);
+			}
+
+			// Return region (or NULL if we could not load/create).
 			return regionsByOffset[regionY][regionX].ptr;
 		}
 
 		void Map::setTileAtCoordVec(const CoordVec &vec, const MapTile &tile) {
 			MapRegion *region=getRegionAtCoordVec(vec);
-			if (region==NULL) {
-				// Do we need to free a region to allocate this one?
-				assert(regionsByIndexNext<regionsLoadedMax); // TODO: better (i.e. unload oldest)
-
-				// Create new blank region.
-				region=new MapRegion();
-				if (region==NULL)
-					return;
-
-				// Calculate region position.
-				CoordComponent tileX=vec.x/Physics::CoordsPerTile;
-				CoordComponent tileY=vec.y/Physics::CoordsPerTile;
-				CoordComponent regionX=tileX/MapRegion::tilesWide;
-				CoordComponent regionY=tileY/MapRegion::tilesHigh;
-
-				regionsByOffset[regionY][regionX].ptr=region;
-				regionsByOffset[regionY][regionX].index=regionsByIndexNext;
-				regionsByOffset[regionY][regionX].offsetX=regionX;
-				regionsByOffset[regionY][regionX].offsetY=regionY;
-				regionsByIndex[regionsByIndexNext]=&(regionsByOffset[regionY][regionX]);
-				regionsByIndexNext++;
-			}
+			if (region==NULL)
+				return; // TODO: Warn?
 
 			region->setTileAtCoordVec(vec, tile);
 		}
@@ -506,54 +469,21 @@ namespace Engine {
 			return textures[id];
 		}
 
-		char *Map::saveBaseDirToRegionsDir(const char *mapBaseDirPath) {
-			assert(mapBaseDirPath!=NULL);
-
-			const char *regionsDirName="regions";
-
-			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
-			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
-			char *regionsDirPath=(char *)malloc(regionsDirPathLen+1); // TODO: Check return
-			sprintf(regionsDirPath, "%s/%s", mapBaseDirPath, regionsDirName);
-
-			return regionsDirPath;
+		const char *Map::getBaseDir(void) const {
+			return baseDir;
 		}
 
-		char *Map::saveBaseDirToTexturesDir(const char *mapBaseDirPath) {
-			assert(mapBaseDirPath!=NULL);
-
-			const char *texturesDirName="textures";
-
-			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
-			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
-			char *texturesDirPath=(char *)malloc(texturesDirPathLen+1); // TODO: Check return
-			sprintf(texturesDirPath, "%s/%s", mapBaseDirPath, texturesDirName);
-
-			return texturesDirPath;
+		const char *Map::getRegionsDir(void) const {
+			return regionsDir;
 		}
 
-		void Map::initclean(void) {
-			unsigned i, j;
-
-			// Clear regions data structures.
-			regionsByIndexNext=0;
-			for(i=0; i<regionsLoadedMax; ++i)
-				regionsByIndex[i]=NULL;
-			for(i=0; i<regionsHigh; ++i)
-				for(j=0; j<regionsWide; ++j)
-					regionsByOffset[i][j].ptr=NULL;
-
-			// Clear textures array.
-			for(i=0; i<MapTexture::IdMax; ++i)
-				textures[i]=NULL;
-
-			// Set initialized flag.
-			initialized=true;
+		const char *Map::getTexturesDir(void) const {
+			return texturesDir;
 		}
 
 		bool Map::createBlankRegion(unsigned regionX, unsigned regionY) {
 			assert(regionX<regionsWide && regionY<regionsHigh);
-			assert(regionsByOffset[regionX][regionY].ptr==NULL);
+			assert(regionsByOffset[regionY][regionX].ptr==NULL);
 
 			// Do we need to free a region to allocate this one?
 			assert(regionsByIndexNext<regionsLoadedMax); // TODO: better (i.e. unload oldest)
