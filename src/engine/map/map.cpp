@@ -184,6 +184,8 @@ namespace Engine {
 		}
 
 		bool Map::saveRegions(void) {
+			bool success=true;
+
 			// Save all regions.
 			const char *regionsDirPath=getRegionsDir();
 
@@ -196,10 +198,10 @@ namespace Engine {
 					continue;
 
 				// Save region.
-				region->save(regionsDirPath, regionsByIndex[i]->offsetX, regionsByIndex[i]->offsetY); // TODO: Check return.
+				success&=region->save(regionsDirPath, regionsByIndex[i]->offsetX, regionsByIndex[i]->offsetY);
 			}
 
-			return true;
+			return success;
 		}
 
 		bool Map::loadRegion(unsigned regionX, unsigned regionY, const char *regionPath) {
