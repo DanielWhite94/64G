@@ -53,6 +53,9 @@ namespace Engine {
 			regionsDir=(char *)malloc(regionsDirPathLen+1); // TODO: check return
 			sprintf(regionsDir, "%s/%s", mapBaseDirPath, regionsDirName);
 
+			// Ensure directories etc exist.
+			saveMetadata();
+
 			// Load textures
 			dirFd=opendir(getTexturesDir());
 			if (dirFd==NULL) {
