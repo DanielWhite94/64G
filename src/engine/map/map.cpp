@@ -166,6 +166,8 @@ namespace Engine {
 		}
 
 		bool Map::saveTextures(void) const {
+			bool success=true;
+
 			// Save all textures.
 			const char *texturesDirPath=getTexturesDir();
 
@@ -177,10 +179,10 @@ namespace Engine {
 					continue;
 
 				// Save texture.
-				texture->save(texturesDirPath); // TODO: Check return.
+				success&=texture->save(texturesDirPath);
 			}
 
-			return true;
+			return success;
 		}
 
 		bool Map::saveRegions(void) {
