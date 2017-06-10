@@ -195,7 +195,7 @@ namespace Engine {
 			// Save all regions.
 			const char *regionsDirPath=getRegionsDir();
 
-			for(unsigned i=0; i<regionsLoadedMax; ++i) {
+			for(unsigned i=0; i<regionsByIndexNext; ++i) {
 				// Grab region.
 				MapRegion *region=regionsByIndex[i]->ptr;
 
