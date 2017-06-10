@@ -109,7 +109,7 @@ namespace Engine {
 
 			// Remove regions.
 			for(i=0; i<regionsLoadedMax; ++i) {
-				MapRegion *region=regionsByIndex[i]->ptr;
+				MapRegion *region=getRegionAtIndex(i);
 				delete region;
 			}
 
@@ -205,7 +205,7 @@ namespace Engine {
 
 			for(unsigned i=0; i<regionsByIndexNext; ++i) {
 				// Grab region.
-				MapRegion *region=regionsByIndex[i]->ptr;
+				MapRegion *region=getRegionAtIndex(i);
 
 				// Is the region even dirty?
 				if (!region->getIsDirty())
@@ -495,6 +495,18 @@ namespace Engine {
 
 		const char *Map::getTexturesDir(void) const {
 			return texturesDir;
+		}
+
+		MapRegion *Map::getRegionAtIndex(unsigned index) {
+			assert(index<regionsByIndexNext);
+
+			return regionsByIndex[index]->ptr;
+		}
+
+		const MapRegion *Map::getRegionAtIndex(unsigned index) const {
+			assert(index<regionsByIndexNext);
+
+			return regionsByIndex[index]->ptr;
 		}
 
 		bool Map::createBlankRegion(unsigned regionX, unsigned regionY) {

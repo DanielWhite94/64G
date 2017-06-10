@@ -74,6 +74,9 @@ namespace Engine {
 			const char *getRegionsDir(void) const;
 			const char *getTexturesDir(void) const;
 
+			MapRegion *getRegionAtIndex(unsigned index);
+			const MapRegion *getRegionAtIndex(unsigned index) const;
+
 			bool createBlankRegion(unsigned regionX, unsigned regionY);
 
 			static bool isDir(const char *path);
