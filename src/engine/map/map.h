@@ -75,6 +75,8 @@ namespace Engine {
 			const char *getTexturesDir(void) const;
 
 			bool createBlankRegion(unsigned regionX, unsigned regionY);
+
+			static bool isDir(const char *path);
 		};
 	};
 };

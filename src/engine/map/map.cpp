@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "map.h"
 #include "../graphics/renderer.h"
@@ -509,6 +510,13 @@ namespace Engine {
 			regionsByIndexNext++;
 
 			return true;
+		}
+
+		bool Map::isDir(const char *path) {
+			struct stat pathStat;
+			if (stat(path, &pathStat)!=0)
+				return false;
+			return S_ISDIR(pathStat.st_mode);
 		}
 	};
 };
