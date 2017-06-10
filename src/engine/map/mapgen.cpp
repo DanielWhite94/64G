@@ -73,40 +73,48 @@ namespace Engine {
 			assert(map!=NULL);
 
 			// Choose parameters.
+			const unsigned heightNoiseWidth=1024;
+			const unsigned heightNoiseHeight=1024;
 			const double cellWidth=1.0;
 			const double cellHeight=1.0;
 			const double heightResolution=200.0;
 
-			double *heightArray=(double *)malloc(sizeof(double)*height*width);
+			double *heightArray=(double *)malloc(sizeof(double)*heightNoiseHeight*heightNoiseWidth);
 			assert(heightArray!=NULL); // TODO: better
 			double *heightArrayPtr;
 
-			unsigned yProgressDelta=height/16;
+			unsigned yProgressDelta=heightNoiseHeight/16;
 
 			unsigned x, y;
 
 			// Calculate heightArray.
+			// ... need to adjust parameters to something...
 			FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
 			// TODO: Loop over in a more cache-friendly manner (i.e. do all of region 0, then all of region 1, etc).
-			float freqFactorX=(cellWidth/width)*1024.0;
-			float freqFactorY=(cellHeight/height)*1024.0;
+			float freqFactorX=(cellWidth/heightNoiseWidth)*1024.0;
+			float freqFactorY=(cellHeight/heightNoiseHeight)*1024.0;
 			heightArrayPtr=heightArray;
-			for(y=0;y<height;++y) {
-				for(x=0;x<width;++x,++heightArrayPtr)
+			for(y=0;y<heightNoiseHeight;++y) {
+				for(x=0;x<heightNoiseWidth;++x,++heightArrayPtr)
 					// Calculate noise value to represent the height here.
 					*heightArrayPtr=heightNose.eval(x*freqFactorX, y*freqFactorY);
 
 				// Update progress (if needed).
 				if (y%yProgressDelta==yProgressDelta-1)
-					printf("MapGen: generating height noise %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
+					printf("MapGen: generating height noise %.1f%%.\n", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
 			}
 
 			// Create base tile layer - water/land.
 			printf("MapGen: creating water/land tiles...\n");
-			heightArrayPtr=heightArray;
+			double heightXFactor=((double)heightNoiseWidth)/width;
+			double heightYFactor=((double)heightNoiseHeight)/height;
 			for(y=0;y<height;++y) {
-				for(x=0;x<width;++x,++heightArrayPtr) {
-					MapTile tile(*heightArrayPtr>=0.0 ? landTextureId : waterTextureId);
+				unsigned heightY=y*heightYFactor;
+				for(x=0;x<width;++x) {
+					unsigned heightX=x*heightXFactor;
+					double height=heightArray[heightX+heightY*heightNoiseWidth];
+
+					MapTile tile(height>=0.0 ? landTextureId : waterTextureId);
 					CoordVec vec((xOffset+x)*Physics::CoordsPerTile, (yOffset+y)*Physics::CoordsPerTile);
 					map->setTileAtCoordVec(vec, tile);
 				}
