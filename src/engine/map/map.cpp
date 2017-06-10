@@ -296,16 +296,16 @@ namespace Engine {
 
 			// Region not loaded?
 			if (regionsByOffset[regionY][regionX].ptr==NULL) {
-				// Do we need to free a region to allocate this one?
-				assert(regionsByIndexNext<regionsLoadedMax); // TODO: better (i.e. unload oldest)
+				// Free a region if we need to.
+				if (ensureSpaceForRegion()) {
+					// Create path.
+					const char *regionsDirPath=getRegionsDir();
+					char regionPath[4096]; // TODO: this better
+					sprintf(regionPath, "%s/%u,%u", regionsDirPath, regionX, regionY); // TODO: Check return.
 
-				// Create path.
-				const char *regionsDirPath=getRegionsDir();
-				char regionPath[4096]; // TODO: this better
-				sprintf(regionPath, "%s/%u,%u", regionsDirPath, regionX, regionY); // TODO: Check return.
-
-				// Attempt to load region (on failure to load this also attempts to create a new blank region instead).
-				loadRegion(regionX, regionY, regionPath);
+					// Attempt to load region (on failure to load this also attempts to create a new blank region instead).
+					loadRegion(regionX, regionY, regionPath);
+				}
 			}
 
 			// Return region (or NULL if we could not load/create).
@@ -514,7 +514,8 @@ namespace Engine {
 			assert(regionsByOffset[regionY][regionX].ptr==NULL);
 
 			// Do we need to free a region to allocate this one?
-			assert(regionsByIndexNext<regionsLoadedMax); // TODO: better (i.e. unload oldest)
+			if (!ensureSpaceForRegion())
+				return false;
 
 			// Create new blank region.
 			MapRegion *region=new MapRegion();
@@ -522,6 +523,7 @@ namespace Engine {
 				return false;
 
 			// Add region.
+			assert(regionsByIndexNext<regionsLoadedMax);
 			regionsByOffset[regionY][regionX].ptr=region;
 			regionsByOffset[regionY][regionX].index=regionsByIndexNext;
 			regionsByOffset[regionY][regionX].offsetX=regionX;
@@ -530,6 +532,26 @@ namespace Engine {
 			regionsByIndexNext++;
 
 			return true;
+		}
+
+		bool Map::ensureSpaceForRegion(void) {
+			// Do we need to evict something?
+			assert(regionsByIndexNext<=regionsLoadedMax);
+			if (regionsByIndexNext==regionsLoadedMax) {
+				// Find the least-recently used region.
+				unsigned oldestRegionIndex=(rand()%regionsByIndexNext); // TODO: this
+				MapRegion *region=getRegionAtIndex(oldestRegionIndex);
+
+				// If this region is dirty, save it back to disk.
+				if (region->getIsDirty()) {
+					// TODO: this
+				}
+
+				// Unload the region.
+				// TODO: this
+			}
+
+			return (regionsByIndexNext<regionsLoadedMax);
 		}
 
 		bool Map::isDir(const char *path) {
