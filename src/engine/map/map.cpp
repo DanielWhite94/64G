@@ -108,10 +108,8 @@ namespace Engine {
 			unsigned i;
 
 			// Remove regions.
-			for(i=0; i<regionsByIndexNext; ++i) {
-				MapRegion *region=getRegionAtIndex(i);
-				delete region;
-			}
+			while(regionsByIndexNext>0)
+				regionUnload(regionsByIndexNext-1);
 
 			// Remove textures.
 			for(i=0; i<MapTexture::IdMax; ++i)
@@ -559,6 +557,23 @@ namespace Engine {
 			if (stat(path, &pathStat)!=0)
 				return false;
 			return S_ISDIR(pathStat.st_mode);
+		}
+
+		void Map::regionUnload(unsigned index) {
+			assert(index<regionsByIndexNext);
+
+			// Free the region and clear the RegionData pointer.
+			MapRegion *region=getRegionAtIndex(index);
+			delete region;
+
+			regionsByIndex[index]->ptr=NULL;
+
+			// Copy last array element into this gap and update its index.
+			regionsByIndex[index]=regionsByIndex[regionsByIndexNext-1];
+			regionsByIndex[index]->index=index;
+
+			// Decrement index next.
+			--regionsByIndexNext;
 		}
 	};
 };
