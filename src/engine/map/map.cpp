@@ -108,7 +108,7 @@ namespace Engine {
 			unsigned i;
 
 			// Remove regions.
-			for(i=0; i<regionsLoadedMax; ++i) {
+			for(i=0; i<regionsByIndexNext; ++i) {
 				MapRegion *region=getRegionAtIndex(i);
 				delete region;
 			}
