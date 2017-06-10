@@ -541,12 +541,11 @@ namespace Engine {
 				MapRegion *region=getRegionAtIndex(oldestRegionIndex);
 
 				// If this region is dirty, save it back to disk.
-				if (region->getIsDirty()) {
-					// TODO: this
-				}
+				if (region->getIsDirty())
+					region->save(getRegionsDir(), regionsByIndex[oldestRegionIndex]->offsetX, regionsByIndex[oldestRegionIndex]->offsetY); // TODO: Check return - don't want to lose data.
 
 				// Unload the region.
-				// TODO: this
+				regionUnload(oldestRegionIndex);
 			}
 
 			return (regionsByIndexNext<regionsLoadedMax);
