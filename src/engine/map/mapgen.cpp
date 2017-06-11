@@ -88,8 +88,8 @@ namespace Engine {
 			// Calculate heightArray.
 			FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
 			// TODO: Loop over in a more cache-friendly manner (i.e. do all of region 0, then all of region 1, etc).
-			float freqFactorX=(((double)width)/heightNoiseWidth);
-			float freqFactorY=(((double)height)/heightNoiseHeight);
+			float freqFactorX=(((double)width)/heightNoiseWidth)/8.0;
+			float freqFactorY=(((double)height)/heightNoiseHeight)/8.0;
 			heightArrayPtr=heightArray;
 			for(y=0;y<heightNoiseHeight;++y) {
 				for(x=0;x<heightNoiseWidth;++x,++heightArrayPtr)
