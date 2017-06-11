@@ -69,7 +69,7 @@ namespace Engine {
 			return success;
 		};
 
-		bool MapGen::generateWaterLand(class Map *map, unsigned xOffset, unsigned yOffset, unsigned width, unsigned height, unsigned waterTextureId, unsigned landTextureId, unsigned tileLayer) {
+		bool MapGen::generateWaterLand(class Map *map, unsigned xOffset, unsigned yOffset, unsigned width, unsigned height, unsigned waterTextureId, unsigned landTextureId, unsigned tileLayer, const double targetLandFraction) {
 			assert(map!=NULL);
 
 			// Choose parameters.
@@ -101,17 +101,59 @@ namespace Engine {
 					printf("MapGen: generating height noise %.1f%%.\n", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
 			}
 
-			// Create base tile layer - water/land.
-			printf("MapGen: creating water/land tiles...\n");
+			// Choose land height (using a binary search).
 			double heightXFactor=((double)heightNoiseWidth)/width;
 			double heightYFactor=((double)heightNoiseHeight)/height;
+
+			printf("MapGen: choosing water/land threshold...\n");
+
+			double minLandHeight=-1.0;
+			double maxLandHeight=1.0;
+			const unsigned iterMax=8;
+			for(unsigned iter=0; iter<iterMax; ++iter) {
+				// Guess the midpoint of our bounds.
+				double guessLandHeight=(maxLandHeight+minLandHeight)/2.0;
+
+				// Calculate how much land this guess would create.
+				double guessLand=0.0;
+				for(y=0;y<height;++y) {
+					unsigned heightY=y*heightYFactor;
+					for(x=0;x<width;++x) {
+						unsigned heightX=x*heightXFactor;
+						double height=heightArray[heightX+heightY*heightNoiseWidth];
+						guessLand+=(height>=guessLandHeight);
+					}
+				}
+				double guessLandFraction=guessLand/(((double)height)*((double)width));
+
+				// Print progress update.
+				printf("	MapGen: choosing water/land threshold %u/%u (min %.3f, max %.3f, guessLandHeight %0.3f, guessLandFraction %0.3f).\n", iter, iterMax, minLandHeight, maxLandHeight, guessLandHeight, guessLandFraction);
+
+				// How good was our guess?
+				const double errorEpsilon=0.005;
+				double errorDelta=guessLandFraction-targetLandFraction;
+				if (errorDelta>errorEpsilon)
+					// Too much land - choose upper half interval.
+					minLandHeight=guessLandHeight;
+				else if (errorDelta<-errorEpsilon)
+					// Not enough land - choose lower half interval.
+					maxLandHeight=guessLandHeight;
+				else
+					// Near enough!
+					break;
+			}
+
+			double landHeight=(maxLandHeight+minLandHeight)/2.0;
+
+			// Create base tile layer - water/land.
+			printf("MapGen: creating water/land tiles... (land height %.2f)\n", landHeight);
 			for(y=0;y<height;++y) {
 				unsigned heightY=y*heightYFactor;
 				for(x=0;x<width;++x) {
 					unsigned heightX=x*heightXFactor;
 					double height=heightArray[heightX+heightY*heightNoiseWidth];
 
-					MapTile tile(height>=0.0 ? landTextureId : waterTextureId);
+					MapTile tile(height>=landHeight ? landTextureId : waterTextureId);
 					CoordVec vec((xOffset+x)*Physics::CoordsPerTile, (yOffset+y)*Physics::CoordsPerTile);
 					map->setTileAtCoordVec(vec, tile);
 				}
