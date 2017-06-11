@@ -81,12 +81,12 @@ namespace Engine {
 			assert(heightArray!=NULL); // TODO: better
 			double *heightArrayPtr;
 
-			unsigned yProgressDelta=heightNoiseHeight/16;
 
 			unsigned x, y;
 
 			// Calculate heightArray.
 			FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
+			unsigned noiseYProgressDelta=heightNoiseHeight/16;
 			// TODO: Loop over in a more cache-friendly manner (i.e. do all of region 0, then all of region 1, etc).
 			float freqFactorX=(((double)width)/heightNoiseWidth)/8.0;
 			float freqFactorY=(((double)height)/heightNoiseHeight)/8.0;
@@ -97,7 +97,7 @@ namespace Engine {
 					*heightArrayPtr=heightNose.eval(x*freqFactorX, y*freqFactorY);
 
 				// Update progress (if needed).
-				if (y%yProgressDelta==yProgressDelta-1)
+				if (y%noiseYProgressDelta==noiseYProgressDelta-1)
 					printf("MapGen: generating height noise %.1f%%.\n", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
 			}
 
@@ -146,6 +146,7 @@ namespace Engine {
 			double landHeight=(maxLandHeight+minLandHeight)/2.0;
 
 			// Create base tile layer - water/land.
+			unsigned baseLayerYProgressDelta=height/16;
 			printf("MapGen: creating water/land tiles... (land height %.2f)\n", landHeight);
 			for(y=0;y<height;++y) {
 				unsigned heightY=y*heightYFactor;
@@ -159,7 +160,7 @@ namespace Engine {
 				}
 
 				// Update progress (if needed).
-				if (y%yProgressDelta==yProgressDelta-1)
+				if (y%baseLayerYProgressDelta==baseLayerYProgressDelta-1)
 					printf("MapGen: creating tiles %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
 			}
 
