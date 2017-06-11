@@ -75,8 +75,6 @@ namespace Engine {
 			// Choose parameters.
 			const unsigned heightNoiseWidth=1024;
 			const unsigned heightNoiseHeight=1024;
-			const double cellWidth=1.0;
-			const double cellHeight=1.0;
 			const double heightResolution=200.0;
 
 			double *heightArray=(double *)malloc(sizeof(double)*heightNoiseHeight*heightNoiseWidth);
@@ -88,11 +86,10 @@ namespace Engine {
 			unsigned x, y;
 
 			// Calculate heightArray.
-			// ... need to adjust parameters to something...
 			FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
 			// TODO: Loop over in a more cache-friendly manner (i.e. do all of region 0, then all of region 1, etc).
-			float freqFactorX=(cellWidth/heightNoiseWidth)*1024.0;
-			float freqFactorY=(cellHeight/heightNoiseHeight)*1024.0;
+			float freqFactorX=(((double)width)/heightNoiseWidth);
+			float freqFactorY=(((double)height)/heightNoiseHeight);
 			heightArrayPtr=heightArray;
 			for(y=0;y<heightNoiseHeight;++y) {
 				for(x=0;x<heightNoiseWidth;++x,++heightArrayPtr)
