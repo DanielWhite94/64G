@@ -80,6 +80,12 @@ int main(int argc, char **argv) {
 	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
 	*/
 
+	// Add a test house.
+	printf("Adding houses...\n");
+	MapGen::addHouse(map, 950, 730, 10, 8, 4);
+	MapGen::addHouse(map, 963, 729, 6, 6, 4);
+	MapGen::addHouse(map, 965, 737, 8, 7, 4);
+
 	// Save map.
 	if (!map->save()) {
 		printf("Could not save map to '%s'.\n", outputPath);
