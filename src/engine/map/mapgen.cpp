@@ -39,6 +39,17 @@ namespace Engine {
 				[TextureIdOldManE]="../images/npcs/oldbeardman/east.png",
 				[TextureIdOldManS]="../images/npcs/oldbeardman/south.png",
 				[TextureIdOldManW]="../images/npcs/oldbeardman/west.png",
+				[TextureIdHouseDoorBL]="../images/tiles/house/doorbl.png",
+				[TextureIdHouseDoorBR]="../images/tiles/house/doorbr.png",
+				[TextureIdHouseDoorTL]="../images/tiles/house/doortl.png",
+				[TextureIdHouseDoorTR]="../images/tiles/house/doortr.png",
+				[TextureIdHouseRoof]="../images/tiles/house/roof.png",
+				[TextureIdHouseRoofTop]="../images/tiles/house/rooftop.png",
+				[TextureIdHouseWall2]="../images/tiles/house/wall2.png",
+				[TextureIdHouseWall3]="../images/tiles/house/wall3.png",
+				[TextureIdHouseWall4]="../images/tiles/house/wall4.png",
+				[TextureIdHouseChimney]="../images/tiles/house/chimney.png",
+				[TextureIdHouseChimneyTop]="../images/tiles/house/chimneytop.png",
 			};
 			const int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -59,6 +70,17 @@ namespace Engine {
 				[TextureIdOldManE]=4,
 				[TextureIdOldManS]=4,
 				[TextureIdOldManW]=4,
+				[TextureIdHouseDoorBL]=4,
+				[TextureIdHouseDoorBR]=4,
+				[TextureIdHouseDoorTL]=4,
+				[TextureIdHouseDoorTR]=4,
+				[TextureIdHouseRoof]=4,
+				[TextureIdHouseRoofTop]=4,
+				[TextureIdHouseWall2]=4,
+				[TextureIdHouseWall3]=4,
+				[TextureIdHouseWall4]=4,
+				[TextureIdHouseChimney]=4,
+				[TextureIdHouseChimneyTop]=4,
 			};
 
 			bool success=true;

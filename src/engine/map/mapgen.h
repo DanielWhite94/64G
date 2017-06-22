@@ -25,7 +25,18 @@ namespace Engine {
 			static const unsigned TextureIdOldManE=15;
 			static const unsigned TextureIdOldManS=16;
 			static const unsigned TextureIdOldManW=17;
-			static const unsigned TextureIdNB=18;
+			static const unsigned TextureIdHouseDoorBL=18;
+			static const unsigned TextureIdHouseDoorBR=19;
+			static const unsigned TextureIdHouseDoorTL=20;
+			static const unsigned TextureIdHouseDoorTR=21;
+			static const unsigned TextureIdHouseRoof=22;
+			static const unsigned TextureIdHouseRoofTop=23;
+			static const unsigned TextureIdHouseWall2=24;
+			static const unsigned TextureIdHouseWall3=25;
+			static const unsigned TextureIdHouseWall4=26;
+			static const unsigned TextureIdHouseChimney=27;
+			static const unsigned TextureIdHouseChimneyTop=28;
+			static const unsigned TextureIdNB=29;
 
 			enum class BuiltinObject {
 				OldBeardMan,
