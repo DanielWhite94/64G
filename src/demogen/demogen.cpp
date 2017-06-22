@@ -83,8 +83,9 @@ int main(int argc, char **argv) {
 	// Add a test house.
 	printf("Adding houses...\n");
 	MapGen::addHouse(map, 950, 730, 10, 8, 4);
-	MapGen::addHouse(map, 963, 729, 6, 6, 4);
+	MapGen::addHouse(map, 963, 725, 6, 11, 4);
 	MapGen::addHouse(map, 965, 737, 8, 7, 4);
+	MapGen::addHouse(map, 951, 740, 5, 5, 4);
 
 	// Save map.
 	if (!map->save()) {
