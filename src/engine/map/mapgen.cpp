@@ -385,7 +385,7 @@ namespace Engine {
 			unsigned tx, ty;
 
 			// Choose parameters.
-			const double roofRatio=0.65;
+			const double roofRatio=0.6;
 
 			// Check width and height are reasonable.
 			if (w<5 || h<5)
