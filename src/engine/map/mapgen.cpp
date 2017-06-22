@@ -378,5 +378,66 @@ namespace Engine {
 					}
 				}
 		}
+
+		bool MapGen::addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer) {
+			assert(map!=NULL);
+
+			unsigned tx, ty;
+
+			// Choose parameters.
+			const double roofRatio=0.65;
+
+			// Check width and height are reasonable.
+			if (w<5 || h<5)
+				return false;
+
+			// Calculate constants.
+			unsigned roofHeight=(int)floor(roofRatio*h);
+			unsigned wallHeight=h-roofHeight;
+
+			// Add walls.
+			for(ty=0;ty<wallHeight;++ty)
+				for(tx=0;tx<w;++tx) {
+					unsigned texture;
+					switch(ty%4) {
+						case 0: texture=TextureIdHouseWall3; break;
+						case 1: texture=TextureIdHouseWall2; break;
+						case 2: texture=TextureIdHouseWall4; break;
+						case 3: texture=TextureIdHouseWall2; break;
+					}
+					MapTile tile(texture, tileLayer);
+					CoordVec vec((x+tx)*Physics::CoordsPerTile, (y+h-1-ty)*Physics::CoordsPerTile);
+					map->setTileAtCoordVec(vec, tile);
+				}
+
+			// Add door.
+			unsigned doorX=(rand()%(w-3))+x+1;
+			map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBL, tileLayer));
+			map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBR, tileLayer));
+			map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTL, tileLayer));
+			map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTR, tileLayer));
+
+			// Add main part of roof.
+			for(ty=0;ty<roofHeight-1;++ty) // -1 due to ridge tiles added later
+				for(tx=0;tx<w;++tx) {
+					MapTile tile(TextureIdHouseRoof, tileLayer);
+					CoordVec vec((x+tx)*Physics::CoordsPerTile, (y+1+ty)*Physics::CoordsPerTile);
+					map->setTileAtCoordVec(vec, tile);
+				}
+
+			// Add roof top ridge.
+			for(tx=0;tx<w;++tx) {
+				MapTile tile(TextureIdHouseRoofTop, tileLayer);
+				CoordVec vec((x+tx)*Physics::CoordsPerTile, y*Physics::CoordsPerTile);
+				map->setTileAtCoordVec(vec, tile);
+			}
+
+			// Add chimney.
+			unsigned chimneyX=rand()%w+x;
+			map->setTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, y*Physics::CoordsPerTile), MapTile(TextureIdHouseChimneyTop, tileLayer));
+			map->setTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (y+1)*Physics::CoordsPerTile), MapTile(TextureIdHouseChimney, tileLayer));
+
+			return true;
+		}
 	};
 };

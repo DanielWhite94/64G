@@ -57,6 +57,8 @@ namespace Engine {
 			static MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 			static void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);
 			static void addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, MapGenAddBuiltinObjectForestTestFunctor *testFunctor, void *testFunctorUserData);
+
+			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer);
 		private:
 			unsigned width, height;
 		};
