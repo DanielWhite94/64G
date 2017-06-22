@@ -176,7 +176,7 @@ namespace Engine {
 					unsigned heightX=x*heightXFactor;
 					double height=heightArray[heightX+heightY*heightNoiseWidth];
 
-					MapTile tile(height>=landHeight ? landTextureId : waterTextureId);
+					MapTile tile((height>=landHeight ? landTextureId : waterTextureId), tileLayer);
 					CoordVec vec((xOffset+x)*Physics::CoordsPerTile, (yOffset+y)*Physics::CoordsPerTile);
 					map->setTileAtCoordVec(vec, tile);
 				}
