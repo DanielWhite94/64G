@@ -59,6 +59,8 @@ namespace Engine {
 			static void addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, MapGenAddBuiltinObjectForestTestFunctor *testFunctor, void *testFunctorUserData);
 
 			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer);
+
+			static bool addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer);
 		private:
 			unsigned width, height;
 		};

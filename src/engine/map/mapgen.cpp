@@ -451,5 +451,88 @@ namespace Engine {
 
 			return true;
 		}
+
+		bool MapGen::addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer) {
+			assert(map!=NULL);
+			assert(n>0);
+			assert(x!=NULL);
+			assert(y!=NULL);
+			assert(radius>0); // TODO: Should this be higher?
+			assert(tileLayer<MapTile::layersMax);
+
+			unsigned i;
+
+			const unsigned radiusSquared=radius*radius;
+
+			// Calculate axis-aligned-bounding-box (AABB) for town.
+			unsigned minX=x[0];
+			unsigned minY=y[0];
+			unsigned maxX=x[0];
+			unsigned maxY=y[0];
+			for(i=1; i<n; ++i) {
+				minX=min(minX, x[i]);
+				minY=min(minY, y[i]);
+				maxX=max(maxX, x[i]);
+				maxY=max(maxY, y[i]);
+			}
+
+			unsigned aabbMinX=minX-radius;
+			unsigned aabbMinY=minY-radius;
+			unsigned aabbMaxX=maxX+radius;
+			unsigned aabbMaxY=maxY+radius;
+
+			// For now simply fill area near given points with houses.
+			const unsigned houseWidthMin=6;
+			const unsigned houseWidthMax=14;
+			const unsigned houseHeightMin=4;
+			const unsigned houseHeightMax=7;
+
+			const unsigned houseGapX=2;
+			const unsigned houseGapY=2;
+
+			unsigned tx, ty;
+			for(ty=aabbMinY; ty<=aabbMaxY; ty+=houseHeightMax+houseGapY) {
+				for(tx=aabbMinX; tx<=aabbMaxX; tx+=houseWidthMax+houseGapX) {
+					// Choose house parameters.
+					unsigned houseW=houseWidthMin+rand()%(houseWidthMax-houseWidthMin);
+					unsigned houseH=houseHeightMin+rand()%(houseHeightMax-houseHeightMin);
+
+					unsigned offsetX=rand()%(houseWidthMax-houseW);
+					unsigned offsetY=rand()%(houseHeightMax-houseH);
+
+					// Check we are close enough to a node.
+					// TODO: this is slightly imprecise
+					for(i=0; i<n; ++i) {
+						int deltaX=tx-x[i];
+						int deltaY=ty-y[i];
+						unsigned distanceSquared=deltaX*deltaX+deltaY*deltaY;
+						if (distanceSquared<=radiusSquared)
+							break;
+					}
+					if (i==n)
+						continue;
+
+					// Check for water.
+					// TODO: add test functor for this rather than hardcoding
+					bool foundWater=false;
+					unsigned sx, sy;
+					for(sy=0; sy<houseH && !foundWater; ++sy)
+						for(sx=0; sx<houseW; ++sx) {
+							MapTile *tile=map->getTileAtCoordVec(CoordVec((tx+sx)*Physics::CoordsPerTile, (ty+sy)*Physics::CoordsPerTile));
+							if (tile->getLayer(0)->textureId!=MapGen::TextureIdGrass0) {
+								foundWater=true;
+								break;
+							}
+						}
+					if (foundWater)
+						continue;
+
+					// Add house.
+					MapGen::addHouse(map, tx+offsetX, ty+offsetY, houseW, houseH, tileLayer);
+				}
+			}
+
+			return true;
+		}
 	};
 };
