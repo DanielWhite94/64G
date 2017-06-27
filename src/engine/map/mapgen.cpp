@@ -131,6 +131,7 @@ namespace Engine {
 			// Choose land height (using a binary search).
 			double heightXFactor=((double)heightNoiseWidth)/width;
 			double heightYFactor=((double)heightNoiseHeight)/height;
+/*
 
 			printf("MapGen: choosing water/land threshold...\n");
 
@@ -174,6 +175,10 @@ namespace Engine {
 			printf("\n");
 
 			double landHeight=(maxLandHeight+minLandHeight)/2.0;
+
+			*/
+
+			double landHeight=-0.12; // TODO: think about this - issue is land isnt reproducible at different sizes due to more/less land changing the landHeight
 
 			// Create base tile layer - water/land.
 			unsigned baseLayerYProgressDelta=height/16;
