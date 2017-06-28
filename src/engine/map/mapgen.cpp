@@ -396,7 +396,7 @@ namespace Engine {
 				}
 		}
 
-		bool MapGen::addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer) {
+		bool MapGen::addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 
 			unsigned tx, ty;
@@ -406,6 +406,10 @@ namespace Engine {
 
 			// Check width and height are reasonable.
 			if (w<5 || h<5)
+				return false;
+
+			// Check area is suitable.
+			if (testFunctor!=NULL && !testFunctor(map, x, y, w, h, testFunctorUserData))
 				return false;
 
 			// Calculate constants.
@@ -457,7 +461,7 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapGen::addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer) {
+		bool MapGen::addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 			assert(n>0);
 			assert(x!=NULL);
@@ -517,23 +521,8 @@ namespace Engine {
 					if (i==n)
 						continue;
 
-					// Check for water.
-					// TODO: add test functor for this rather than hardcoding
-					bool foundWater=false;
-					unsigned sx, sy;
-					for(sy=0; sy<houseH && !foundWater; ++sy)
-						for(sx=0; sx<houseW; ++sx) {
-							MapTile *tile=map->getTileAtCoordVec(CoordVec((tx+sx)*Physics::CoordsPerTile, (ty+sy)*Physics::CoordsPerTile));
-							if (tile->getLayer(0)->textureId!=MapGen::TextureIdGrass0) {
-								foundWater=true;
-								break;
-							}
-						}
-					if (foundWater)
-						continue;
-
-					// Add house.
-					MapGen::addHouse(map, tx+offsetX, ty+offsetY, houseW, houseH, tileLayer);
+					// Attempt to add house.
+					MapGen::addHouse(map, tx+offsetX, ty+offsetY, houseW, houseH, tileLayer, testFunctor, testFunctorUserData);
 				}
 			}
 

@@ -47,6 +47,8 @@ namespace Engine {
 
 			typedef bool (MapGenAddBuiltinObjectForestTestFunctor)(const class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);
 
+			typedef bool (AddHouseTestFunctor)(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData);
+
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
 
@@ -58,9 +60,9 @@ namespace Engine {
 			static void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);
 			static void addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, MapGenAddBuiltinObjectForestTestFunctor *testFunctor, void *testFunctorUserData);
 
-			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer);
+			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData);
 
-			static bool addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer);
+			static bool addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData);
 		private:
 			unsigned width, height;
 		};

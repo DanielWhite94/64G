@@ -25,6 +25,67 @@ bool demogenForestTestFunctorIsLand(class Map *map, MapGen::BuiltinObject builti
 	return (layer->textureId!=MapGen::TextureIdWater);
 }
 
+bool demogenAddHouseTestFunctor(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData) {
+	assert(map!=NULL);
+	assert(map!=NULL);
+
+	// Loop over tiles ensuring all have a suitable base layer.
+	unsigned tx, ty;
+	for(ty=0; ty<h; ++ty)
+		for(tx=0; tx<w; ++tx) {
+			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile));
+
+			switch(tile->getLayer(0)->textureId) {
+				case MapGen::TextureIdGrass0:
+				case MapGen::TextureIdGrass1:
+				case MapGen::TextureIdGrass2:
+				case MapGen::TextureIdGrass3:
+				case MapGen::TextureIdGrass4:
+				case MapGen::TextureIdGrass5:
+				case MapGen::TextureIdDirt:
+					// OK
+				break;
+				case MapGen::TextureIdBrickPath:
+				case MapGen::TextureIdDock:
+				case MapGen::TextureIdWater:
+				case MapGen::TextureIdTree1:
+				case MapGen::TextureIdTree2:
+				case MapGen::TextureIdHouseDoorBL:
+				case MapGen::TextureIdHouseDoorBR:
+				case MapGen::TextureIdHouseDoorTL:
+				case MapGen::TextureIdHouseDoorTR:
+				case MapGen::TextureIdHouseRoof:
+				case MapGen::TextureIdHouseRoofTop:
+				case MapGen::TextureIdHouseWall2:
+				case MapGen::TextureIdHouseWall3:
+				case MapGen::TextureIdHouseWall4:
+				case MapGen::TextureIdHouseChimney:
+				case MapGen::TextureIdHouseChimneyTop:
+					// Bad
+					return false;
+				break;
+				case MapGen::TextureIdNone:
+				case MapGen::TextureIdMan1:
+				case MapGen::TextureIdOldManN:
+				case MapGen::TextureIdOldManE:
+				case MapGen::TextureIdOldManS:
+				case MapGen::TextureIdOldManW:
+					// These shouldn't be in the base layer?
+					return false;
+				break;
+				case MapGen::TextureIdNB:
+					assert(false);
+					return false;
+				break;
+				default:
+					// TODO: Better
+				break;
+			}
+		}
+
+	return true;
+}
+
 int main(int argc, char **argv) {
 	// Grab arguments.
 	if (argc!=4) {
@@ -91,7 +152,7 @@ int main(int argc, char **argv) {
 
 	unsigned xPoints[3]={750,870,950};
 	unsigned yPoints[3]={550,620,720};
-	MapGen::addTown(map, 3, xPoints, yPoints, 120, 4);
+	MapGen::addTown(map, 3, xPoints, yPoints, 120, 4, &demogenAddHouseTestFunctor, NULL);
 
 	// Save map.
 	if (!map->save()) {
