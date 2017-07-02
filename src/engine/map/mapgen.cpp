@@ -6,6 +6,7 @@
 #include "mapgen.h"
 #include "../physics/coord.h"
 #include "../fbnnoise.h"
+#include "../util.h"
 
 using namespace Engine;
 
@@ -119,9 +120,13 @@ namespace Engine {
 					*heightArrayPtr=heightNose.eval(x*freqFactorX, y*freqFactorY);
 
 				// Update progress (if needed).
-				if (y%noiseYProgressDelta==noiseYProgressDelta-1)
-					printf("MapGen: generating height noise %.1f%%.\n", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
+				if (y%noiseYProgressDelta==noiseYProgressDelta-1) {
+					Util::clearConsoleLine();
+					printf("MapGen: generating height noise %.1f%%.", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
+					fflush(stdout);
+				}
 			}
+			printf("\n");
 
 			// Choose land height (using a binary search).
 			double heightXFactor=((double)heightNoiseWidth)/width;
@@ -149,7 +154,9 @@ namespace Engine {
 				double guessLandFraction=guessLand/(((double)height)*((double)width));
 
 				// Print progress update.
-				printf("	MapGen: choosing water/land threshold %u/%u (min %.3f, max %.3f, guessLandHeight %0.3f, guessLandFraction %0.3f).\n", iter, iterMax, minLandHeight, maxLandHeight, guessLandHeight, guessLandFraction);
+				Util::clearConsoleLine();
+				printf("	MapGen: choosing water/land threshold %u/%u (min %.3f, max %.3f, guessLandHeight %0.3f, guessLandFraction %0.3f).", iter, iterMax, minLandHeight, maxLandHeight, guessLandHeight, guessLandFraction);
+				fflush(stdout);
 
 				// How good was our guess?
 				const double errorEpsilon=0.005;
@@ -164,6 +171,7 @@ namespace Engine {
 					// Near enough!
 					break;
 			}
+			printf("\n");
 
 			double landHeight=(maxLandHeight+minLandHeight)/2.0;
 
@@ -182,9 +190,13 @@ namespace Engine {
 				}
 
 				// Update progress (if needed).
-				if (y%baseLayerYProgressDelta==baseLayerYProgressDelta-1)
-					printf("MapGen: creating tiles %.1f%%.\n", ((y+1)*100.0)/height); // TODO: this better
+				if (y%baseLayerYProgressDelta==baseLayerYProgressDelta-1) {
+					Util::clearConsoleLine();
+					printf("MapGen: creating tiles %.1f%%.", ((y+1)*100.0)/height); // TODO: this better
+					fflush(stdout);
+				}
 			}
+			printf("\n");
 
 			// Tidy up.
 			free(heightArray);
