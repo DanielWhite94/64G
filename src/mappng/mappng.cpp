@@ -106,8 +106,10 @@ int main(int argc, char **argv) {
 						r=0,g=200,b=0;
 					break;
 					case MapGen::TextureIdBrickPath:
-					case MapGen::TextureIdDirt:
 					case MapGen::TextureIdDock:
+						r=102,g=51,b=0;
+					break;
+					case MapGen::TextureIdDirt:
 						r=0xCC,g=0x66,b=0x00;
 					break;
 					case MapGen::TextureIdWater:
@@ -123,6 +125,19 @@ int main(int argc, char **argv) {
 					case MapGen::TextureIdOldManS:
 					case MapGen::TextureIdOldManW:
 						r=255,g=0,b=0;
+					break;
+					case MapGen::TextureIdHouseDoorBL:
+					case MapGen::TextureIdHouseDoorBR:
+					case MapGen::TextureIdHouseDoorTL:
+					case MapGen::TextureIdHouseDoorTR:
+					case MapGen::TextureIdHouseRoof:
+					case MapGen::TextureIdHouseRoofTop:
+					case MapGen::TextureIdHouseWall2:
+					case MapGen::TextureIdHouseWall3:
+					case MapGen::TextureIdHouseWall4:
+					case MapGen::TextureIdHouseChimney:
+					case MapGen::TextureIdHouseChimneyTop:
+						r=255,g=128,b=0;
 					break;
 					case MapGen::TextureIdNB:
 						assert(false);
