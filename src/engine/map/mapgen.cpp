@@ -396,7 +396,7 @@ namespace Engine {
 				}
 		}
 
-		bool MapGen::addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, bool showDoor, AddHouseTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 
 			unsigned tx, ty;
@@ -432,11 +432,13 @@ namespace Engine {
 				}
 
 			// Add door.
-			unsigned doorX=(rand()%(w-3))+x+1;
-			map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBL, tileLayer));
-			map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBR, tileLayer));
-			map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTL, tileLayer));
-			map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTR, tileLayer));
+			if (showDoor) {
+				unsigned doorX=(rand()%(w-3))+x+1;
+				map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBL, tileLayer));
+				map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBR, tileLayer));
+				map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTL, tileLayer));
+				map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTR, tileLayer));
+			}
 
 			// Add main part of roof.
 			for(ty=0;ty<roofHeight-1;++ty) // -1 due to ridge tiles added later
