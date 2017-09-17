@@ -42,9 +42,9 @@ bool demogenAddHouseTestFunctor(class Map *map, unsigned x, unsigned y, unsigned
 				case MapGen::TextureIdGrass3:
 				case MapGen::TextureIdGrass4:
 				case MapGen::TextureIdGrass5:
-				case MapGen::TextureIdDirt:
 					// OK
 				break;
+				case MapGen::TextureIdDirt:
 				case MapGen::TextureIdBrickPath:
 				case MapGen::TextureIdDock:
 				case MapGen::TextureIdWater:
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
 	*/
 
 	// Add a test town.
-	if (!MapGen::addTown(map, 780, 580, 980, 580, 4, &demogenAddHouseTestFunctor, NULL))
+	if (!MapGen::addTown(map, 780, 560, 980, 560, 4, &demogenAddHouseTestFunctor, NULL))
 		printf("Could not add town.\n");
 
 	// Save map.

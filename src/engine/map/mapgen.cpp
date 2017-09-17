@@ -489,7 +489,7 @@ namespace Engine {
 			initialRoad.width=ceil(log2(initialRoad.getLen()));
 			initialRoad.trueX1=(initialRoad.isVertical() ? initialRoad.x0+initialRoad.width : initialRoad.x1+1);
 			initialRoad.trueY1=(initialRoad.isHorizontal() ? initialRoad.y0+initialRoad.width : initialRoad.y1+1);
-			initialRoad.weight=initialRoad.getLen();
+			initialRoad.weight=initialRoad.getLen()*initialRoad.width;
 			pq.push(initialRoad);
 
 			// Add roads from queue.
@@ -499,7 +499,7 @@ namespace Engine {
 				pq.pop();
 
 				// Can we add this road?
-				if (road.width<2 || road.getLen()<8)
+				if (road.width<2 || road.getLen()<5)
 					continue;
 
 				if ((road.x0-townCentreX)*(road.x0-townCentreX)+(road.y0-townCentreY)*(road.y0-townCentreY)>townRadiusSquared)
@@ -507,7 +507,7 @@ namespace Engine {
 				if ((road.x1-townCentreX)*(road.x1-townCentreX)+(road.y1-townCentreY)*(road.y1-townCentreY)>townRadiusSquared)
 					continue;
 
-				int testFunctorMargin=2+road.width;
+				int testFunctorMargin=std::min(6*road.width-2, 25);
 				if (!testFunctor(map, road.x0-(road.isVertical() ? testFunctorMargin : 0), road.y0-(road.isHorizontal() ? testFunctorMargin : 0), road.trueX1-road.x0+(road.isVertical() ? testFunctorMargin*2 : 0), road.trueY1-road.y0+(road.isHorizontal() ? testFunctorMargin*2 : 0), testFunctorUserData))
 					continue;
 
@@ -521,17 +521,17 @@ namespace Engine {
 
 				// Add potential child roads.
 				MapGenRoad newRoad;
-				newRoad.width=road.width*0.7;
 
-				int offset, jump=std::max(newRoad.width+6,road.getLen()/6);
-				for(offset=jump; offset<=road.getLen()-newRoad.width; offset+=jump) {
-					for(unsigned i=0; i<8; ++i) {
+				for(unsigned i=0; i<16; ++i) {
+					newRoad.width=(road.width*((rand()%5)+5))/10;
+					int offset, jump=std::max(newRoad.width+8,road.getLen()/6);
+					for(offset=jump; offset<=road.getLen()-newRoad.width; offset+=jump/2+rand()%jump) {
 						// Create candidate child road.
-						int newLen=0.5*(rand()%(road.getLen()));
-						newRoad.weight=newLen;
+						int newLen=rand()%(4*((1u)<<(newRoad.width)));
+						newRoad.weight=newLen*newRoad.width;
 
 						bool greater=rand()%2;
-						int randOffset=rand()%(jump/2)-jump/4;
+						int randOffset=0;
 						newRoad.x0=(road.isHorizontal() ? road.x0+offset+randOffset : (greater ? road.trueX1 : road.x0-newLen-1));
 						newRoad.y0=(road.isVertical() ? road.y0+offset+randOffset : (greater ? road.trueY1 : road.y0-newLen-1));
 						newRoad.x1=(road.isHorizontal() ? newRoad.x0 : newRoad.x0+newLen);
@@ -548,30 +548,37 @@ namespace Engine {
 
 			// Add houses along roads.
 			for(const auto road: roads) {
-				if (!road.isHorizontal())
-					continue;
-
-				int minWidth=5;
+				//if (!road.isHorizontal())
+				int minWidth=4;
 				int maxWidth=std::min(road.width+7, road.getLen()-1);
 				if (minWidth>=maxWidth)
 					continue;
 
 				for(unsigned i=0; i<100; ++i) {
 					int width=rand()%(maxWidth-minWidth)+minWidth;
-					int depth=rand()%road.width+6; // distance from edge with road to opposite edge
+					int depth=rand()%road.width+5; // distance from edge with road to opposite edge
 
 					unsigned j;
 					for(j=0; j<20; ++j) {
-						bool greater=rand()%2;
-						bool offset=rand()%(road.getLen()-width);
+						bool greater=(rand()%2==0);
+						int offset=rand()%(road.getLen()-width);
 
 						int hx=(road.isHorizontal() ? road.x0+offset : (greater ? road.trueX1 : road.x0-depth));
 						int hy=(road.isVertical() ? road.y0+offset : (greater ? road.trueY1 : road.y0-depth));
 						int hw=(road.isHorizontal() ? width : depth);
 						int hh=(road.isVertical() ? width : depth);
 
-						if (addHouse(map, hx, hy, hw, hh, tileLayer, !greater, testFunctor, testFunctorUserData))
-							break;
+						if (road.isHorizontal()) {
+							if (testFunctor(map, hx-1, hy, hw+2, hh, testFunctorUserData)) {
+								addHouse(map, hx, hy, hw, hh, tileLayer, !greater, NULL, NULL);
+								break;
+							}
+						} else {
+							if (testFunctor(map, hx, hy-1, hw, hh+2, testFunctorUserData)) {
+								addHouse(map, hx, hy, hw, hh, tileLayer, false, NULL, NULL);
+								break;
+							}
+						}
 					}
 				}
 			}
