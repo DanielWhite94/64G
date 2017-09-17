@@ -89,7 +89,7 @@ bool demogenAddHouseTestFunctor(class Map *map, unsigned x, unsigned y, unsigned
 int main(int argc, char **argv) {
 	// Grab arguments.
 	if (argc!=4) {
-		printf("Usage: %s width height outputpath", argv[0]);
+		printf("Usage: %s width height outputpath\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
