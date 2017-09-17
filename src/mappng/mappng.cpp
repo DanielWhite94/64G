@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 			uint8_t r=0, g=0, b=0;
 
 			for(int z=MapTile::layersMax-1; z>=0; --z) {
-				const MapTileLayer *layer=tile->getLayer(0); //
+				const MapTileLayer *layer=tile->getLayer(z);
 				switch(layer->textureId) {
 					case MapGen::TextureIdNone:
 						continue; // Try next layer instead
