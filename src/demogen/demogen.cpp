@@ -150,9 +150,9 @@ int main(int argc, char **argv) {
 	MapGen::addHouse(map, 951, 740, 5, 5, 4);
 	*/
 
-	unsigned xPoints[3]={750,870,950};
-	unsigned yPoints[3]={550,620,720};
-	MapGen::addTown(map, 3, xPoints, yPoints, 120, 4, &demogenAddHouseTestFunctor, NULL);
+	// Add a test town.
+	if (!MapGen::addTown(map, 780, 580, 980, 580, 4, &demogenAddHouseTestFunctor, NULL))
+		printf("Could not add town.\n");
 
 	// Save map.
 	if (!map->save()) {

@@ -463,68 +463,116 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapGen::addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
-			assert(n>0);
-			assert(x!=NULL);
-			assert(y!=NULL);
-			assert(radius>0); // TODO: Should this be higher?
 			assert(tileLayer<MapTile::layersMax);
 
-			unsigned i;
+			// Check either horizontal or vertical.
+			if (!((y0==y1) || (x0==x1)))
+				return false;
 
-			const unsigned radiusSquared=radius*radius;
+			// Compute constants.
+			const int townCentreX=(x0+x1)/2;
+			const int townCentreY=(y0+y1)/2;
+			const int townRadius=((x1-x0)+(y1-y0))/2+1;
+			const int townRadiusSquared=townRadius*townRadius;
 
-			// Calculate axis-aligned-bounding-box (AABB) for town.
-			unsigned minX=x[0];
-			unsigned minY=y[0];
-			unsigned maxX=x[0];
-			unsigned maxY=y[0];
-			for(i=1; i<n; ++i) {
-				minX=min(minX, x[i]);
-				minY=min(minY, y[i]);
-				maxX=max(maxX, x[i]);
-				maxY=max(maxY, y[i]);
+			// Add initial road.
+			priority_queue<MapGenRoad, vector<MapGenRoad>, CompareMapGenRoadWeight> pq;
+			vector<MapGenRoad> roads;
+
+			MapGenRoad initialRoad;
+			initialRoad.x0=x0;
+			initialRoad.y0=y0;
+			initialRoad.x1=x1;
+			initialRoad.y1=y1;
+			initialRoad.width=ceil(log2(initialRoad.getLen()));
+			initialRoad.trueX1=(initialRoad.isVertical() ? initialRoad.x0+initialRoad.width : initialRoad.x1+1);
+			initialRoad.trueY1=(initialRoad.isHorizontal() ? initialRoad.y0+initialRoad.width : initialRoad.y1+1);
+			initialRoad.weight=initialRoad.getLen();
+			pq.push(initialRoad);
+
+			// Add roads from queue.
+			while(!pq.empty()) {
+				// Pop road.
+				MapGenRoad road=pq.top();
+				pq.pop();
+
+				// Can we add this road?
+				if (road.width<2 || road.getLen()<8)
+					continue;
+
+				if ((road.x0-townCentreX)*(road.x0-townCentreX)+(road.y0-townCentreY)*(road.y0-townCentreY)>townRadiusSquared)
+					continue;
+				if ((road.x1-townCentreX)*(road.x1-townCentreX)+(road.y1-townCentreY)*(road.y1-townCentreY)>townRadiusSquared)
+					continue;
+
+				int testFunctorMargin=2+road.width;
+				if (!testFunctor(map, road.x0-(road.isVertical() ? testFunctorMargin : 0), road.y0-(road.isHorizontal() ? testFunctorMargin : 0), road.trueX1-road.x0+(road.isVertical() ? testFunctorMargin*2 : 0), road.trueY1-road.y0+(road.isHorizontal() ? testFunctorMargin*2 : 0), testFunctorUserData))
+					continue;
+
+				// Add road.
+				roads.push_back(road);
+
+				int a, b;
+				for(a=road.y0; a<road.trueY1; ++a)
+					for(b=road.x0; b<road.trueX1; ++b)
+						map->setTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), MapTile((road.width>=3 ? TextureIdBrickPath : TextureIdDirt), tileLayer));
+
+				// Add potential child roads.
+				MapGenRoad newRoad;
+				newRoad.width=road.width*0.7;
+
+				int offset, jump=std::max(newRoad.width+6,road.getLen()/6);
+				for(offset=jump; offset<=road.getLen()-newRoad.width; offset+=jump) {
+					for(unsigned i=0; i<8; ++i) {
+						// Create candidate child road.
+						int newLen=0.5*(rand()%(road.getLen()));
+						newRoad.weight=newLen;
+
+						bool greater=rand()%2;
+						int randOffset=rand()%(jump/2)-jump/4;
+						newRoad.x0=(road.isHorizontal() ? road.x0+offset+randOffset : (greater ? road.trueX1 : road.x0-newLen-1));
+						newRoad.y0=(road.isVertical() ? road.y0+offset+randOffset : (greater ? road.trueY1 : road.y0-newLen-1));
+						newRoad.x1=(road.isHorizontal() ? newRoad.x0 : newRoad.x0+newLen);
+						newRoad.y1=(road.isVertical() ? newRoad.y0 : newRoad.y0+newLen);
+
+						newRoad.trueX1=(road.isHorizontal() ? newRoad.x0+newRoad.width : newRoad.x1+1);
+						newRoad.trueY1=(road.isVertical() ? newRoad.y0+newRoad.width : newRoad.y1+1);
+
+						// Push to queue.
+						pq.push(newRoad);
+					}
+				}
 			}
 
-			unsigned aabbMinX=minX-radius;
-			unsigned aabbMinY=minY-radius;
-			unsigned aabbMaxX=maxX+radius;
-			unsigned aabbMaxY=maxY+radius;
+			// Add houses along roads.
+			for(const auto road: roads) {
+				if (!road.isHorizontal())
+					continue;
 
-			// For now simply fill area near given points with houses.
-			const unsigned houseWidthMin=6;
-			const unsigned houseWidthMax=14;
-			const unsigned houseHeightMin=4;
-			const unsigned houseHeightMax=7;
+				int minWidth=5;
+				int maxWidth=std::min(road.width+7, road.getLen()-1);
+				if (minWidth>=maxWidth)
+					continue;
 
-			const unsigned houseGapX=2;
-			const unsigned houseGapY=2;
+				for(unsigned i=0; i<100; ++i) {
+					int width=rand()%(maxWidth-minWidth)+minWidth;
+					int depth=rand()%road.width+6; // distance from edge with road to opposite edge
 
-			unsigned tx, ty;
-			for(ty=aabbMinY; ty<=aabbMaxY; ty+=houseHeightMax+houseGapY) {
-				for(tx=aabbMinX; tx<=aabbMaxX; tx+=houseWidthMax+houseGapX) {
-					// Choose house parameters.
-					unsigned houseW=houseWidthMin+rand()%(houseWidthMax-houseWidthMin);
-					unsigned houseH=houseHeightMin+rand()%(houseHeightMax-houseHeightMin);
+					unsigned j;
+					for(j=0; j<20; ++j) {
+						bool greater=rand()%2;
+						bool offset=rand()%(road.getLen()-width);
 
-					unsigned offsetX=rand()%(houseWidthMax-houseW);
-					unsigned offsetY=rand()%(houseHeightMax-houseH);
+						int hx=(road.isHorizontal() ? road.x0+offset : (greater ? road.trueX1 : road.x0-depth));
+						int hy=(road.isVertical() ? road.y0+offset : (greater ? road.trueY1 : road.y0-depth));
+						int hw=(road.isHorizontal() ? width : depth);
+						int hh=(road.isVertical() ? width : depth);
 
-					// Check we are close enough to a node.
-					// TODO: this is slightly imprecise
-					for(i=0; i<n; ++i) {
-						int deltaX=tx-x[i];
-						int deltaY=ty-y[i];
-						unsigned distanceSquared=deltaX*deltaX+deltaY*deltaY;
-						if (distanceSquared<=radiusSquared)
+						if (addHouse(map, hx, hy, hw, hh, tileLayer, !greater, testFunctor, testFunctorUserData))
 							break;
 					}
-					if (i==n)
-						continue;
-
-					// Attempt to add house.
-					MapGen::addHouse(map, tx+offsetX, ty+offsetY, houseW, houseH, tileLayer, testFunctor, testFunctorUserData);
 				}
 			}
 

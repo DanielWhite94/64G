@@ -1,10 +1,39 @@
 #ifndef ENGINE_MAP_MAPGEN_H
 #define ENGINE_MAP_MAPGEN_H
 
+#include <queue>
+#include <iomanip>
+
 #include "map.h"
 
 namespace Engine {
 	namespace Map {
+		struct MapGenRoad {
+			unsigned x0, y0, x1, y1;
+			unsigned trueX1, trueY1;
+			int width;
+			double weight;
+
+			int getLen(void) const {
+				return (x1-x0)+(y1-y0);
+			};
+
+			bool isHorizontal(void) const {
+				return (y0==y1);
+			}
+
+			bool isVertical(void) const {
+				return (x0==x1);
+			}
+		};
+
+		class CompareMapGenRoadWeight {
+		public:
+			bool operator()(MapGenRoad &x, MapGenRoad &y) {
+				return (x.weight<y.weight);
+			}
+		};
+
 		class MapGen {
 		public:
 			static const unsigned TextureIdNone=0;
@@ -62,7 +91,7 @@ namespace Engine {
 
 			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, bool showDoor, AddHouseTestFunctor *testFunctor, void *testFunctorUserData);
 
-			static bool addTown(class Map *map, unsigned n, unsigned *x, unsigned *y, unsigned radius, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData);
+			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData);
 		private:
 			unsigned width, height;
 		};
