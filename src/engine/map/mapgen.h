@@ -74,7 +74,7 @@ namespace Engine {
 				Bush,
 			};
 
-			typedef bool (MapGenAddBuiltinObjectForestTestFunctor)(const class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);
+			typedef bool (MapGenAddBuiltinObjectForestTestFunctor)(class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);
 
 			typedef bool (AddHouseTestFunctor)(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData);
 
