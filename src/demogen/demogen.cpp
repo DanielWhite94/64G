@@ -150,9 +150,12 @@ int main(int argc, char **argv) {
 	MapGen::addHouse(map, 951, 740, 5, 5, 4);
 	*/
 
-	// Add a test town.
-	if (!MapGen::addTown(map, 780, 560, 980, 560, 4, &demogenAddHouseTestFunctor, NULL))
-		printf("Could not add town.\n");
+	// Add a some test towns.
+	printf("Adding towns...\n");
+	MapGen::addTown(map, 780, 560, 980, 560, 4, &demogenAddHouseTestFunctor, NULL);
+	MapGen::addTown(map, 2*259, 2*42, 2*259, 2*117, 4, &demogenAddHouseTestFunctor, NULL);
+	MapGen::addTown(map, 2*808, 2*683, 2*1005, 2*683, 4, &demogenAddHouseTestFunctor, NULL);
+	MapGen::addTown(map, 2*279, 2*837, 2*279, 2*900, 4, &demogenAddHouseTestFunctor, NULL);
 
 	// Save map.
 	if (!map->save()) {
