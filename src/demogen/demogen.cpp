@@ -86,6 +86,18 @@ bool demogenAddHouseTestFunctor(class Map *map, unsigned x, unsigned y, unsigned
 	return true;
 }
 
+void addMixedForest(class Map *map, int x0, int y0, int x1, int y1) {
+	assert(map!=NULL);
+	assert(x0<=x1);
+	assert(y0<=y1);
+
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree2, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
+
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
+
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Bush, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
+}
+
 int main(int argc, char **argv) {
 	// Grab arguments.
 	if (argc!=4) {
@@ -130,19 +142,13 @@ int main(int argc, char **argv) {
 	if (npc1!=NULL)
 		npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
 
-	// Add a test forest.
-	/*
-	printf("Adding a few forests...\n");
-
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Bush, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
-
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree2, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
-
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(0*Physics::CoordsPerTile, 0*Physics::CoordsPerTile), CoordVec(width*Physics::CoordsPerTile, height*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
-	*/
+	// Add forests.
+	printf("Adding forests...\n");
+	addMixedForest(map, 2*0, 2*686, 2*411, 2*1023);
+	addMixedForest(map, 2*605, 2*0, 2*1023, 2*293);
 
 	/*
-	// Add a test house.
+	// Add houses.
 	printf("Adding houses...\n");
 	MapGen::addHouse(map, 950, 730, 10, 8, 4);
 	MapGen::addHouse(map, 963, 725, 6, 11, 4);
@@ -150,7 +156,7 @@ int main(int argc, char **argv) {
 	MapGen::addHouse(map, 951, 740, 5, 5, 4);
 	*/
 
-	// Add a some test towns.
+	// Add towns.
 	printf("Adding towns...\n");
 	MapGen::addTown(map, 780, 560, 980, 560, 4, &demogenAddHouseTestFunctor, NULL);
 	MapGen::addTown(map, 2*259, 2*42, 2*259, 2*117, 4, &demogenAddHouseTestFunctor, NULL);
