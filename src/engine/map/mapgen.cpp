@@ -383,7 +383,7 @@ namespace Engine {
 					for(i=0; i<4; ++i) {
 						// Calculate exact position.
 						CoordVec randomOffset=CoordVec(rand()%interval.x, rand()%interval.y);
-						CoordVec exactPosition=pos=randomOffset;
+						CoordVec exactPosition=pos+randomOffset;
 
 						// Run test functor.
 						if (testFunctor!=NULL && !testFunctor(map, builtin, exactPosition, testFunctorUserData))
