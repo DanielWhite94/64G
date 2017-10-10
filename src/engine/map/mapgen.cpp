@@ -465,6 +465,8 @@ namespace Engine {
 
 		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
+			assert(x0<=x1);
+			assert(y0<=y1);
 			assert(tileLayer<MapTile::layersMax);
 
 			// Check either horizontal or vertical.
