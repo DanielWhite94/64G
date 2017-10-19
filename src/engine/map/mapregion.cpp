@@ -110,4 +110,8 @@ namespace Engine {
 		// Set dirty flag.
 		isDirty=true;
 	}
+
+	void MapRegion::setDirty(void) {
+		isDirty=true;
+	}
 };

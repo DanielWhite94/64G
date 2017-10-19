@@ -29,6 +29,7 @@ namespace Engine {
 			bool getIsDirty(void) const;
 
 			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
+			void setDirty(void);
 		private:
 			bool isDirty;
 
