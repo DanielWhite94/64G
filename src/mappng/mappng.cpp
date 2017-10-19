@@ -14,7 +14,7 @@ using namespace Engine::Map;
 int main(int argc, char **argv) {
 	// Grab arguments.
 	if (argc!=9) {
-		printf("Usage: %s mappath mapx mapy mapw maph imagewidth imageheight imagepath", argv[0]);
+		printf("Usage: %s mappath mapx mapy mapw maph imagewidth imageheight imagepath\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
