@@ -185,6 +185,8 @@ namespace Engine {
 
 			free(modifyTilesData);
 
+			printf("\n");
+
 			// Tidy up.
 			free(heightArray);
 
