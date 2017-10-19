@@ -76,7 +76,10 @@ namespace Engine {
 
 			typedef bool (MapGenAddBuiltinObjectForestTestFunctor)(class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);
 
-			typedef bool (AddHouseTestFunctor)(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData);
+			typedef bool (ObjectTestFunctor)(class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);
+
+			typedef bool (TileTestFunctor)(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData);
+
 
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
@@ -87,11 +90,12 @@ namespace Engine {
 
 			static MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 			static void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);
-			static void addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, MapGenAddBuiltinObjectForestTestFunctor *testFunctor, void *testFunctorUserData);
+			static void addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, ObjectTestFunctor *testFunctor, void *testFunctorUserData);
 
-			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, bool showDoor, AddHouseTestFunctor *testFunctor, void *testFunctorUserData);
+			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData);
 
-			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, AddHouseTestFunctor *testFunctor, void *testFunctorUserData);
+			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData);
+
 		private:
 			unsigned width, height;
 		};
