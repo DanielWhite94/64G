@@ -12,6 +12,38 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
+		void mapGenGenerateWaterLandModifyTilesProgress(class Map *map, unsigned y, unsigned height, void *userData);
+		void mapGenGenerateWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+
+		void mapGenGenerateWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			const MapGen::GenerateWaterLandModifyTilesFunctorData *data=(const MapGen::GenerateWaterLandModifyTilesFunctorData *)userData;
+
+			// Calculate height.
+			unsigned heightY=y*data->heightYFactor;
+			unsigned heightX=x*data->heightXFactor;
+			double height=data->heightArray[heightX+heightY*data->heightNoiseWidth];
+
+			// Update tile layer.
+			MapTile *tile=map->getTileAtOffset(x, y);
+			if (tile!=NULL) {
+				MapTileLayer layer={.textureId=(height>=data->landHeight ? data->landTextureId : data->waterTextureId)};
+				tile->setLayer(data->tileLayer, layer);
+			}
+		}
+
+		void mapGenGenerateWaterLandModifyTilesProgress(class Map *map, unsigned y, unsigned height, void *userData) {
+			assert(map!=NULL);
+			assert(y<height);
+			assert(userData==NULL);
+
+			Util::clearConsoleLine();
+			printf("MapGen: generating water/land tiles %.1f%%.", ((y+1)*100.0)/height); // TODO: this better
+			fflush(stdout);
+		}
+
 		MapGen::MapGen(unsigned gWidth, unsigned gHeight) {
 			width=gWidth;
 			height=gHeight;
@@ -131,77 +163,27 @@ namespace Engine {
 			// Choose land height (using a binary search).
 			double heightXFactor=((double)heightNoiseWidth)/width;
 			double heightYFactor=((double)heightNoiseHeight)/height;
-/*
-
-			printf("MapGen: choosing water/land threshold...\n");
-
-			double minLandHeight=-1.0;
-			double maxLandHeight=1.0;
-			const unsigned iterMax=8;
-			for(unsigned iter=0; iter<iterMax; ++iter) {
-				// Guess the midpoint of our bounds.
-				double guessLandHeight=(maxLandHeight+minLandHeight)/2.0;
-
-				// Calculate how much land this guess would create.
-				double guessLand=0.0;
-				for(y=0;y<height;++y) {
-					unsigned heightY=y*heightYFactor;
-					for(x=0;x<width;++x) {
-						unsigned heightX=x*heightXFactor;
-						double height=heightArray[heightX+heightY*heightNoiseWidth];
-						guessLand+=(height>=guessLandHeight);
-					}
-				}
-				double guessLandFraction=guessLand/(((double)height)*((double)width));
-
-				// Print progress update.
-				Util::clearConsoleLine();
-				printf("	MapGen: choosing water/land threshold %u/%u (min %.3f, max %.3f, guessLandHeight %0.3f, guessLandFraction %0.3f).", iter, iterMax, minLandHeight, maxLandHeight, guessLandHeight, guessLandFraction);
-				fflush(stdout);
-
-				// How good was our guess?
-				const double errorEpsilon=0.005;
-				double errorDelta=guessLandFraction-targetLandFraction;
-				if (errorDelta>errorEpsilon)
-					// Too much land - choose upper half interval.
-					minLandHeight=guessLandHeight;
-				else if (errorDelta<-errorEpsilon)
-					// Not enough land - choose lower half interval.
-					maxLandHeight=guessLandHeight;
-				else
-					// Near enough!
-					break;
-			}
-			printf("\n");
-
-			double landHeight=(maxLandHeight+minLandHeight)/2.0;
-
-			*/
 
 			double landHeight=-0.12; // TODO: think about this - issue is land isnt reproducible at different sizes due to more/less land changing the landHeight
 
 			// Create base tile layer - water/land.
-			unsigned baseLayerYProgressDelta=height/16;
 			printf("MapGen: creating water/land tiles... (land height %.2f)\n", landHeight);
-			for(y=0;y<height;++y) {
-				unsigned heightY=y*heightYFactor;
-				for(x=0;x<width;++x) {
-					unsigned heightX=x*heightXFactor;
-					double height=heightArray[heightX+heightY*heightNoiseWidth];
 
-					MapTile tile((height>=landHeight ? landTextureId : waterTextureId), tileLayer);
-					CoordVec vec((xOffset+x)*Physics::CoordsPerTile, (yOffset+y)*Physics::CoordsPerTile);
-					map->setTileAtCoordVec(vec, tile);
-				}
+			unsigned progressDelta=height/16;
 
-				// Update progress (if needed).
-				if (y%baseLayerYProgressDelta==baseLayerYProgressDelta-1) {
-					Util::clearConsoleLine();
-					printf("MapGen: creating tiles %.1f%%.", ((y+1)*100.0)/height); // TODO: this better
-					fflush(stdout);
-				}
-			}
-			printf("\n");
+			GenerateWaterLandModifyTilesFunctorData *modifyTilesData=(GenerateWaterLandModifyTilesFunctorData *)malloc(sizeof(GenerateWaterLandModifyTilesFunctorData));
+			modifyTilesData->heightArray=heightArray;
+			modifyTilesData->heightXFactor=heightXFactor;
+			modifyTilesData->heightYFactor=heightYFactor;
+			modifyTilesData->heightNoiseWidth=heightNoiseWidth;
+			modifyTilesData->landHeight=landHeight;
+			modifyTilesData->landTextureId=landTextureId;
+			modifyTilesData->waterTextureId=waterTextureId;
+			modifyTilesData->tileLayer=tileLayer;
+
+			modifyTiles(map, xOffset, yOffset, width, height, &mapGenGenerateWaterLandModifyTilesFunctor, (void *)modifyTilesData, progressDelta, &mapGenGenerateWaterLandModifyTilesProgress, NULL);
+
+			free(modifyTilesData);
 
 			// Tidy up.
 			free(heightArray);
@@ -586,6 +568,31 @@ namespace Engine {
 			}
 
 			return true;
+		}
+
+		void MapGen::modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+			assert(map!=NULL);
+			assert(functor!=NULL);
+			assert(progressDelta>0);
+
+			unsigned tx, ty;
+			for(ty=0;ty<height;++ty) {
+				// Loop over each tile in this row.
+				for(tx=0;tx<width;++tx) {
+					// Set region dirty.
+					unsigned regionX=(x+tx)/MapRegion::tilesWide;
+					unsigned regionY=(y+ty)/MapRegion::tilesHigh;
+					MapRegion *region=map->getRegionAtOffset(regionX, regionY);
+					region->setDirty();
+
+					// Call functor.
+					functor(map, x+tx, y+ty, functorUserData);
+				}
+
+				// Update progress (if needed).
+				if (progressFunctor!=NULL && ty%progressDelta==progressDelta-1)
+					progressFunctor(map, ty, height, progressUserData);
+			}
 		}
 	};
 };
