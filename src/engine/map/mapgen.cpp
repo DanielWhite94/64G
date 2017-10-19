@@ -577,23 +577,35 @@ namespace Engine {
 			assert(functor!=NULL);
 			assert(progressDelta>0);
 
-			unsigned tx, ty;
-			for(ty=0;ty<height;++ty) {
-				// Loop over each tile in this row.
-				for(tx=0;tx<width;++tx) {
+			// Calculate constants.
+			const unsigned regionX0=x/MapRegion::tilesWide;
+			const unsigned regionY0=y/MapRegion::tilesHigh;
+			const unsigned regionX1=(x+width)/MapRegion::tilesWide;
+			const unsigned regionY1=(y+height)/MapRegion::tilesHigh;
+
+			// Loop over each region
+			unsigned regionX, regionY;
+			for(regionY=regionY0; regionY<regionY1; ++regionY) {
+				const unsigned regionYOffset=regionY*MapRegion::tilesHigh;
+				for(regionX=regionX0; regionX<regionX1; ++regionX) {
+					const unsigned regionXOffset=regionX*MapRegion::tilesWide;
+
 					// Set region dirty.
-					unsigned regionX=(x+tx)/MapRegion::tilesWide;
-					unsigned regionY=(y+ty)/MapRegion::tilesHigh;
 					MapRegion *region=map->getRegionAtOffset(regionX, regionY);
 					region->setDirty();
 
-					// Call functor.
-					functor(map, x+tx, y+ty, functorUserData);
-				}
+					// Loop over all rows in this region.
+					unsigned tileX, tileY;
+					for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY) {
+						// Loop over all tiles in this row.
+						for(tileX=0; tileX<MapRegion::tilesWide; ++tileX)
+							functor(map, regionXOffset+tileX, regionYOffset+tileY, functorUserData);
 
-				// Update progress (if needed).
-				if (progressFunctor!=NULL && ty%progressDelta==progressDelta-1)
-					progressFunctor(map, ty, height, progressUserData);
+						// Update progress (if needed).
+						if (progressFunctor!=NULL && (regionYOffset+tileY-y)%progressDelta==progressDelta-1)
+							progressFunctor(map, regionYOffset+tileY-y, height, progressUserData);
+					}
+				}
 			}
 		}
 	};
