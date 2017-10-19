@@ -25,7 +25,7 @@ bool demogenForestTestFunctorIsLand(class Map *map, MapGen::BuiltinObject builti
 	return (layer->textureId!=MapGen::TextureIdWater);
 }
 
-bool demogenAddHouseTestFunctor(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData) {
+bool demogenTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData) {
 	assert(map!=NULL);
 	assert(map!=NULL);
 

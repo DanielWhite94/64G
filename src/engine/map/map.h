@@ -36,6 +36,7 @@ namespace Engine {
 			void tick(void);
 
 			MapTile *getTileAtCoordVec(const CoordVec &vec);
+			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY);
 			MapRegion *getRegionAtCoordVec(const CoordVec &vec);
 			MapRegion *getRegionAtOffset(unsigned regionX, unsigned regionY);
 

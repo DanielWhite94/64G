@@ -275,6 +275,22 @@ namespace Engine {
 			return region->getTileAtCoordVec(vec);
 		}
 
+		MapTile *Map::getTileAtOffset(unsigned offsetX, unsigned offsetY) {
+			assert(offsetX>=0 && offsetX<regionsWide*MapRegion::tilesWide);
+			assert(offsetY>=0 && offsetY<regionsHigh*MapRegion::tilesHigh);
+
+			unsigned regionX=offsetX/MapRegion::tilesWide;
+			unsigned regionY=offsetY/MapRegion::tilesHigh;
+			MapRegion *region=getRegionAtOffset(regionX, regionY);
+			if (region==NULL)
+				return NULL;
+
+
+			unsigned regionTileOffsetX=offsetX%MapRegion::tilesWide;
+			unsigned regionTileOffsetY=offsetY%MapRegion::tilesHigh;
+			return region->getTileAtOffset(regionTileOffsetX, regionTileOffsetY);
+		}
+
 		MapRegion *Map::getRegionAtCoordVec(const CoordVec &vec) {
 			if (vec.x<0 || vec.y<0)
 				return NULL;
