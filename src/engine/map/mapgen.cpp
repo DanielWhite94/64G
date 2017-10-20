@@ -136,7 +136,6 @@ namespace Engine {
 			assert(heightArray!=NULL); // TODO: better
 			double *heightArrayPtr;
 
-
 			unsigned x, y;
 
 			// Calculate heightArray.
