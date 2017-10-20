@@ -10,77 +10,48 @@
 using namespace Engine;
 using namespace Engine::Map;
 
-bool demogenForestTestFunctorIsLand(class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
+enum DemoGenTileLayer {
+	DemoGenTileLayerGround,
+	DemoGenTileLayerDecoration,
+	DemoGenTileLayerHalf,
+	DemoGenTileLayerFull,
+};
+
+bool demogenForestTestFunctorGroundIsTexture(class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
 	assert(map!=NULL);
-	assert(userData==NULL);
+
+	unsigned textureId=(unsigned)(uintptr_t)userData;
 
 	const MapTile *tile=map->getTileAtCoordVec(position);
 	if (tile==NULL)
 		return false;
 
-	const MapTileLayer *layer=tile->getLayer(0);
+	const MapTileLayer *layer=tile->getLayer(DemoGenTileLayerGround);
 	if (layer==NULL)
 		return false;
 
-	return (layer->textureId!=MapGen::TextureIdWater);
+	return (layer->textureId==textureId);
 }
 
-bool demogenTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData) {
+bool demogenTownTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData) {
 	assert(map!=NULL);
 	assert(map!=NULL);
 
-	// Loop over tiles ensuring all have a suitable base layer.
+	// Loop over tiles.
 	unsigned tx, ty;
 	for(ty=0; ty<h; ++ty)
 		for(tx=0; tx<w; ++tx) {
 			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile));
 
-			switch(tile->getLayer(0)->textureId) {
-				case MapGen::TextureIdGrass0:
-				case MapGen::TextureIdGrass1:
-				case MapGen::TextureIdGrass2:
-				case MapGen::TextureIdGrass3:
-				case MapGen::TextureIdGrass4:
-				case MapGen::TextureIdGrass5:
-					// OK
-				break;
-				case MapGen::TextureIdDirt:
-				case MapGen::TextureIdBrickPath:
-				case MapGen::TextureIdDock:
-				case MapGen::TextureIdWater:
-				case MapGen::TextureIdTree1:
-				case MapGen::TextureIdTree2:
-				case MapGen::TextureIdHouseDoorBL:
-				case MapGen::TextureIdHouseDoorBR:
-				case MapGen::TextureIdHouseDoorTL:
-				case MapGen::TextureIdHouseDoorTR:
-				case MapGen::TextureIdHouseRoof:
-				case MapGen::TextureIdHouseRoofTop:
-				case MapGen::TextureIdHouseWall2:
-				case MapGen::TextureIdHouseWall3:
-				case MapGen::TextureIdHouseWall4:
-				case MapGen::TextureIdHouseChimney:
-				case MapGen::TextureIdHouseChimneyTop:
-					// Bad
-					return false;
-				break;
-				case MapGen::TextureIdNone:
-				case MapGen::TextureIdMan1:
-				case MapGen::TextureIdOldManN:
-				case MapGen::TextureIdOldManE:
-				case MapGen::TextureIdOldManS:
-				case MapGen::TextureIdOldManW:
-					// These shouldn't be in the base layer?
-					return false;
-				break;
-				case MapGen::TextureIdNB:
-					assert(false);
-					return false;
-				break;
-				default:
-					// TODO: Better
-				break;
-			}
+			// Look for grass ground layer.
+			unsigned layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
+			if (layerGround<=MapGen::TextureIdGrass0 || layerGround>=MapGen::TextureIdGrass5)
+				return false;
+
+			// Look full obstacles.
+			unsigned layerFull=tile->getLayer(DemoGenTileLayerFull)->textureId;
+			if (layerFull!=MapGen::TextureIdNone)
+				return false;
 		}
 
 	return true;
@@ -91,11 +62,11 @@ void addMixedForest(class Map *map, int x0, int y0, int x1, int y1) {
 	assert(x0<=x1);
 	assert(y0<=y1);
 
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree2, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree2, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile), &demogenForestTestFunctorGroundIsTexture, (void *)(uintptr_t)MapGen::TextureIdGrass0);
 
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorGroundIsTexture, (void *)(uintptr_t)MapGen::TextureIdGrass0);
 
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Bush, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorIsLand, NULL);
+	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Bush, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorGroundIsTexture, (void *)(uintptr_t)MapGen::TextureIdGrass0);
 }
 
 int main(int argc, char **argv) {
@@ -131,7 +102,7 @@ int main(int argc, char **argv) {
 
 	// Create base tile layer - water/grass.
 	printf("Creating land/water...\n");
-	if (!MapGen::generateWaterLand(map, 0, 0, width, height, MapGen::TextureIdWater, MapGen::TextureIdGrass0, 0)) {
+	if (!MapGen::generateWaterLand(map, 0, 0, width, height, MapGen::TextureIdWater, MapGen::TextureIdGrass0, DemoGenTileLayerGround)) {
 		printf("Could not generate land/water.\n");
 		return EXIT_FAILURE;
 	}
@@ -147,21 +118,20 @@ int main(int argc, char **argv) {
 	addMixedForest(map, 2*0, 2*686, 2*411, 2*1023);
 	addMixedForest(map, 2*605, 2*0, 2*1023, 2*293);
 
-	/*
 	// Add houses.
 	printf("Adding houses...\n");
-	MapGen::addHouse(map, 950, 730, 10, 8, 4);
-	MapGen::addHouse(map, 963, 725, 6, 11, 4);
-	MapGen::addHouse(map, 965, 737, 8, 7, 4);
-	MapGen::addHouse(map, 951, 740, 5, 5, 4);
+	MapGen::addHouse(map, 950, 730, 10, 8, DemoGenTileLayerFull);
+	MapGen::addHouse(map, 963, 725, 6, 11, DemoGenTileLayerFull);
+	MapGen::addHouse(map, 965, 737, 8, 7, DemoGenTileLayerFull);
+	MapGen::addHouse(map, 951, 740, 5, 5, DemoGenTileLayerFull);
 	*/
 
 	// Add towns.
 	printf("Adding towns...\n");
-	MapGen::addTown(map, 780, 560, 980, 560, 4, &demogenAddHouseTestFunctor, NULL);
-	MapGen::addTown(map, 2*259, 2*42, 2*259, 2*117, 4, &demogenAddHouseTestFunctor, NULL);
-	MapGen::addTown(map, 2*808, 2*683, 2*1005, 2*683, 4, &demogenAddHouseTestFunctor, NULL);
-	MapGen::addTown(map, 2*279, 2*837, 2*279, 2*900, 4, &demogenAddHouseTestFunctor, NULL);
+	MapGen::addTown(map, 780, 560, 980, 560, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+	MapGen::addTown(map, 2*259, 2*42, 2*259, 2*117, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+	MapGen::addTown(map, 2*808, 2*683, 2*1005, 2*683, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+	MapGen::addTown(map, 2*279, 2*837, 2*279, 2*900, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
 
 	// Save map.
 	if (!map->save()) {
