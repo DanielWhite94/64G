@@ -124,7 +124,7 @@ namespace Engine {
 			return success;
 		};
 
-		bool MapGen::generateWaterLand(class Map *map, unsigned xOffset, unsigned yOffset, unsigned width, unsigned height, unsigned waterTextureId, unsigned landTextureId, unsigned tileLayer, const double targetLandFraction) {
+		bool MapGen::generateWaterLand(class Map *map, unsigned xOffset, unsigned yOffset, unsigned width, unsigned height, unsigned waterTextureId, unsigned landTextureId, unsigned tileLayer) {
 			assert(map!=NULL);
 
 			// Choose parameters.

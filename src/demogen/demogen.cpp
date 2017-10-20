@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 
 	// Create base tile layer - water/grass.
 	printf("Creating land/water...\n");
-	if (!MapGen::generateWaterLand(map, 0, 0, width, height, MapGen::TextureIdWater, MapGen::TextureIdGrass0, 0, 0.3)) { // 30% land, 70% water
+	if (!MapGen::generateWaterLand(map, 0, 0, width, height, MapGen::TextureIdWater, MapGen::TextureIdGrass0, 0)) {
 		printf("Could not generate land/water.\n");
 		return EXIT_FAILURE;
 	}
