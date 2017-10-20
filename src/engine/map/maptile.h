@@ -12,8 +12,8 @@ namespace Engine {
 
 		class MapTile {
 		public:
-			static const unsigned layersMax=16;
-			static const unsigned objectsMax=16;
+			static const unsigned layersMax=4;
+			static const unsigned objectsMax=8;
 
 			MapTile();
 			MapTile(unsigned textureId);
