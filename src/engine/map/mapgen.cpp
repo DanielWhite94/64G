@@ -5,21 +5,17 @@
 
 #include "mapgen.h"
 #include "../physics/coord.h"
-#include "../fbnnoise.h"
 #include "../util.h"
 
 using namespace Engine;
 
 namespace Engine {
 	namespace Map {
-		void mapGenGenerateWaterLandModifyTilesProgress(class Map *map, unsigned y, unsigned height, void *userData);
-		void mapGenGenerateWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-
-		void mapGenGenerateWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);
 
-			const MapGen::GenerateWaterLandModifyTilesFunctorData *data=(const MapGen::GenerateWaterLandModifyTilesFunctorData *)userData;
+			const MapGen::GenerateBinaryNoiseModifyTilesData *data=(const MapGen::GenerateBinaryNoiseModifyTilesData *)userData;
 
 			// Calculate height.
 			unsigned heightY=y*data->heightYFactor;
@@ -29,18 +25,20 @@ namespace Engine {
 			// Update tile layer.
 			MapTile *tile=map->getTileAtOffset(x, y);
 			if (tile!=NULL) {
-				MapTileLayer layer={.textureId=(height>=data->landHeight ? data->landTextureId : data->waterTextureId)};
+				MapTileLayer layer={.textureId=(height>=data->threshold ? data->highTextureId : data->lowTextureId)};
 				tile->setLayer(data->tileLayer, layer);
 			}
 		}
 
-		void mapGenGenerateWaterLandModifyTilesProgress(class Map *map, unsigned y, unsigned height, void *userData) {
+		void mapGenModifyTilesProgressString(class Map *map, unsigned y, unsigned height, void *userData) {
 			assert(map!=NULL);
 			assert(y<height);
-			assert(userData==NULL);
+			assert(userData!=NULL);
+
+			const char *string=(const char *)userData;
 
 			Util::clearConsoleLine();
-			printf("MapGen: generating water/land tiles %.1f%%.", ((y+1)*100.0)/height); // TODO: this better
+			printf("%s%.1f%%", string, ((y+1)*100.0)/height);
 			fflush(stdout);
 		}
 
@@ -123,74 +121,6 @@ namespace Engine {
 
 			return success;
 		};
-
-		bool MapGen::generateWaterLand(class Map *map, unsigned xOffset, unsigned yOffset, unsigned width, unsigned height, unsigned waterTextureId, unsigned landTextureId, unsigned tileLayer) {
-			assert(map!=NULL);
-
-			// Choose parameters.
-			const unsigned heightNoiseWidth=1024;
-			const unsigned heightNoiseHeight=1024;
-			const double heightResolution=200.0;
-
-			double *heightArray=(double *)malloc(sizeof(double)*heightNoiseHeight*heightNoiseWidth);
-			assert(heightArray!=NULL); // TODO: better
-			double *heightArrayPtr;
-
-			unsigned x, y;
-
-			// Calculate heightArray.
-			FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
-			unsigned noiseYProgressDelta=heightNoiseHeight/16;
-			// TODO: Loop over in a more cache-friendly manner (i.e. do all of region 0, then all of region 1, etc).
-			float freqFactorX=(((double)width)/heightNoiseWidth)/8.0;
-			float freqFactorY=(((double)height)/heightNoiseHeight)/8.0;
-			heightArrayPtr=heightArray;
-			for(y=0;y<heightNoiseHeight;++y) {
-				for(x=0;x<heightNoiseWidth;++x,++heightArrayPtr)
-					// Calculate noise value to represent the height here.
-					*heightArrayPtr=heightNose.eval(x*freqFactorX, y*freqFactorY);
-
-				// Update progress (if needed).
-				if (y%noiseYProgressDelta==noiseYProgressDelta-1) {
-					Util::clearConsoleLine();
-					printf("MapGen: generating height noise %.1f%%.", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
-					fflush(stdout);
-				}
-			}
-			printf("\n");
-
-			// Choose land height (using a binary search).
-			double heightXFactor=((double)heightNoiseWidth)/width;
-			double heightYFactor=((double)heightNoiseHeight)/height;
-
-			double landHeight=-0.12; // TODO: think about this - issue is land isnt reproducible at different sizes due to more/less land changing the landHeight
-
-			// Create base tile layer - water/land.
-			printf("MapGen: creating water/land tiles... (land height %.2f)\n", landHeight);
-
-			unsigned progressDelta=height/16;
-
-			GenerateWaterLandModifyTilesFunctorData *modifyTilesData=(GenerateWaterLandModifyTilesFunctorData *)malloc(sizeof(GenerateWaterLandModifyTilesFunctorData));
-			modifyTilesData->heightArray=heightArray;
-			modifyTilesData->heightXFactor=heightXFactor;
-			modifyTilesData->heightYFactor=heightYFactor;
-			modifyTilesData->heightNoiseWidth=heightNoiseWidth;
-			modifyTilesData->landHeight=landHeight;
-			modifyTilesData->landTextureId=landTextureId;
-			modifyTilesData->waterTextureId=waterTextureId;
-			modifyTilesData->tileLayer=tileLayer;
-
-			modifyTiles(map, xOffset, yOffset, width, height, &mapGenGenerateWaterLandModifyTilesFunctor, (void *)modifyTilesData, progressDelta, &mapGenGenerateWaterLandModifyTilesProgress, NULL);
-
-			free(modifyTilesData);
-
-			printf("\n");
-
-			// Tidy up.
-			free(heightArray);
-
-			return true;
-		}
 
 		MapObject *MapGen::addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos) {
 			switch(builtin) {
@@ -576,6 +506,21 @@ namespace Engine {
 			assert(functor!=NULL);
 			assert(progressDelta>0);
 
+			MapGen::ModifyTilesManyEntry entry={
+				.functor=functor,
+				.userData=functorUserData,
+			};
+			MapGen::ModifyTilesManyEntry *functorArray[1]={&entry};
+
+			MapGen::modifyTilesMany(map, x, y, width, height, 1, functorArray, progressDelta, progressFunctor, progressUserData);
+		}
+
+		void MapGen::modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, ModifyTilesManyEntry *functorArray[], unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+			assert(map!=NULL);
+			assert(functorArrayCount>0);
+			assert(functorArray!=NULL);
+			assert(progressDelta>0);
+
 			// Calculate constants.
 			const unsigned regionX0=x/MapRegion::tilesWide;
 			const unsigned regionY0=y/MapRegion::tilesHigh;
@@ -597,8 +542,11 @@ namespace Engine {
 					unsigned tileX, tileY;
 					for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY) {
 						// Loop over all tiles in this row.
-						for(tileX=0; tileX<MapRegion::tilesWide; ++tileX)
-							functor(map, regionXOffset+tileX, regionYOffset+tileY, functorUserData);
+						for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
+							// Loop over functors.
+							for(size_t functorId=0; functorId<functorArrayCount; ++functorId)
+								functorArray[functorId]->functor(map, regionXOffset+tileX, regionYOffset+tileY, functorArray[functorId]->userData);
+						}
 
 						// Update progress (if needed).
 						if (progressFunctor!=NULL && (regionYOffset+tileY-y)%progressDelta==progressDelta-1)

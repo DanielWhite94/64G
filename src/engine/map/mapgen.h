@@ -8,6 +8,9 @@
 
 namespace Engine {
 	namespace Map {
+		void mapGenModifyTilesProgressString(class Map *map, unsigned y, unsigned height, void *userData);
+		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+
 		struct MapGenRoad {
 			unsigned x0, y0, x1, y1;
 			unsigned trueX1, trueY1;
@@ -74,12 +77,14 @@ namespace Engine {
 				Bush,
 			};
 
-			struct GenerateWaterLandModifyTilesFunctorData {
+			struct GenerateBinaryNoiseModifyTilesData {
 				const double *heightArray;
 				double heightYFactor, heightXFactor;
-				double landHeight;
 				unsigned heightNoiseWidth;
-				unsigned landTextureId, waterTextureId;
+
+				double threshold;
+				unsigned lowTextureId, highTextureId;
+
 				unsigned tileLayer;
 			};
 
@@ -90,12 +95,15 @@ namespace Engine {
 			typedef void (ModifyTilesFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 			typedef void (ModifyTilesProgress)(class Map *map, unsigned y, unsigned height, void *userData);
 
+			struct ModifyTilesManyEntry {
+				ModifyTilesFunctor *functor;
+				void *userData;
+			} ;
+
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
 
 			static bool addBaseTextures(class Map *map);
-
-			static bool generateWaterLand(class Map *map, unsigned xOffset, unsigned yOffset, unsigned width, unsigned height, unsigned waterTextureId, unsigned landTextureId, unsigned tileLayer);
 
 			static MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 			static void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);
@@ -106,6 +114,7 @@ namespace Engine {
 			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData);
 
 			static void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData);
+			static void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, MapGen::ModifyTilesManyEntry *functorArray[], unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData);
 		private:
 			unsigned width, height;
 		};
