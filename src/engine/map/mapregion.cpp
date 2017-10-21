@@ -28,19 +28,11 @@ namespace Engine {
 		size_t written=0, target=0;
 		for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
 			for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
-				// Grab tile.
+				// Grab tile and save all layers.
 				const MapTile *tile=getTileAtOffset(tileX, tileY);
-
-				// Save all layers.
-				unsigned z;
-				for(z=0; z<MapTile::layersMax; ++z) {
-					// Grab layer.
-					const MapTileLayer *layer=tile->getLayer(z);
-
-					// Save texture.
-					written+=sizeof(layer->textureId)*fwrite(&layer->textureId, sizeof(layer->textureId), 1, regionFile);
-					target+=sizeof(layer->textureId)*1;
-				}
+				const MapTile::Layer *layers=tile->getLayers();
+				written+=sizeof(MapTile::Layer)*fwrite(layers, sizeof(MapTile::Layer), MapTile::layersMax, regionFile);
+				target+=sizeof(MapTile::Layer)*MapTile::layersMax;
 			}
 
 		// Close file.
