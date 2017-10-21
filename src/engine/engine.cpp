@@ -17,8 +17,8 @@ using namespace Engine::Map;
 
 int main(int argc, char **argv) {
 	// Parse arguments.
-	if (argc!=2) {
-		printf("Usage: %s mapfile\n", argv[0]);
+	if (argc!=4) {
+		printf("Usage: %s mapfile starttilex starttiley\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
@@ -46,7 +46,9 @@ int main(int argc, char **argv) {
 	}
 
 	// Add player object.
-	MapObject objectPlayer(CoordAngle0, CoordVec(880*Physics::CoordsPerTile, 580*Physics::CoordsPerTile), 1, 1);
+	int startTileX=atoi(argv[2]);
+	int startTileY=atoi(argv[2]);
+	MapObject objectPlayer(CoordAngle0, CoordVec(startTileX*Physics::CoordsPerTile, startTileY*Physics::CoordsPerTile), 1, 1);
 	HitMask playerHitmask;
 	const unsigned playerW=4, playerH=6;
 	unsigned playerX, playerY;
