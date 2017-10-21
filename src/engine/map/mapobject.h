@@ -1,6 +1,7 @@
 #ifndef ENGINE_MAP_MAPOBJECT_H
 #define ENGINE_MAP_MAPOBJECT_H
 
+#include "./maptexture.h"
 #include "../physics/coord.h"
 #include "../physics/hitmask.h"
 
@@ -41,15 +42,15 @@ namespace Engine {
 			unsigned getTilesHigh(void) const;
 			HitMask getHitMaskByTileOffset(int xOffset, int yOffset) const;
 			HitMask getHitMaskByCoord(const CoordVec &vec) const;
-			unsigned getTextureIdCurrent(void) const;
-			unsigned getTextureIdForAngle(CoordAngle angle) const;
+			MapTexture::Id getTextureIdCurrent(void) const;
+			MapTexture::Id getTextureIdForAngle(CoordAngle angle) const;
 
 			void setAngle(CoordAngle angle);
 			void setPos(const CoordVec &pos);
 			void setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask hitmask);
 			void setMovementModeStatic(void);
 			void setMovementModeConstantVelocity(const CoordVec &delta);
-			void setTextureIdForAngle(CoordAngle angle, unsigned textureId);
+			void setTextureIdForAngle(CoordAngle angle, MapTexture::Id textureId);
 		private:
 			CoordAngle angle;
 			CoordVec pos;
@@ -60,7 +61,7 @@ namespace Engine {
 				MapObjectMovementModeConstantVelocity constantVelocity;
 			} movementData;
 
-			unsigned textureIds[CoordAngleNB];
+			MapTexture::Id textureIds[CoordAngleNB];
 		};
 	};
 };

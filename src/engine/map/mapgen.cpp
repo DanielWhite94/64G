@@ -25,7 +25,7 @@ namespace Engine {
 			// Update tile layer.
 			MapTile *tile=map->getTileAtOffset(x, y);
 			if (tile!=NULL) {
-				MapTileLayer layer={.textureId=(height>=data->threshold ? data->highTextureId : data->lowTextureId)};
+				MapTile::Layer layer={.textureId=(height>=data->threshold ? data->highTextureId : data->lowTextureId)};
 				tile->setLayer(data->tileLayer, layer);
 			}
 		}

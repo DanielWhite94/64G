@@ -235,8 +235,8 @@ namespace Engine {
 			unsigned tileX, tileY;
 			for(tileX=0,tileY=0; tileX<256 && tileY<256; tileX=(tileX+1)%256,tileY+=(tileX==0)) {
 				// Read layers in.
-				unsigned textureIdArray[MapTile::layersMax];
-				if (fread(&textureIdArray, sizeof(unsigned), MapTile::layersMax, regionFile)!=MapTile::layersMax) {
+				MapTexture::Id textureIdArray[MapTile::layersMax];
+				if (fread(&textureIdArray, sizeof(MapTexture::Id), MapTile::layersMax, regionFile)!=MapTile::layersMax) {
 					printf("skipping...\n"); // TODO: better
 					break;
 				}
@@ -244,7 +244,7 @@ namespace Engine {
 				// Create tile.
 				MapTile tile;
 				for(unsigned z=0; z<MapTile::layersMax; ++z) {
-					MapTileLayer layer;
+					MapTile::Layer layer;
 					layer.textureId=textureIdArray[z];
 					tile.setLayer(z, layer);
 				}

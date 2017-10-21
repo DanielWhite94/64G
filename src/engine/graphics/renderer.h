@@ -42,7 +42,7 @@ namespace Engine {
 			void renderGrid(const CoordVec &coordDelta); // Set colour before calling.
 			void renderHitMask(Engine::Physics::HitMask hitmask, int sx, int sy, int r, int g, int b);
 
-			const Texture *getTexture(const class Map &map, unsigned textureId);
+			const Texture *getTexture(const class Map &map, MapTexture::Id textureId);
 		};
 	};
 };

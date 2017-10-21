@@ -6,33 +6,35 @@
 
 namespace Engine {
 	namespace Map {
-		struct MapTileLayer {
-			unsigned textureId;
-		};
 
 		class MapTile {
 		public:
+			struct Layer {
+				MapTexture::Id textureId;
+			};
+
 			static const unsigned layersMax=4;
 			static const unsigned objectsMax=8;
 
 			MapTile();
-			MapTile(unsigned textureId);
-			MapTile(unsigned textureId, unsigned layer);
+			MapTile(MapTexture::Id textureId);
+			MapTile(MapTexture::Id textureId, unsigned layer);
 			~MapTile();
 
-			const MapTileLayer *getLayer(unsigned z) const;
+			const Layer *getLayer(unsigned z) const;
+			const Layer *getLayers(void) const;
 			const MapObject *getObject(unsigned n) const;
 			unsigned getObjectCount(void) const;
 
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
-			void setLayer(unsigned z, const MapTileLayer &layer);
+			void setLayer(unsigned z, const Layer &layer);
 
 			bool addObject(MapObject *object);
 			void removeObject(MapObject *object);
 			bool isObjectsFull(void) const;
 		private:
-			MapTileLayer layers[layersMax];
+			Layer layers[layersMax];
 
 			MapObject *objects[objectsMax];
 			unsigned objectsNext;

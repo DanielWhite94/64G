@@ -23,13 +23,13 @@ enum DemoGenTileLayer {
 bool demogenForestTestFunctorGroundIsTexture(class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
 	assert(map!=NULL);
 
-	unsigned textureId=(unsigned)(uintptr_t)userData;
+	MapTexture::Id textureId=(MapTexture::Id)(uintptr_t)userData;
 
 	const MapTile *tile=map->getTileAtCoordVec(position);
 	if (tile==NULL)
 		return false;
 
-	const MapTileLayer *layer=tile->getLayer(DemoGenTileLayerGround);
+	const MapTile::Layer *layer=tile->getLayer(DemoGenTileLayerGround);
 	if (layer==NULL)
 		return false;
 
@@ -49,12 +49,12 @@ bool demogenTownTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned
 			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile));
 
 			// Look for grass ground layer.
-			unsigned layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
+			MapTexture::Id layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
 			if (layerGround<=MapGen::TextureIdGrass0 || layerGround>=MapGen::TextureIdGrass5)
 				return false;
 
 			// Look full obstacles.
-			unsigned layerFull=tile->getLayer(DemoGenTileLayerFull)->textureId;
+			MapTexture::Id layerFull=tile->getLayer(DemoGenTileLayerFull)->textureId;
 			if (layerFull!=MapGen::TextureIdNone)
 				return false;
 		}

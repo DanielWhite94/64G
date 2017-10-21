@@ -1,10 +1,13 @@
 #ifndef ENGINE_GRAPHICS_MAPTEXTURE_H
 #define ENGINE_GRAPHICS_MAPTEXTURE_H
 
+#include <cstdint>
+
 namespace Engine {
 	namespace Map {
 		class MapTexture {
 		public:
+			typedef uint16_t Id;
 			static const unsigned IdMax=((1u)<<16);
 
 			MapTexture(unsigned id, const char *path, unsigned scale);

@@ -17,9 +17,7 @@ namespace Engine {
 			objectsNext=0;
 		}
 
-		MapTile::MapTile(unsigned textureId) {
-			assert(textureId<MapTexture::IdMax);
-
+		MapTile::MapTile(MapTexture::Id textureId) {
 			for(unsigned i=0; i<layersMax; ++i)
 				layers[i].textureId=0;
 			layers[0].textureId=textureId;
@@ -27,8 +25,7 @@ namespace Engine {
 			objectsNext=0;
 		}
 
-		MapTile::MapTile(unsigned textureId, unsigned layer) {
-			assert(textureId<MapTexture::IdMax);
+		MapTile::MapTile(MapTexture::Id textureId, unsigned layer) {
 			assert(layer<layersMax);
 
 			for(unsigned i=0; i<layersMax; ++i)
@@ -42,9 +39,13 @@ namespace Engine {
 
 		}
 
-		const MapTileLayer *MapTile::getLayer(unsigned z) const {
+		const MapTile::Layer *MapTile::getLayer(unsigned z) const {
 			assert(z<layersMax);
 			return &layers[z];
+		}
+
+		const MapTile::Layer *MapTile::getLayers(void) const {
+			return layers;
 		}
 
 		const MapObject *MapTile::getObject(unsigned n) const {
@@ -64,7 +65,7 @@ namespace Engine {
 			return hitMask;
 		}
 
-		void MapTile::setLayer(unsigned z, const MapTileLayer &layer) {
+		void MapTile::setLayer(unsigned z, const Layer &layer) {
 			assert(z<layersMax);
 
 			layers[z]=layer;

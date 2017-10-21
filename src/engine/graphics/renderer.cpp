@@ -83,7 +83,7 @@ namespace Engine {
 
 					for(z=0; z<MapTile::layersMax; ++z) {
 						// Find layer for this (x,y,z).
-						const MapTileLayer *layer=tile->getLayer(z);
+						const MapTile::Layer *layer=tile->getLayer(z);
 						assert(layer!=NULL);
 
 						if (layer->textureId==0)
@@ -151,7 +151,7 @@ namespace Engine {
 						const int textureCoordOffsetH=coordObjectSize.y;
 
 						// Draw slice of texture for this x-offset.
-						const unsigned objectTextureId=object->getTextureIdCurrent();
+						const MapTexture::Id objectTextureId=object->getTextureIdCurrent();
 						if (objectTextureId>0) {
 							// Grab texture.
 							const Texture *texture=getTexture(*map, objectTextureId);
@@ -262,9 +262,7 @@ namespace Engine {
 				}
 		}
 
-		const Texture *Renderer::getTexture(const class Map &map, unsigned textureId) {
-			assert(textureId<MapTexture::IdMax);
-
+		const Texture *Renderer::getTexture(const class Map &map, MapTexture::Id textureId) {
 			// If this texture is not loaded attempt to now.
 			if (textures[textureId]==NULL) {
 				const MapTexture *mapTexture=map.getTexture(textureId);

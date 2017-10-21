@@ -109,11 +109,11 @@ namespace Engine {
 			return hitmaskTL|hitmaskTR|hitmaskBL|hitmaskBR;
 		}
 
-		unsigned MapObject::getTextureIdCurrent(void) const {
+		MapTexture::Id MapObject::getTextureIdCurrent(void) const {
 			return getTextureIdForAngle(getAngle());
 		}
 
-		unsigned MapObject::getTextureIdForAngle(CoordAngle angle) const {
+		MapTexture::Id MapObject::getTextureIdForAngle(CoordAngle angle) const {
 			assert(angle<CoordAngleNB);
 
 			return textureIds[angle];
@@ -143,9 +143,8 @@ namespace Engine {
 			movementData.constantVelocity.delta=delta;
 		}
 
-		void MapObject::setTextureIdForAngle(CoordAngle angle, unsigned textureId) {
+		void MapObject::setTextureIdForAngle(CoordAngle angle, MapTexture::Id textureId) {
 			assert(angle<CoordAngleNB);
-			assert(textureId<MapTexture::IdMax);
 
 			textureIds[angle]=textureId;
 		}
