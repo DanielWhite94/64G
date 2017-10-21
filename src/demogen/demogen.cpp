@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include <cstdbool>
 #include <cstdio>
 #include <cstdlib>
@@ -140,22 +141,30 @@ struct DemogenFullForestModifyTilesData {
 	unsigned heightNoiseWidth;
 };
 
-void demogenFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
 	const DemogenFullForestModifyTilesData *data=(const DemogenFullForestModifyTilesData *)userData;
 
-	// Random factor.
+	// Compute factor.
 	double randomValue=(rand()/((double)RAND_MAX));
-	if (randomValue>1/6.0)
-		return;
 
-	// Check height.
+	// Calculate height.
 	unsigned heightY=y*data->heightYFactor;
 	unsigned heightX=x*data->heightXFactor;
 	double height=data->heightArray[heightX+heightY*data->heightNoiseWidth];
-	if (height<0.1)
+
+	// Cutoff based on height and random factor.
+	const double thresholdLimit=1/15.0;
+	double power=pow(2.0,128.0);
+	double offset=0.1-log(1/thresholdLimit)/log(power);
+	double exponent=height-offset;
+	double threshold=pow(power, exponent);
+	if (threshold>thresholdLimit)
+		threshold=thresholdLimit;
+
+	if (randomValue>threshold)
 		return;
 
 	// Grab tile.
@@ -221,7 +230,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(int widt
 
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&demogenFullForestModifyTilesFunctor;
+	entry->functor=&demogenFullForestFullForestModifyTilesFunctor;
 	entry->userData=fullModifyTilesData;
 
 	return entry;
