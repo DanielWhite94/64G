@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstdbool>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 
 #include "../engine/fbnnoise.h"
 #include "../engine/map/map.h"
