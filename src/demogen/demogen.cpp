@@ -105,7 +105,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int
 		// Update progress (if needed).
 		if (y%noiseYProgressDelta==noiseYProgressDelta-1) {
 			Util::clearConsoleLine();
-			printf("	generating height noise %.1f%%.", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
+			printf("	water/land: generating height noise %.1f%%.", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
 			fflush(stdout);
 		}
 	}
@@ -130,6 +130,99 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
 	entry->functor=&mapGenGenerateBinaryNoiseModifyTilesFunctor;
 	entry->userData=groundModifyTilesData;
+
+	return entry;
+}
+
+struct DemogenFullForestModifyTilesData {
+	const double *heightArray;
+	double heightYFactor, heightXFactor;
+	unsigned heightNoiseWidth;
+};
+
+void demogenFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData!=NULL);
+
+	const DemogenFullForestModifyTilesData *data=(const DemogenFullForestModifyTilesData *)userData;
+
+	// Random factor.
+	double randomValue=(rand()/((double)RAND_MAX));
+	if (randomValue>1/6.0)
+		return;
+
+	// Check height.
+	unsigned heightY=y*data->heightYFactor;
+	unsigned heightX=x*data->heightXFactor;
+	double height=data->heightArray[heightX+heightY*data->heightNoiseWidth];
+	if (height<0.1)
+		return;
+
+	// Grab tile.
+	MapTile *tile=map->getTileAtOffset(x, y);
+	if (tile==NULL)
+		return;
+
+	// Check ground layer.
+	const MapTile::Layer *groundLayer=tile->getLayer(DemoGenTileLayerGround);
+	MapTexture::Id groundId=groundLayer->textureId;
+	if (groundId!=MapGen::TextureIdGrass0)
+		return;
+
+	// Update tile layer.
+	MapTile::Layer layer={.textureId=MapGen::TextureIdTree1};
+	tile->setLayer(DemoGenTileLayerFull, layer);
+}
+
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(int width, int height) {
+	assert(width>0);
+	assert(height>0);
+
+	// Create noise.
+	const unsigned heightNoiseWidth=1024;
+	const unsigned heightNoiseHeight=1024;
+	const double heightResolution=200.0;
+
+	double *heightArray=(double *)malloc(sizeof(double)*heightNoiseHeight*heightNoiseWidth); // TODO: never freed
+	assert(heightArray!=NULL); // TODO: better
+	double *heightArrayPtr;
+
+	unsigned x, y;
+
+	FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
+	unsigned noiseYProgressDelta=heightNoiseHeight/16;
+	const float freqFactorX=(((double)width)/heightNoiseWidth)/8.0;
+	const float freqFactorY=(((double)height)/heightNoiseHeight)/8.0;
+	heightArrayPtr=heightArray;
+	for(y=0;y<heightNoiseHeight;++y) {
+		for(x=0;x<heightNoiseWidth;++x,++heightArrayPtr)
+			// Calculate noise value to represent the height here.
+			*heightArrayPtr=heightNose.eval(x*freqFactorX, y*freqFactorY);
+
+		// Update progress (if needed).
+		if (y%noiseYProgressDelta==noiseYProgressDelta-1) {
+			Util::clearConsoleLine();
+			printf("	forest: generating height noise %.1f%%.", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
+			fflush(stdout);
+		}
+	}
+	printf("\n");
+
+	// Create user data.
+	const double heightXFactor=((double)heightNoiseWidth)/width;
+	const double heightYFactor=((double)heightNoiseHeight)/height;
+
+	DemogenFullForestModifyTilesData *fullModifyTilesData=(DemogenFullForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
+	assert(fullModifyTilesData!=NULL); // TODO: better
+	fullModifyTilesData->heightArray=heightArray;
+	fullModifyTilesData->heightXFactor=heightXFactor;
+	fullModifyTilesData->heightYFactor=heightYFactor;
+	fullModifyTilesData->heightNoiseWidth=heightNoiseWidth;
+
+	// Create entry.
+	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
+	entry->functor=&demogenFullForestModifyTilesFunctor;
+	entry->userData=fullModifyTilesData;
 
 	return entry;
 }
@@ -166,11 +259,12 @@ int main(int argc, char **argv) {
 	}
 
 	// Run modify tiles.
-	size_t modifyTilesArrayCount=1;
+	size_t modifyTilesArrayCount=2;
 	MapGen::ModifyTilesManyEntry *modifyTilesArray[modifyTilesArrayCount];
 	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGroundWaterLand(width, height);
+	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryFullForest(width, height);
 
-	const char *progressString="	generating tiles (ground) ";
+	const char *progressString="	generating tiles (ground+forests) ";
 	MapGen::modifyTilesMany(map, 0, 0, width, height, modifyTilesArrayCount, modifyTilesArray, 128, &mapGenModifyTilesProgressString, (void *)progressString);
 	printf("\n");
 
