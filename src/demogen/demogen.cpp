@@ -82,8 +82,8 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int
 	assert(height>0);
 
 	// Create noise.
-	const unsigned heightNoiseWidth=1024;
-	const unsigned heightNoiseHeight=1024;
+	const unsigned heightNoiseWidth=4096;
+	const unsigned heightNoiseHeight=4096;
 	const double heightResolution=200.0;
 
 	double *heightArray=(double *)malloc(sizeof(double)*heightNoiseHeight*heightNoiseWidth); // TODO: never freed
