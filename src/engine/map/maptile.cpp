@@ -44,6 +44,11 @@ namespace Engine {
 			return &layers[z];
 		}
 
+		MapTile::Layer *MapTile::getLayer(unsigned z) {
+			assert(z<layersMax);
+			return &layers[z];
+		}
+
 		const MapTile::Layer *MapTile::getLayers(void) const {
 			return layers;
 		}

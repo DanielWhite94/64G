@@ -21,6 +21,7 @@ namespace Engine {
 			MapTile(MapTexture::Id textureId, unsigned layer);
 			~MapTile();
 
+			Layer *getLayer(unsigned z);
 			const Layer *getLayer(unsigned z) const;
 			const Layer *getLayers(void) const;
 			const MapObject *getObject(unsigned n) const;
