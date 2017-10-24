@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "../engine/fbnnoise.h"
+#include "../engine/noisearray.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
@@ -18,6 +18,10 @@ enum DemoGenTileLayer {
 	DemoGenTileLayerDecoration,
 	DemoGenTileLayerHalf,
 	DemoGenTileLayerFull,
+};
+
+struct DemogenFullForestModifyTilesData {
+	NoiseArray *noiseArray;
 };
 
 /*
@@ -83,45 +87,13 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int
 	assert(height>0);
 
 	// Create noise.
-	const unsigned heightNoiseWidth=4096;
-	const unsigned heightNoiseHeight=4096;
-	const double heightResolution=600.0;
-
-	double *heightArray=(double *)malloc(sizeof(double)*heightNoiseHeight*heightNoiseWidth); // TODO: never freed
-	assert(heightArray!=NULL); // TODO: better
-	double *heightArrayPtr;
-
-	unsigned x, y;
-
-	FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
-	unsigned noiseYProgressDelta=heightNoiseHeight/16;
-	const float freqFactorX=(((double)width)/heightNoiseWidth)/8.0;
-	const float freqFactorY=(((double)height)/heightNoiseHeight)/8.0;
-	heightArrayPtr=heightArray;
-	for(y=0;y<heightNoiseHeight;++y) {
-		for(x=0;x<heightNoiseWidth;++x,++heightArrayPtr)
-			// Calculate noise value to represent the height here.
-			*heightArrayPtr=heightNose.eval(x*freqFactorX, y*freqFactorY);
-
-		// Update progress (if needed).
-		if (y%noiseYProgressDelta==noiseYProgressDelta-1) {
-			Util::clearConsoleLine();
-			printf("	water/land: generating height noise %.1f%%.", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
-			fflush(stdout);
-		}
-	}
+	NoiseArray *noiseArray=new NoiseArray(width, height, 4096, 4096, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
 	printf("\n");
 
 	// Create user data.
-	const double heightXFactor=((double)heightNoiseWidth)/width;
-	const double heightYFactor=((double)heightNoiseHeight)/height;
-
 	MapGen::GenerateBinaryNoiseModifyTilesData *groundModifyTilesData=(MapGen::GenerateBinaryNoiseModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
 	assert(groundModifyTilesData!=NULL); // TODO: better
-	groundModifyTilesData->heightArray=heightArray;
-	groundModifyTilesData->heightXFactor=heightXFactor;
-	groundModifyTilesData->heightYFactor=heightYFactor;
-	groundModifyTilesData->heightNoiseWidth=heightNoiseWidth;
+	groundModifyTilesData->noiseArray=noiseArray;
 	groundModifyTilesData->threshold=-0.12;
 	groundModifyTilesData->lowTextureId=MapGen::TextureIdGrass0;
 	groundModifyTilesData->highTextureId=MapGen::TextureIdWater;
@@ -135,12 +107,6 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int
 	return entry;
 }
 
-struct DemogenFullForestModifyTilesData {
-	const double *heightArray;
-	double heightYFactor, heightXFactor;
-	unsigned heightNoiseWidth;
-};
-
 void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
@@ -151,9 +117,7 @@ void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, u
 	double randomValue=(rand()/((double)RAND_MAX));
 
 	// Calculate height.
-	unsigned heightY=y*data->heightYFactor;
-	unsigned heightX=x*data->heightXFactor;
-	double height=data->heightArray[heightX+heightY*data->heightNoiseWidth];
+	double height=data->noiseArray->eval(x, y);
 
 	// Cutoff based on height and random factor.
 	const double thresholdLimit=1/15.0;
@@ -188,45 +152,13 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(int widt
 	assert(height>0);
 
 	// Create noise.
-	const unsigned heightNoiseWidth=1024;
-	const unsigned heightNoiseHeight=1024;
-	const double heightResolution=200.0;
-
-	double *heightArray=(double *)malloc(sizeof(double)*heightNoiseHeight*heightNoiseWidth); // TODO: never freed
-	assert(heightArray!=NULL); // TODO: better
-	double *heightArrayPtr;
-
-	unsigned x, y;
-
-	FbnNoise heightNose(8, 1.0/heightResolution, 1.0, 2.0, 0.5);
-	unsigned noiseYProgressDelta=heightNoiseHeight/16;
-	const float freqFactorX=(((double)width)/heightNoiseWidth)/8.0;
-	const float freqFactorY=(((double)height)/heightNoiseHeight)/8.0;
-	heightArrayPtr=heightArray;
-	for(y=0;y<heightNoiseHeight;++y) {
-		for(x=0;x<heightNoiseWidth;++x,++heightArrayPtr)
-			// Calculate noise value to represent the height here.
-			*heightArrayPtr=heightNose.eval(x*freqFactorX, y*freqFactorY);
-
-		// Update progress (if needed).
-		if (y%noiseYProgressDelta==noiseYProgressDelta-1) {
-			Util::clearConsoleLine();
-			printf("	forest: generating height noise %.1f%%.", ((y+1)*100.0)/heightNoiseHeight); // TODO: this better
-			fflush(stdout);
-		}
-	}
+	NoiseArray *noiseArray=new NoiseArray(width, height, 1024, 1024, 200.0, 16, &noiseArrayProgressFunctorString, (void *)"Forest: generating noise ");
 	printf("\n");
 
 	// Create user data.
-	const double heightXFactor=((double)heightNoiseWidth)/width;
-	const double heightYFactor=((double)heightNoiseHeight)/height;
-
 	DemogenFullForestModifyTilesData *fullModifyTilesData=(DemogenFullForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
 	assert(fullModifyTilesData!=NULL); // TODO: better
-	fullModifyTilesData->heightArray=heightArray;
-	fullModifyTilesData->heightXFactor=heightXFactor;
-	fullModifyTilesData->heightYFactor=heightYFactor;
-	fullModifyTilesData->heightNoiseWidth=heightNoiseWidth;
+	fullModifyTilesData->noiseArray=noiseArray;
 
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));

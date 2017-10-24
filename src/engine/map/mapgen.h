@@ -5,6 +5,7 @@
 #include <iomanip>
 
 #include "map.h"
+#include "../noisearray.h"
 
 namespace Engine {
 	namespace Map {
@@ -78,9 +79,7 @@ namespace Engine {
 			};
 
 			struct GenerateBinaryNoiseModifyTilesData {
-				const double *heightArray;
-				double heightYFactor, heightXFactor;
-				unsigned heightNoiseWidth;
+				const NoiseArray *noiseArray;
 
 				double threshold;
 				MapTexture::Id lowTextureId, highTextureId;

@@ -18,9 +18,7 @@ namespace Engine {
 			const MapGen::GenerateBinaryNoiseModifyTilesData *data=(const MapGen::GenerateBinaryNoiseModifyTilesData *)userData;
 
 			// Calculate height.
-			unsigned heightY=y*data->heightYFactor;
-			unsigned heightX=x*data->heightXFactor;
-			double height=data->heightArray[heightX+heightY*data->heightNoiseWidth];
+			double height=data->noiseArray->eval(x, y);
 
 			// Update tile layer.
 			MapTile *tile=map->getTileAtOffset(x, y);
