@@ -330,46 +330,39 @@ namespace Engine {
 			// Add walls.
 			for(ty=0;ty<wallHeight;++ty)
 				for(tx=0;tx<w;++tx) {
-					unsigned texture;
+					MapTexture::Id texture;
 					switch(ty%4) {
 						case 0: texture=TextureIdHouseWall3; break;
 						case 1: texture=TextureIdHouseWall2; break;
 						case 2: texture=TextureIdHouseWall4; break;
 						case 3: texture=TextureIdHouseWall2; break;
 					}
-					MapTile tile(texture, tileLayer);
-					CoordVec vec((x+tx)*Physics::CoordsPerTile, (y+h-1-ty)*Physics::CoordsPerTile);
-					map->setTileAtCoordVec(vec, tile);
+					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+h-1-ty)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=texture});
 				}
 
 			// Add door.
 			if (showDoor) {
 				unsigned doorX=(rand()%(w-3))+x+1;
-				map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBL, tileLayer));
-				map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorBR, tileLayer));
-				map->setTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTL, tileLayer));
-				map->setTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), MapTile(TextureIdHouseDoorTR, tileLayer));
+
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBL});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBR});
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTL});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTR});
 			}
 
 			// Add main part of roof.
 			for(ty=0;ty<roofHeight-1;++ty) // -1 due to ridge tiles added later
-				for(tx=0;tx<w;++tx) {
-					MapTile tile(TextureIdHouseRoof, tileLayer);
-					CoordVec vec((x+tx)*Physics::CoordsPerTile, (y+1+ty)*Physics::CoordsPerTile);
-					map->setTileAtCoordVec(vec, tile);
-				}
+				for(tx=0;tx<w;++tx)
+					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+1+ty)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseRoof});
 
 			// Add roof top ridge.
-			for(tx=0;tx<w;++tx) {
-				MapTile tile(TextureIdHouseRoofTop, tileLayer);
-				CoordVec vec((x+tx)*Physics::CoordsPerTile, y*Physics::CoordsPerTile);
-				map->setTileAtCoordVec(vec, tile);
-			}
+			for(tx=0;tx<w;++tx)
+				map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, y*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseRoofTop});
 
 			// Add chimney.
 			unsigned chimneyX=rand()%w+x;
-			map->setTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, y*Physics::CoordsPerTile), MapTile(TextureIdHouseChimneyTop, tileLayer));
-			map->setTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (y+1)*Physics::CoordsPerTile), MapTile(TextureIdHouseChimney, tileLayer));
+			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, y*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseChimneyTop});
+			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (y+1)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseChimney});
 
 			return true;
 		}
@@ -430,7 +423,8 @@ namespace Engine {
 				int a, b;
 				for(a=road.y0; a<road.trueY1; ++a)
 					for(b=road.x0; b<road.trueX1; ++b)
-						map->setTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), MapTile((road.width>=3 ? TextureIdBrickPath : TextureIdDirt), tileLayer));
+						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=(road.width>=3 ? TextureIdBrickPath : TextureIdDirt)});
+					}
 
 				// Add potential child roads.
 				MapGenRoad newRoad;
