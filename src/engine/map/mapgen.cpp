@@ -573,6 +573,10 @@ namespace Engine {
 			const unsigned regionX1=(x+width)/MapRegion::tilesWide;
 			const unsigned regionY1=(y+height)/MapRegion::tilesHigh;
 
+			// Initial progress update (if needed).
+			if (progressFunctor!=NULL)
+				progressFunctor(map, 0, regionY1-regionY0, progressUserData);
+
 			// Loop over each region
 			unsigned regionX, regionY;
 			for(regionY=regionY0; regionY<regionY1; ++regionY) {
