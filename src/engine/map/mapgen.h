@@ -92,7 +92,7 @@ namespace Engine {
 			typedef bool (TileTestFunctor)(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData);
 
 			typedef void (ModifyTilesFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
-			typedef void (ModifyTilesProgress)(class Map *map, unsigned y, unsigned height, void *userData);
+			typedef void (ModifyTilesProgress)(class Map *map, unsigned regionY, unsigned regionHeight, void *userData);
 
 			struct ModifyTilesManyEntry {
 				ModifyTilesFunctor *functor;
@@ -113,8 +113,8 @@ namespace Engine {
 			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData);
 			static bool addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData);
 
-			static void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData);
-			static void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, MapGen::ModifyTilesManyEntry *functorArray[], unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData);
+			static void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData);
+			static void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, MapGen::ModifyTilesManyEntry *functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData);
 		private:
 			unsigned width, height;
 		};

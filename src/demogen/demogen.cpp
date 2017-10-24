@@ -205,8 +205,8 @@ int main(int argc, char **argv) {
 	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGroundWaterLand(width, height);
 	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryFullForest(width, height);
 
-	const char *progressString="	generating tiles (ground+forests) ";
-	MapGen::modifyTilesMany(map, 0, 0, width, height, modifyTilesArrayCount, modifyTilesArray, 128, &mapGenModifyTilesProgressString, (void *)progressString);
+	const char *progressString="Generating tiles (ground+forests) ";
+	MapGen::modifyTilesMany(map, 0, 0, width, height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
 	printf("\n");
 
 	size_t i;

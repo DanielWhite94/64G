@@ -28,15 +28,15 @@ namespace Engine {
 			}
 		}
 
-		void mapGenModifyTilesProgressString(class Map *map, unsigned y, unsigned height, void *userData) {
+		void mapGenModifyTilesProgressString(class Map *map, unsigned regionY, unsigned regionHeight, void *userData) {
 			assert(map!=NULL);
-			assert(y<height);
+			assert(regionY<regionHeight);
 			assert(userData!=NULL);
 
 			const char *string=(const char *)userData;
 
 			Util::clearConsoleLine();
-			printf("%s%.1f%%", string, ((y+1)*100.0)/height);
+			printf("%s%.1f%%", string, ((regionY+1)*100.0)/regionHeight);
 			fflush(stdout);
 		}
 
@@ -555,10 +555,9 @@ namespace Engine {
 			return true;
 		}
 
-		void MapGen::modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void MapGen::modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functor!=NULL);
-			assert(progressDelta>0);
 
 			MapGen::ModifyTilesManyEntry entry={
 				.functor=functor,
@@ -566,14 +565,13 @@ namespace Engine {
 			};
 			MapGen::ModifyTilesManyEntry *functorArray[1]={&entry};
 
-			MapGen::modifyTilesMany(map, x, y, width, height, 1, functorArray, progressDelta, progressFunctor, progressUserData);
+			MapGen::modifyTilesMany(map, x, y, width, height, 1, functorArray, progressFunctor, progressUserData);
 		}
 
-		void MapGen::modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, ModifyTilesManyEntry *functorArray[], unsigned progressDelta, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void MapGen::modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, ModifyTilesManyEntry *functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functorArrayCount>0);
 			assert(functorArray!=NULL);
-			assert(progressDelta>0);
 
 			// Calculate constants.
 			const unsigned regionX0=x/MapRegion::tilesWide;
@@ -601,12 +599,12 @@ namespace Engine {
 							for(size_t functorId=0; functorId<functorArrayCount; ++functorId)
 								functorArray[functorId]->functor(map, regionXOffset+tileX, regionYOffset+tileY, functorArray[functorId]->userData);
 						}
-
-						// Update progress (if needed).
-						if (progressFunctor!=NULL && (regionYOffset+tileY-y)%progressDelta==progressDelta-1)
-							progressFunctor(map, regionYOffset+tileY-y, height, progressUserData);
 					}
 				}
+
+				// Update progress (if needed).
+				if (progressFunctor!=NULL)
+					progressFunctor(map, regionY-regionY0, regionY1-regionY0, progressUserData);
 			}
 		}
 	};
