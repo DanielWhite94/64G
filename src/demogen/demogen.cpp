@@ -42,7 +42,6 @@ bool demogenForestTestFunctorGroundIsTexture(class Map *map, MapGen::BuiltinObje
 }
 */
 
-/*
 bool demogenTownTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData) {
 	assert(map!=NULL);
 	assert(map!=NULL);
@@ -66,7 +65,6 @@ bool demogenTownTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned
 
 	return true;
 }
-*/
 
 /*
 void addMixedForest(class Map *map, int x0, int y0, int x1, int y1) {
@@ -238,13 +236,36 @@ int main(int argc, char **argv) {
 	*/
 
 	// Add towns.
-	/*
 	printf("Adding towns...\n");
-	MapGen::addTown(map, 780, 560, 980, 560, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
-	MapGen::addTown(map, 2*259, 2*42, 2*259, 2*117, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
-	MapGen::addTown(map, 2*808, 2*683, 2*1005, 2*683, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
-	MapGen::addTown(map, 2*279, 2*837, 2*279, 2*900, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
-	*/
+	const int townAvgSize=200;
+	const int townMax=64;
+	int townCount=0;
+	for(int townI=0; townI<townMax; ++townI) {
+		int townX=width*(((rand()/(double)RAND_MAX)));
+		int townY=height*(((rand()/(double)RAND_MAX)));
+		int townSize=townAvgSize*(((rand()/(double)RAND_MAX))+0.5);
+		bool horizontal=(rand()%2==0);
+
+		if (horizontal) {
+			int townX0=townX-townSize/2;
+			int townX1=townX-townSize/2;
+			if (townX0<0 || townX1>=width)
+				continue;
+			townCount+=MapGen::addTown(map, townX0, townY, townX1, townY, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+		} else {
+			int townY0=townY-townSize/2;
+			int townY1=townY-townSize/2;
+			if (townY0<0 || townY1>=height)
+				continue;
+			townCount+=MapGen::addTown(map, townX, townY0, townX, townY1, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+		}
+
+		// Update progress.
+		Util::clearConsoleLine();
+		printf("	adding towns: %.1f%% (%i/%i successful)", ((townI+1)*100.0)/townMax, townCount, townI);
+		fflush(stdout);
+	}
+	printf("\n");
 
 	// Save map.
 	if (!map->save()) {
