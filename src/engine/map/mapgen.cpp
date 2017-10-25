@@ -424,11 +424,9 @@ namespace Engine {
 				for(a=road.y0; a<road.trueY1; ++a)
 					for(b=road.x0; b<road.trueX1; ++b)
 						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=(road.width>=3 ? TextureIdBrickPath : TextureIdDirt)});
-					}
 
 				// Add potential child roads.
 				MapGenRoad newRoad;
-
 				for(unsigned i=0; i<16; ++i) {
 					newRoad.width=(road.width*((rand()%5)+5))/10;
 					int offset, jump=std::max(newRoad.width+8,road.getLen()/6);
