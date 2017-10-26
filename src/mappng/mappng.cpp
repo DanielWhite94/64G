@@ -165,6 +165,9 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdHouseChimneyTop:
 								r=255,g=128,b=0;
 							break;
+							case MapGen::TextureIdSand:
+								r=255,g=255,b=0;
+							break;
 							case MapGen::TextureIdNB:
 								assert(false);
 								continue; // Try next layer instead

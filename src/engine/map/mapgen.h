@@ -69,7 +69,8 @@ namespace Engine {
 			static const MapTexture::Id TextureIdHouseWall4=26;
 			static const MapTexture::Id TextureIdHouseChimney=27;
 			static const MapTexture::Id TextureIdHouseChimneyTop=28;
-			static const MapTexture::Id TextureIdNB=29;
+			static const MapTexture::Id TextureIdSand=29;
+			static const MapTexture::Id TextureIdNB=30;
 
 			enum class BuiltinObject {
 				OldBeardMan,
