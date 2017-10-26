@@ -13,8 +13,8 @@ namespace Engine {
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 		struct MapGenRoad {
-			unsigned x0, y0, x1, y1;
-			unsigned trueX1, trueY1;
+			int x0, y0, x1, y1;
+			int trueX1, trueY1;
 			int width;
 			double weight;
 
@@ -89,7 +89,7 @@ namespace Engine {
 
 			typedef bool (ObjectTestFunctor)(class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);
 
-			typedef bool (TileTestFunctor)(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData);
+			typedef bool (TileTestFunctor)(class Map *map, int x, int y, int w, int h, void *userData);
 
 			typedef void (ModifyTilesFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 			typedef void (ModifyTilesProgress)(class Map *map, unsigned regionY, unsigned regionHeight, void *userData);

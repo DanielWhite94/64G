@@ -42,15 +42,16 @@ bool demogenForestTestFunctorGroundIsTexture(class Map *map, MapGen::BuiltinObje
 }
 */
 
-bool demogenTownTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, void *userData) {
-	assert(map!=NULL);
+bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
 	assert(map!=NULL);
 
 	// Loop over tiles.
-	unsigned tx, ty;
+	int tx, ty;
 	for(ty=0; ty<h; ++ty)
 		for(tx=0; tx<w; ++tx) {
-			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile));
+			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile), false);
+			if (tile==NULL)
+				return false;
 
 			// Look for grass ground layer.
 			MapTexture::Id layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
@@ -130,7 +131,7 @@ void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, u
 		return;
 
 	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y);
+	MapTile *tile=map->getTileAtOffset(x, y, false);
 	if (tile==NULL)
 		return;
 

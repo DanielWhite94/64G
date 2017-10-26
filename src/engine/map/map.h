@@ -35,10 +35,10 @@ namespace Engine {
 
 			void tick(void);
 
-			MapTile *getTileAtCoordVec(const CoordVec &vec);
-			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY);
-			MapRegion *getRegionAtCoordVec(const CoordVec &vec);
-			MapRegion *getRegionAtOffset(unsigned regionX, unsigned regionY);
+			MapTile *getTileAtCoordVec(const CoordVec &vec, bool create);
+			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY, bool create);
+			MapRegion *getRegionAtCoordVec(const CoordVec &vec, bool create);
+			MapRegion *getRegionAtOffset(unsigned regionX, unsigned regionY, bool create);
 
 			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
 

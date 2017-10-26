@@ -77,7 +77,7 @@ namespace Engine {
 			for(vec.y=topLeft.y,sy=syTopLeft; vec.y<=bottomRight.y; vec.y+=CoordsPerTile,sy+=delta)
 				for(vec.x=topLeft.x,sx=sxTopLeft; vec.x<=bottomRight.x; vec.x+=CoordsPerTile,sx+=delta) {
 					// Find tile for this (x,y).
-					const MapTile *tile=map->getTileAtCoordVec(vec);
+					const MapTile *tile=map->getTileAtCoordVec(vec, false);
 					if (tile==NULL)
 						continue;
 
@@ -106,7 +106,7 @@ namespace Engine {
 				moreObjectsToRender=false;
 				for(vec.x=topLeft.x,sx=sxTopLeft; vec.x<=bottomRight.x; vec.x+=CoordsPerTile,sx+=delta) {
 					// Find tile at this (x,y).
-					const MapTile *tile=map->getTileAtCoordVec(vec);
+					const MapTile *tile=map->getTileAtCoordVec(vec, false);
 					if (tile==NULL)
 						continue;
 
@@ -187,7 +187,7 @@ namespace Engine {
 				for(vec.y=topLeft.y,sy=syTopLeft; vec.y<=bottomRight.y; vec.y+=CoordsPerTile,sy+=delta)
 					for(vec.x=topLeft.x,sx=sxTopLeft; vec.x<=bottomRight.x; vec.x+=CoordsPerTile,sx+=delta) {
 						// Find tile at this (x,y).
-						const MapTile *tile=map->getTileAtCoordVec(vec);
+						const MapTile *tile=map->getTileAtCoordVec(vec, false);
 						if (tile==NULL)
 							continue;
 

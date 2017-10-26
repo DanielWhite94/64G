@@ -106,8 +106,9 @@ int main(int argc, char **argv) {
 					CoordComponent imageTileY=imageY*yScale+mapTileY;
 
 					CoordVec vec={imageTileX*Physics::CoordsPerTile, imageTileY*Physics::CoordsPerTile};
-					const MapTile *tile=map->getTileAtCoordVec(vec);
-					assert(tile!=NULL); // TODO: Handle better
+					const MapTile *tile=map->getTileAtCoordVec(vec, false);
+					if (tile==NULL)
+						continue; // TODO: Handle better
 
 					// Choose colour (based on topmost layer with a texture set).
 					uint8_t r=0, g=0, b=0;

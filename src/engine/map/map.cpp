@@ -267,31 +267,30 @@ namespace Engine {
 			}
 		}
 
-		MapTile *Map::getTileAtCoordVec(const CoordVec &vec) {
-			MapRegion *region=getRegionAtCoordVec(vec);
+		MapTile *Map::getTileAtCoordVec(const CoordVec &vec, bool create) {
+			MapRegion *region=getRegionAtCoordVec(vec, create);
 			if (region==NULL)
 				return NULL;
 
 			return region->getTileAtCoordVec(vec);
 		}
 
-		MapTile *Map::getTileAtOffset(unsigned offsetX, unsigned offsetY) {
+		MapTile *Map::getTileAtOffset(unsigned offsetX, unsigned offsetY, bool create) {
 			assert(offsetX>=0 && offsetX<regionsWide*MapRegion::tilesWide);
 			assert(offsetY>=0 && offsetY<regionsHigh*MapRegion::tilesHigh);
 
 			unsigned regionX=offsetX/MapRegion::tilesWide;
 			unsigned regionY=offsetY/MapRegion::tilesHigh;
-			MapRegion *region=getRegionAtOffset(regionX, regionY);
+			MapRegion *region=getRegionAtOffset(regionX, regionY, create);
 			if (region==NULL)
 				return NULL;
-
 
 			unsigned regionTileOffsetX=offsetX%MapRegion::tilesWide;
 			unsigned regionTileOffsetY=offsetY%MapRegion::tilesHigh;
 			return region->getTileAtOffset(regionTileOffsetX, regionTileOffsetY);
 		}
 
-		MapRegion *Map::getRegionAtCoordVec(const CoordVec &vec) {
+		MapRegion *Map::getRegionAtCoordVec(const CoordVec &vec, bool create) {
 			if (vec.x<0 || vec.y<0)
 				return NULL;
 
@@ -300,10 +299,10 @@ namespace Engine {
 			CoordComponent regionX=tileX/MapRegion::tilesWide;
 			CoordComponent regionY=tileY/MapRegion::tilesHigh;
 
-			return getRegionAtOffset(regionX, regionY);
+			return getRegionAtOffset(regionX, regionY, create);
 		}
 
-		MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY) {
+		MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY, bool create) {
 			// Out of bounds?
 			if (regionX>=regionsWide || regionY>=regionsHigh)
 				return NULL;
@@ -317,8 +316,17 @@ namespace Engine {
 					char regionPath[4096]; // TODO: this better
 					sprintf(regionPath, "%s/%u,%u", regionsDirPath, regionX, regionY); // TODO: Check return.
 
-					// Attempt to load region (on failure to load this also attempts to create a new blank region instead).
-					loadRegion(regionX, regionY, regionPath);
+					// Attempt to load region.
+					if (!loadRegion(regionX, regionY, regionPath)) {
+						if (!create) {
+							// Failed - ensure this region is unloaded as it is not correct.
+							for(unsigned r=0; r<regionsByIndexNext; ++r)
+								if (regionsByIndex[r]->offsetX==regionX && regionsByIndex[r]->offsetY==regionY) {
+									regionUnload(r);
+									break;
+								}
+						}
+					}
 				}
 			}
 
@@ -327,7 +335,7 @@ namespace Engine {
 		}
 
 		void Map::setTileAtCoordVec(const CoordVec &vec, const MapTile &tile) {
-			MapRegion *region=getRegionAtCoordVec(vec);
+			MapRegion *region=getRegionAtCoordVec(vec, true);
 			if (region==NULL)
 				return; // TODO: Warn?
 
@@ -350,7 +358,7 @@ namespace Engine {
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile) {
 					// Is there even a tile here?
-					MapTile *tile=getTileAtCoordVec(vec);
+					MapTile *tile=getTileAtCoordVec(vec, false);
 					if (tile==NULL)
 						return false;
 
@@ -369,7 +377,7 @@ namespace Engine {
 			// Add to tiles.
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
-					getTileAtCoordVec(vec)->addObject(object);
+					getTileAtCoordVec(vec, false)->addObject(object);
 
 			return true;
 		}
@@ -398,7 +406,7 @@ namespace Engine {
 			// Remove from tiles.
 			for(vec.y=oldVec1.y; vec.y<=oldVec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=oldVec1.x; vec.x<=oldVec2.x; vec.x+=Physics::CoordsPerTile)
-					getTileAtCoordVec(vec)->removeObject(object);
+					getTileAtCoordVec(vec, false)->removeObject(object);
 
 			// Move object.
 			double angle=(180.0/M_PI)*Util::angleFromXYToXY(object->getCoordTopLeft().x, object->getCoordTopLeft().y, newPos.x, newPos.y);
@@ -431,7 +439,7 @@ namespace Engine {
 			for(vec.y=newVec1.y; vec.y<=newVec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=newVec1.x; vec.x<=newVec2.x; vec.x+=Physics::CoordsPerTile) {
 					// Is there even a tile here?
-					MapTile *tile=getTileAtCoordVec(vec);
+					MapTile *tile=getTileAtCoordVec(vec, false);
 					if (tile==NULL) {
 						result=false;
 						break;
@@ -457,7 +465,7 @@ namespace Engine {
 				// Add to old tiles.
 				for(vec.y=oldVec1.y; vec.y<=oldVec2.y; vec.y+=Physics::CoordsPerTile)
 					for(vec.x=oldVec1.x; vec.x<=oldVec2.x; vec.x+=Physics::CoordsPerTile)
-						getTileAtCoordVec(vec)->addObject(object);
+						getTileAtCoordVec(vec, false)->addObject(object);
 
 				return false;
 			}
@@ -465,7 +473,7 @@ namespace Engine {
 			// Add to new tiles.
 			for(vec.y=newVec1.y; vec.y<=newVec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=newVec1.x; vec.x<=newVec2.x; vec.x+=Physics::CoordsPerTile)
-					getTileAtCoordVec(vec)->addObject(object);
+					getTileAtCoordVec(vec, false)->addObject(object);
 
 			return result;
 		}

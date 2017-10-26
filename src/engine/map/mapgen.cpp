@@ -21,7 +21,7 @@ namespace Engine {
 			double height=data->noiseArray->eval(x, y);
 
 			// Update tile layer.
-			MapTile *tile=map->getTileAtOffset(x, y);
+			MapTile *tile=map->getTileAtOffset(x, y, true);
 			if (tile!=NULL) {
 				MapTile::Layer layer={.textureId=(height>=data->threshold ? data->highTextureId : data->lowTextureId)};
 				tile->setLayer(data->tileLayer, layer);
@@ -337,32 +337,32 @@ namespace Engine {
 						case 2: texture=TextureIdHouseWall4; break;
 						case 3: texture=TextureIdHouseWall2; break;
 					}
-					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+h-1-ty)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=texture});
+					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+h-1-ty)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=texture});
 				}
 
 			// Add door.
 			if (showDoor) {
 				unsigned doorX=(rand()%(w-3))+x+1;
 
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBL});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBR});
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTL});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTR});
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBL});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBR});
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTL});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTR});
 			}
 
 			// Add main part of roof.
 			for(ty=0;ty<roofHeight-1;++ty) // -1 due to ridge tiles added later
 				for(tx=0;tx<w;++tx)
-					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+1+ty)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseRoof});
+					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+1+ty)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseRoof});
 
 			// Add roof top ridge.
 			for(tx=0;tx<w;++tx)
-				map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, y*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseRoofTop});
+				map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, y*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseRoofTop});
 
 			// Add chimney.
 			unsigned chimneyX=rand()%w+x;
-			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, y*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseChimneyTop});
-			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (y+1)*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=TextureIdHouseChimney});
+			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, y*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseChimneyTop});
+			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (y+1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseChimney});
 
 			return true;
 		}
@@ -414,7 +414,11 @@ namespace Engine {
 					continue;
 
 				int testFunctorMargin=std::min(6*road.width-2, 25);
-				if (!testFunctor(map, road.x0-(road.isVertical() ? testFunctorMargin : 0), road.y0-(road.isHorizontal() ? testFunctorMargin : 0), road.trueX1-road.x0+(road.isVertical() ? testFunctorMargin*2 : 0), road.trueY1-road.y0+(road.isHorizontal() ? testFunctorMargin*2 : 0), testFunctorUserData))
+				int testFunctorX=road.x0-(road.isVertical() ? testFunctorMargin : 0);
+				int testFunctorY=road.y0-(road.isHorizontal() ? testFunctorMargin : 0);
+				int testFunctorWidth=road.trueX1-road.x0+(road.isVertical() ? testFunctorMargin*2 : 0);
+				int testFunctorHeight=road.trueY1-road.y0+(road.isHorizontal() ? testFunctorMargin*2 : 0);
+				if (!testFunctor(map, testFunctorX, testFunctorY, testFunctorWidth, testFunctorHeight, testFunctorUserData))
 					continue;
 
 				// Add road.
@@ -423,7 +427,7 @@ namespace Engine {
 				int a, b;
 				for(a=road.y0; a<road.trueY1; ++a)
 					for(b=road.x0; b<road.trueX1; ++b)
-						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile))->setLayer(tileLayer, {.textureId=(road.width>=3 ? TextureIdBrickPath : TextureIdDirt)});
+						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=(road.width>=3 ? TextureIdBrickPath : TextureIdDirt)});
 
 				// Add potential child roads.
 				MapGenRoad newRoad;
@@ -450,6 +454,9 @@ namespace Engine {
 					}
 				}
 			}
+
+			if (roads.size()<3)
+				return false;
 
 			// Add houses along roads.
 			for(const auto road: roads) {
@@ -583,7 +590,7 @@ namespace Engine {
 					const unsigned regionXOffset=regionX*MapRegion::tilesWide;
 
 					// Set region dirty.
-					MapRegion *region=map->getRegionAtOffset(regionX, regionY);
+					MapRegion *region=map->getRegionAtOffset(regionX, regionY, true);
 					region->setDirty();
 
 					// Loop over all rows in this region.
