@@ -126,10 +126,10 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdGrass2:
 							case MapGen::TextureIdGrass3:
 							case MapGen::TextureIdGrass4:
-								r=0,g=200,b=0;
+								r=0,g=240,b=0;
 							break;
 							case MapGen::TextureIdGrass5:
-								r=0,g=150,b=0;
+								r=0,g=200,b=0;
 							break;
 							case MapGen::TextureIdBrickPath:
 							case MapGen::TextureIdDock:
