@@ -54,7 +54,7 @@ bool demogenTownTileTestFunctor(class Map *map, unsigned x, unsigned y, unsigned
 
 			// Look for grass ground layer.
 			MapTexture::Id layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
-			if (layerGround<=MapGen::TextureIdGrass0 || layerGround>=MapGen::TextureIdGrass5)
+			if (layerGround<MapGen::TextureIdGrass0 || layerGround>MapGen::TextureIdGrass5)
 				return false;
 
 			// Look for full obstacles.
