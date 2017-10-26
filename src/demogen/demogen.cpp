@@ -248,13 +248,13 @@ int main(int argc, char **argv) {
 
 		if (horizontal) {
 			int townX0=townX-townSize/2;
-			int townX1=townX-townSize/2;
+			int townX1=townX+townSize/2;
 			if (townX0<0 || townX1>=width)
 				continue;
 			townCount+=MapGen::addTown(map, townX0, townY, townX1, townY, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
 		} else {
 			int townY0=townY-townSize/2;
-			int townY1=townY-townSize/2;
+			int townY1=townY+townSize/2;
 			if (townY0<0 || townY1>=height)
 				continue;
 			townCount+=MapGen::addTown(map, townX, townY0, townX, townY1, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
