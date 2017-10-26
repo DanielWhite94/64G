@@ -81,6 +81,45 @@ void addMixedForest(class Map *map, int x0, int y0, int x1, int y1) {
 }
 */
 
+void demogenGroundWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData!=NULL);
+
+	const NoiseArray *noiseArray=(const NoiseArray *)userData;
+
+	// Calculate height.
+	double height=noiseArray->eval(x, y);
+
+	// Grab tile.
+	MapTile *tile=map->getTileAtOffset(x, y, false);
+	if (tile==NULL)
+		return;
+
+	MapTexture::Id textureId=MapGen::TextureIdNone;
+	if (height>-0.12)
+		textureId=MapGen::TextureIdWater;
+	else if (height>-0.13)
+		textureId=MapGen::TextureIdSand;
+	else {
+		double r=((double)rand())/RAND_MAX;
+		if (r<0.80)
+			textureId=MapGen::TextureIdGrass0;
+		else if (r<0.85)
+			textureId=MapGen::TextureIdGrass1;
+		else if (r<0.90)
+			textureId=MapGen::TextureIdGrass2;
+		else if (r<0.95)
+			textureId=MapGen::TextureIdGrass3;
+		else
+			textureId=MapGen::TextureIdGrass4;
+	}
+	assert(textureId!=MapGen::TextureIdNone);
+
+	// Update tile layer.
+	MapTile::Layer layer={.textureId=textureId};
+	tile->setLayer(DemoGenTileLayerGround, layer);
+}
+
 MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int width, int height) {
 	assert(width>0);
 	assert(height>0);
@@ -89,19 +128,10 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int
 	NoiseArray *noiseArray=new NoiseArray(width, height, 4096, 4096, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
 	printf("\n");
 
-	// Create user data.
-	MapGen::GenerateBinaryNoiseModifyTilesData *groundModifyTilesData=(MapGen::GenerateBinaryNoiseModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
-	assert(groundModifyTilesData!=NULL); // TODO: better
-	groundModifyTilesData->noiseArray=noiseArray;
-	groundModifyTilesData->threshold=-0.12;
-	groundModifyTilesData->lowTextureId=MapGen::TextureIdGrass0;
-	groundModifyTilesData->highTextureId=MapGen::TextureIdWater;
-	groundModifyTilesData->tileLayer=DemoGenTileLayerGround;
-
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&mapGenGenerateBinaryNoiseModifyTilesFunctor;
-	entry->userData=groundModifyTilesData;
+	entry->functor=&demogenGroundWaterLandModifyTilesFunctor;
+	entry->userData=noiseArray;
 
 	return entry;
 }
