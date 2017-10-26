@@ -165,10 +165,14 @@ void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, u
 	if (tile==NULL)
 		return;
 
-	// Check ground layer.
-	const MapTile::Layer *groundLayer=tile->getLayer(DemoGenTileLayerGround);
-	MapTexture::Id groundId=groundLayer->textureId;
-	if (groundId!=MapGen::TextureIdGrass0)
+	// Check layers.
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId<MapGen::TextureIdGrass0 || tile->getLayer(DemoGenTileLayerGround)->textureId>MapGen::TextureIdGrass5)
+		return;
+	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
+		return;
+	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapGen::TextureIdNone)
+		return;
+	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
 		return;
 
 	// Update tile layer.
