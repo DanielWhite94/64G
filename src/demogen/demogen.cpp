@@ -20,9 +20,25 @@ enum DemoGenTileLayer {
 	DemoGenTileLayerFull,
 };
 
+typedef struct {
+	// Only these are computed initially.
+	class Map *map;
+	int width, height;
+
+	// These are computed after ground water/land modify tiles stage.
+	unsigned long long landCount, waterCount, totalCount;
+	double landFraction;
+} DemogenMapData;
+
 struct DemogenFullForestModifyTilesData {
 	NoiseArray *noiseArray;
 };
+
+typedef struct {
+	DemogenMapData *mapData;
+
+	NoiseArray *noiseArray;
+} DemogenGroundWaterLandModifyTilesData;
 
 /*
 bool demogenForestTestFunctorGroundIsTexture(class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
@@ -90,7 +106,9 @@ void demogenGroundWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsign
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
-	const NoiseArray *noiseArray=(const NoiseArray *)userData;
+	const DemogenGroundWaterLandModifyTilesData *data=(const DemogenGroundWaterLandModifyTilesData *)userData;
+	DemogenMapData *mapData=data->mapData;
+	const NoiseArray *noiseArray=data->noiseArray;
 
 	// Calculate height.
 	double height=noiseArray->eval(x, y);
@@ -123,20 +141,31 @@ void demogenGroundWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsign
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=textureId};
 	tile->setLayer(DemoGenTileLayerGround, layer);
+
+	// Update map data.
+	if (textureId==MapGen::TextureIdWater)
+		++mapData->waterCount;
+	else
+		++mapData->landCount;
+	++mapData->totalCount;
 }
 
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(int width, int height) {
-	assert(width>0);
-	assert(height>0);
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(DemogenMapData *mapData) {
+	assert(mapData!=NULL);
+
+	// Create callback data.
+	DemogenGroundWaterLandModifyTilesData *callbackData=(DemogenGroundWaterLandModifyTilesData *)malloc(sizeof(DemogenGroundWaterLandModifyTilesData));
+	assert(callbackData!=NULL); // TODO: Better
+	callbackData->mapData=mapData;
 
 	// Create noise.
-	NoiseArray *noiseArray=new NoiseArray(width, height, 4096, 4096, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
+	callbackData->noiseArray=new NoiseArray(mapData->width, mapData->height, 4096, 4096, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
 	printf("\n");
 
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
 	entry->functor=&demogenGroundWaterLandModifyTilesFunctor;
-	entry->userData=noiseArray;
+	entry->userData=(void *)callbackData;
 
 	return entry;
 }
@@ -207,32 +236,42 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(int widt
 }
 
 int main(int argc, char **argv) {
+	DemogenMapData mapData={
+	    .map=NULL,
+	    .width=0,
+	    .height=0,
+	    .landCount=0,
+	    .waterCount=0,
+	    .totalCount=0,
+	    .landFraction=0.0,
+	};
+
 	// Grab arguments.
 	if (argc!=4) {
 		printf("Usage: %s width height outputpath\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
-	int width=atoi(argv[1]);
-	int height=atoi(argv[2]);
+	mapData.width=atoi(argv[1]);
+	mapData.height=atoi(argv[2]);
 	const char *outputPath=argv[3];
 
-	if (width<=0 || height<=0) {
-		printf("Bad width or height (%i and %i)", width, height);
+	if (mapData.width<=0 || mapData.height<=0) {
+		printf("Bad width or height (%i and %i)", mapData.width, mapData.height);
 		return EXIT_FAILURE;
 	}
 
 	// Create Map.
 	printf("Creating map...\n");
-	class Map *map=new class Map(outputPath);
-	if (map==NULL || !map->initialized) {
+	mapData.map=new class Map(outputPath);
+	if (mapData.map==NULL || !mapData.map->initialized) {
 		printf("Could not create a map.\n");
 		return EXIT_FAILURE;
 	}
 
 	// Add textures.
 	printf("Creating textures...\n");
-	if (!MapGen::addBaseTextures(map)) {
+	if (!MapGen::addBaseTextures(mapData.map)) {
 		printf("Could not add base textures.\n");
 		return EXIT_FAILURE;
 	}
@@ -240,21 +279,29 @@ int main(int argc, char **argv) {
 	// Run modify tiles.
 	size_t modifyTilesArrayCount=2;
 	MapGen::ModifyTilesManyEntry *modifyTilesArray[modifyTilesArrayCount];
-	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGroundWaterLand(width, height);
-	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryFullForest(width, height);
+	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGroundWaterLand(&mapData);
+	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryFullForest(mapData.width, mapData.height);
 
 	const char *progressString="Generating tiles (ground+forests) ";
-	MapGen::modifyTilesMany(map, 0, 0, width, height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
 	printf("\n");
 
 	size_t i;
 	for(i=0; i<modifyTilesArrayCount; ++i)
 		free(modifyTilesArray[i]);
 
+	if (mapData.totalCount>0)
+		mapData.landFraction=((double)mapData.landCount)/mapData.totalCount;
+	else
+		mapData.landFraction=0.0;
+
+	setlocale(LC_NUMERIC, "");
+	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landCount/(1000.0*1000.0), mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
+
 	// Add a test NPC.
 	/*
 	printf("Adding an NPC...\n");
-	MapObject *npc1=MapGen::addBuiltinObject(map, MapGen::BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
+	MapObject *npc1=MapGen::addBuiltinObject(mapData.map, MapGen::BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
 	if (npc1!=NULL)
 		npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
 	*/
@@ -262,17 +309,17 @@ int main(int argc, char **argv) {
 	// Add forests.
 	/*
 	printf("Adding forests...\n");
-	addMixedForest(map, 2*0, 2*686, 2*411, 2*1023);
-	addMixedForest(map, 2*605, 2*0, 2*1023, 2*293);
+	addMixedForest(mapData.map, 2*0, 2*686, 2*411, 2*1023);
+	addMixedForest(mapData.map, 2*605, 2*0, 2*1023, 2*293);
 	*/
 
 	// Add houses.
 	/*
 	printf("Adding houses...\n");
-	MapGen::addHouse(map, 950, 730, 10, 8, DemoGenTileLayerFull);
-	MapGen::addHouse(map, 963, 725, 6, 11, DemoGenTileLayerFull);
-	MapGen::addHouse(map, 965, 737, 8, 7, DemoGenTileLayerFull);
-	MapGen::addHouse(map, 951, 740, 5, 5, DemoGenTileLayerFull);
+	MapGen::addHouse(mapData.map, 950, 730, 10, 8, DemoGenTileLayerFull);
+	MapGen::addHouse(mapData.map, 963, 725, 6, 11, DemoGenTileLayerFull);
+	MapGen::addHouse(mapData.map, 965, 737, 8, 7, DemoGenTileLayerFull);
+	MapGen::addHouse(mapData.map, 951, 740, 5, 5, DemoGenTileLayerFull);
 	*/
 
 	// Add towns.
@@ -281,23 +328,23 @@ int main(int argc, char **argv) {
 	const int townMax=64;
 	int townCount=0;
 	for(int townI=0; townI<townMax; ++townI) {
-		int townX=width*(((rand()/(double)RAND_MAX)));
-		int townY=height*(((rand()/(double)RAND_MAX)));
+		int townX=mapData.width*(((rand()/(double)RAND_MAX)));
+		int townY=mapData.height*(((rand()/(double)RAND_MAX)));
 		int townSize=townAvgSize*(((rand()/(double)RAND_MAX))+0.5);
 		bool horizontal=(rand()%2==0);
 
 		if (horizontal) {
 			int townX0=townX-townSize/2;
 			int townX1=townX+townSize/2;
-			if (townX0<0 || townX1>=width)
+			if (townX0<0 || townX1>=mapData.width)
 				continue;
-			townCount+=MapGen::addTown(map, townX0, townY, townX1, townY, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+			townCount+=MapGen::addTown(mapData.map, townX0, townY, townX1, townY, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
 		} else {
 			int townY0=townY-townSize/2;
 			int townY1=townY+townSize/2;
-			if (townY0<0 || townY1>=height)
+			if (townY0<0 || townY1>=mapData.height)
 				continue;
-			townCount+=MapGen::addTown(map, townX, townY0, townX, townY1, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+			townCount+=MapGen::addTown(mapData.map, townX, townY0, townX, townY1, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
 		}
 
 		// Update progress.
@@ -308,7 +355,7 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Save map.
-	if (!map->save()) {
+	if (!mapData.map->save()) {
 		printf("Could not save map to '%s'.\n", outputPath);
 		return EXIT_FAILURE;
 	}
