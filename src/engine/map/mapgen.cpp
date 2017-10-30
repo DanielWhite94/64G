@@ -501,11 +501,12 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, MapGen::TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, MapGen::TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
-			assert(tileLayer<MapTile::layersMax);
+			assert(roadTileLayer<MapTile::layersMax);
+			assert(houseTileLayer<MapTile::layersMax);
 
 			// Check either horizontal or vertical.
 			if (!((y0==y1) || (x0==x1)))
