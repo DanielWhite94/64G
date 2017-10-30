@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -30,4 +31,10 @@ void Util::clearConsoleLine() {
 
 	printf(fmtString, "");
 	fflush(stdout);
+}
+
+double Util::randInInterval(double min, double max) {
+	assert(min<max);
+
+	return (((double)rand())/RAND_MAX)*(max-min)+min;
 }
