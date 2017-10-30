@@ -58,6 +58,11 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 			if (layerGround<MapGen::TextureIdGrass0 || layerGround>MapGen::TextureIdGrass5)
 				return false;
 
+			// Look for road decoration.
+			MapTexture::Id layerDecoration=tile->getLayer(DemoGenTileLayerDecoration)->textureId;
+			if (layerDecoration==MapGen::TextureIdBrickPath || layerDecoration==MapGen::TextureIdDirt)
+				return false;
+
 			// Look for full obstacles.
 			MapTexture::Id layerFull=tile->getLayer(DemoGenTileLayerFull)->textureId;
 			if (layerFull!=MapGen::TextureIdNone)
@@ -286,13 +291,13 @@ int main(int argc, char **argv) {
 			int townX1=townX+townSize/2;
 			if (townX0<0 || townX1>=width)
 				continue;
-			townCount+=MapGen::addTown(map, townX0, townY, townX1, townY, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+			townCount+=MapGen::addTown(map, townX0, townY, townX1, townY, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
 		} else {
 			int townY0=townY-townSize/2;
 			int townY1=townY+townSize/2;
 			if (townY0<0 || townY1>=height)
 				continue;
-			townCount+=MapGen::addTown(map, townX, townY0, townX, townY1, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
+			townCount+=MapGen::addTown(map, townX, townY0, townX, townY1, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
 		}
 
 		// Update progress.

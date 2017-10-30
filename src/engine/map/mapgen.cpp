@@ -369,11 +369,12 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned tileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
-			assert(tileLayer<MapTile::layersMax);
+			assert(roadTileLayer<MapTile::layersMax);
+			assert(houseTileLayer<MapTile::layersMax);
 
 			// Check either horizontal or vertical.
 			if (!((y0==y1) || (x0==x1)))
@@ -429,7 +430,7 @@ namespace Engine {
 				int a, b;
 				for(a=road.y0; a<road.trueY1; ++a)
 					for(b=road.x0; b<road.trueX1; ++b)
-						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=(road.width>=3 ? TextureIdBrickPath : TextureIdDirt)});
+						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), true)->setLayer(roadTileLayer, {.textureId=(road.width>=3 ? TextureIdBrickPath : TextureIdDirt)});
 
 				// Add potential child roads.
 				MapGenRoad newRoad;
@@ -484,12 +485,12 @@ namespace Engine {
 
 						if (road.isHorizontal()) {
 							if (testFunctor(map, hx-1, hy, hw+2, hh, testFunctorUserData)) {
-								addHouse(map, hx, hy, hw, hh, tileLayer, !greater, NULL, NULL);
+								addHouse(map, hx, hy, hw, hh, houseTileLayer, !greater, NULL, NULL);
 								break;
 							}
 						} else {
 							if (testFunctor(map, hx, hy-1, hw, hh+2, testFunctorUserData)) {
-								addHouse(map, hx, hy, hw, hh, tileLayer, false, NULL, NULL);
+								addHouse(map, hx, hy, hw, hh, houseTileLayer, false, NULL, NULL);
 								break;
 							}
 						}
