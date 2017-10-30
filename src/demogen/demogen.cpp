@@ -28,6 +28,8 @@ typedef struct {
 	// These are computed after ground water/land modify tiles stage.
 	unsigned long long landCount, waterCount, totalCount;
 	double landFraction;
+
+	double landSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
 struct DemogenFullForestModifyTilesData {
@@ -244,6 +246,9 @@ int main(int argc, char **argv) {
 	    .waterCount=0,
 	    .totalCount=0,
 	    .landFraction=0.0,
+		.landSqKm=0.0,
+		.peoplePerSqKm=0.0,
+		.totalPopulation=0.0,
 	};
 
 	// Grab arguments.
@@ -290,13 +295,19 @@ int main(int argc, char **argv) {
 	for(i=0; i<modifyTilesArrayCount; ++i)
 		free(modifyTilesArray[i]);
 
+	// Compute more map data.
 	if (mapData.totalCount>0)
 		mapData.landFraction=((double)mapData.landCount)/mapData.totalCount;
 	else
 		mapData.landFraction=0.0;
 
+	mapData.landSqKm=mapData.landCount/(1000.0*1000.0);
+	mapData.peoplePerSqKm=100.0;
+	mapData.totalPopulation=mapData.landSqKm*mapData.peoplePerSqKm;
+
 	setlocale(LC_NUMERIC, "");
-	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landCount/(1000.0*1000.0), mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
+	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
+	printf("People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add a test NPC.
 	/*
