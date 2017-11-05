@@ -100,6 +100,18 @@ namespace Engine {
 				void *userData;
 			};
 
+			struct AddTownHouseData {
+				int x, y;
+
+				int mapW, mapH;
+
+				int genWidth, genDepth;
+
+				bool isHorizontal; // derived from the road the house is conencted to
+				bool side; // 0 = left/top, 1=/right/down
+				bool showDoor;
+			};
+
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
 

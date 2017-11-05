@@ -461,39 +461,44 @@ namespace Engine {
 			if (roads.size()<3)
 				return false;
 
-			// Add houses along roads.
+			// Generate houses along roads.
 			for(const auto road: roads) {
-				//if (!road.isHorizontal())
 				int minWidth=4;
 				int maxWidth=std::min(road.width+7, road.getLen()-1);
 				if (minWidth>=maxWidth)
 					continue;
 
+				AddTownHouseData houseData;
+				houseData.isHorizontal=road.isHorizontal();
+
 				for(unsigned i=0; i<100; ++i) {
-					int width=rand()%(maxWidth-minWidth)+minWidth;
-					int depth=rand()%road.width+5; // distance from edge with road to opposite edge
+					houseData.genWidth=rand()%(maxWidth-minWidth)+minWidth;
+					houseData.genDepth=rand()%road.width+5; // distance from edge with road to opposite edge
 
 					unsigned j;
 					for(j=0; j<20; ++j) {
-						bool greater=(rand()%2==0);
-						int offset=rand()%(road.getLen()-width);
+						houseData.side=(rand()%2==0);
+						int offset=rand()%(road.getLen()-houseData.genWidth);
 
-						int hx=(road.isHorizontal() ? road.x0+offset : (greater ? road.trueX1 : road.x0-depth));
-						int hy=(road.isVertical() ? road.y0+offset : (greater ? road.trueY1 : road.y0-depth));
-						int hw=(road.isHorizontal() ? width : depth);
-						int hh=(road.isVertical() ? width : depth);
+						houseData.x=(road.isHorizontal() ? road.x0+offset : (houseData.side ? road.trueX1 : road.x0-houseData.genDepth));
+						houseData.y=(road.isVertical() ? road.y0+offset : (houseData.side ? road.trueY1 : road.y0-houseData.genDepth));
+						houseData.mapW=(road.isHorizontal() ? houseData.genWidth : houseData.genDepth);
+						houseData.mapH=(road.isVertical() ? houseData.genWidth : houseData.genDepth);
+
+						houseData.showDoor=(road.isHorizontal() && !houseData.side);
 
 						if (road.isHorizontal()) {
-							if (testFunctor(map, hx-1, hy, hw+2, hh, testFunctorUserData)) {
-								addHouse(map, hx, hy, hw, hh, houseTileLayer, !greater, NULL, NULL);
-								break;
-							}
+							if (!testFunctor(map, houseData.x-1, houseData.y, houseData.mapW+2, houseData.mapH, testFunctorUserData))
+								continue;
 						} else {
-							if (testFunctor(map, hx, hy-1, hw, hh+2, testFunctorUserData)) {
-								addHouse(map, hx, hy, hw, hh, houseTileLayer, false, NULL, NULL);
-								break;
-							}
+							if (!testFunctor(map, houseData.x, houseData.y-1, houseData.mapW, houseData.mapH+2, testFunctorUserData))
+								continue;
 						}
+
+						if (!addHouse(map, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseTileLayer, houseData.showDoor, NULL, NULL))
+							continue;
+
+						break;
 					}
 				}
 			}
