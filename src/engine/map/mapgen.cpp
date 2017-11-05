@@ -501,59 +501,46 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, MapGen::TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, double totalPopulation, MapGen::TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
 			assert(roadTileLayer<MapTile::layersMax);
 			assert(houseTileLayer<MapTile::layersMax);
 
-			// Check either horizontal or vertical.
-			if (!((y0==y1) || (x0==x1)))
-				return false;
+			const double peoplePerSqKm=20000.0;
 
-			// Compute constants.
-			// ...
+			const double initialTownPop=Util::randInInterval(10.0,20.0)*sqrt(totalPopulation);
+			for(double townPop=initialTownPop; townPop>=30; townPop*=Util::randInInterval(0.6,0.8)) {
+				const double townSizeSqKm=townPop/peoplePerSqKm;
 
-			// Create points representing candidate village/town locations.
-			// ...
+				const int townSize=1000.0*sqrt(townSizeSqKm);
+				//const unsigned desiredCount=1;
+				const unsigned desiredCount=ceil(initialTownPop/townPop);
+				printf("	attempting to add %u towns, each with pop %.0f, size %.3fkm^2 (%'im per side)\n", desiredCount, townPop, townSizeSqKm, townSize);
 
-			/*
+				const unsigned attemptMax=desiredCount*4;
+				unsigned addedCount=0;
+				for(unsigned i=0; i<attemptMax && addedCount<desiredCount; ++i) {
+					int townX=Util::randInInterval(x0, x1);
+					int townY=Util::randInInterval(y0, y1);
+					bool horizontal=(rand()%2==0);
 
-			.....
-
-			# placing towns #
-			first place virtual towns/points, each with a score, at sensible/attractive places within the kingdom
-			the score would be based on things such as:
-			* resources in the area - e.g. desert bad, forest/ores nearby good
-			* distance from coastline
-			(perhaps each score factor 0.0-1.0 then weighted average)
-			then do another pass making roads/bridges where needed
-			then using this knowledge boost score of some towns if major transport links
-			also add smaller towns etc
-
-
-			* Villages 20-1k pop, typically 50-300, have thousands
-			* towns 1k-8k pop, typically 2,500
-			* cities 8k-12k pop. A large kingdom will have 2-6. Universities tend to be in cities of this size
-			* Big Cities 12k-100k pop, exceptional cities exceeding this scale.
-				Historical: London 25k-40k, Paris 50k-80k, Genoa 75k-100k, Venice 100k+, Moscow of 200k.
-			Large population centers of any scale are the result of traffic. Coastlines, navigable rivers and overland trade-routes form a criss-crossing pattern of trade-arteries, and the towns and cities grow along those lines. The larger the artery, the larger the town. And where several large arteries converge, you have a city.
-			Villages are scattered densely through the country between the larger settlements.
-
-			Population Spread
-			* largest citys pop: sqrt(kingdom pop)*randin(10,20)
-			* 2nd largest 20-80% size of largest
-			* Each remaining city 10% to 40% smaller than the previous; continue until no longer city pop >=8,000.
-			* #towns=#cities*randin(5,15)
-			The remaining population live in villages; a small number will live in isolated dwellings or be itinerent workers and wanderers.
-			Example:
-			Chamlek is an island kingdom, total land area 88,700 square miles, good climate only a few rocky hills, well-watered countryside. population is 6.6 million, average density 75 people per square mile.
-			major cities are Restagg (39,000), Volthyrm (19,000), McClannach (15,000), Cormidigar (11,000), and Oberthrush (8,000).
-			5 cities and 45 towns, with a total urban population of 200,000 (about 3% of the kingdom).
-			The rest is rural - approximately 1 urban center for every 1,800 square miles.
-
-			*/
+					if (horizontal) {
+						int townX0=townX-townSize/2;
+						int townX1=townX+townSize/2;
+						if (townX0<0)
+							continue;
+						addedCount+=MapGen::addTown(map, townX0, townY, townX1, townY, roadTileLayer, houseTileLayer, testFunctor, testFunctorUserData);
+					} else {
+						int townY0=townY-townSize/2;
+						int townY1=townY+townSize/2;
+						if (townY0<0)
+							continue;
+						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, roadTileLayer, houseTileLayer, testFunctor, testFunctorUserData);
+					}
+				}
+			}
 
 			return true;
 		}

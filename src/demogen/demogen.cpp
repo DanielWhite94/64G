@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
 		mapData.landFraction=0.0;
 
 	mapData.landSqKm=mapData.landCount/(1000.0*1000.0);
-	mapData.peoplePerSqKm=100.0;
+	mapData.peoplePerSqKm=150.0;
 	mapData.totalPopulation=mapData.landSqKm*mapData.peoplePerSqKm;
 
 	setlocale(LC_NUMERIC, "");
@@ -335,34 +335,7 @@ int main(int argc, char **argv) {
 
 	// Add towns.
 	printf("Adding towns...\n");
-	const int townAvgSize=200;
-	const int townMax=64;
-	int townCount=0;
-	for(int townI=0; townI<townMax; ++townI) {
-		int townX=mapData.width*(((rand()/(double)RAND_MAX)));
-		int townY=mapData.height*(((rand()/(double)RAND_MAX)));
-		int townSize=townAvgSize*(((rand()/(double)RAND_MAX))+0.5);
-		bool horizontal=(rand()%2==0);
-
-		if (horizontal) {
-			int townX0=townX-townSize/2;
-			int townX1=townX+townSize/2;
-			if (townX0<0 || townX1>=mapData.width)
-				continue;
-			townCount+=MapGen::addTown(mapData.map, townX0, townY, townX1, townY, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
-		} else {
-			int townY0=townY-townSize/2;
-			int townY1=townY+townSize/2;
-			if (townY0<0 || townY1>=mapData.height)
-				continue;
-			townCount+=MapGen::addTown(mapData.map, townX, townY0, townX, townY1, DemoGenTileLayerDecoration, DemoGenTileLayerFull, &demogenTownTileTestFunctor, NULL);
-		}
-
-		// Update progress.
-		Util::clearConsoleLine();
-		printf("	adding towns: %.1f%% (%i/%i successful)", ((townI+1)*100.0)/townMax, townCount, townI);
-		fflush(stdout);
-	}
+	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerDecoration, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
 	printf("\n");
 
 	// Save map.

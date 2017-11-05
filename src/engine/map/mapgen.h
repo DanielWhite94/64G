@@ -112,7 +112,7 @@ namespace Engine {
 			static bool addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData);
 
 			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData);
-			static bool addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer,  TileTestFunctor *testFunctor, void *testFunctorUserData);
+			static bool addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, double totalPopulation,  TileTestFunctor *testFunctor, void *testFunctorUserData);
 
 			static void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData);
 			static void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, MapGen::ModifyTilesManyEntry *functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData);
