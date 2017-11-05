@@ -98,7 +98,7 @@ namespace Engine {
 			struct ModifyTilesManyEntry {
 				ModifyTilesFunctor *functor;
 				void *userData;
-			} ;
+			};
 
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
