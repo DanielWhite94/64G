@@ -100,6 +100,13 @@ namespace Engine {
 				void *userData;
 			};
 
+			enum AddHouseFullFlags {
+				None=0x0,
+				ShowDoor=0x1,
+				ShowChimney=0x2,
+				All=(ShowDoor|ShowChimney),
+			};
+
 			struct AddTownHouseData {
 				int x, y;
 
@@ -109,14 +116,11 @@ namespace Engine {
 
 				bool isHorizontal; // derived from the road the house is conencted to
 				bool side; // 0 = left/top, 1=/right/down
-				bool showDoor;
-			};
+				AddHouseFullFlags flags;
 
-			enum AddHouseFullFlags {
-				None=0x0,
-				ShowDoor=0x1,
-				ShowChimney=0x2,
-				All=(ShowDoor|ShowChimney),
+				unsigned roofHeight;
+				unsigned doorOffset; // Only valid if flags has ShowDoor
+				unsigned chimneyOffset;
 			};
 
 			MapGen(unsigned width, unsigned height);

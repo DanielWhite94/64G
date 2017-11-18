@@ -498,6 +498,7 @@ namespace Engine {
 
 					unsigned j;
 					for(j=0; j<20; ++j) {
+						// Choose house position.
 						houseData.side=(rand()%2==0);
 						int offset=rand()%(road.getLen()-houseData.genWidth);
 
@@ -506,8 +507,7 @@ namespace Engine {
 						houseData.mapW=(road.isHorizontal() ? houseData.genWidth : houseData.genDepth);
 						houseData.mapH=(road.isVertical() ? houseData.genWidth : houseData.genDepth);
 
-						houseData.showDoor=(road.isHorizontal() && !houseData.side);
-
+						// Test house area is valid.
 						if (road.isHorizontal()) {
 							if (!testFunctor(map, houseData.x-1, houseData.y, houseData.mapW+2, houseData.mapH, testFunctorUserData))
 								continue;
@@ -516,7 +516,18 @@ namespace Engine {
 								continue;
 						}
 
-						if (!addHouse(map, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseTileLayer, houseData.showDoor, NULL, NULL))
+						// Compute house parameters.
+						bool showDoor=(road.isHorizontal() && !houseData.side);
+						houseData.flags=(AddHouseFullFlags)(AddHouseFullFlags::ShowChimney|(showDoor ? AddHouseFullFlags::ShowDoor : AddHouseFullFlags::None));
+
+						const double houseRoofRatio=0.6;
+						houseData.roofHeight=(int)floor(houseRoofRatio*houseData.mapH);
+
+						houseData.doorOffset=(rand()%(houseData.mapW-3))+1;
+						houseData.chimneyOffset=rand()%houseData.mapW;
+
+						// Attempt to add the house.
+						if (!addHouseFull(map, houseData.flags, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseData.roofHeight, houseTileLayer, houseData.doorOffset, houseData.chimneyOffset, NULL, NULL))
 							continue;
 
 						break;
