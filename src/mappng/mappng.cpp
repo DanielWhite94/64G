@@ -163,6 +163,7 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdHouseWall4:
 							case MapGen::TextureIdHouseChimney:
 							case MapGen::TextureIdHouseChimneyTop:
+							case MapGen::TextureIdShopCobbler:
 								r=255,g=128,b=0;
 							break;
 							case MapGen::TextureIdSand:

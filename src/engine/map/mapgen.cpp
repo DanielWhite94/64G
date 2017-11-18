@@ -80,6 +80,7 @@ namespace Engine {
 				[TextureIdHouseChimney]="../images/tiles/house/chimney.png",
 				[TextureIdHouseChimneyTop]="../images/tiles/house/chimneytop.png",
 				[TextureIdSand]="../images/tiles/sand.png",
+				[TextureIdShopCobbler]="../images/tiles/shops/cobbler.png",
 			};
 			const int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -112,6 +113,7 @@ namespace Engine {
 				[TextureIdHouseChimney]=4,
 				[TextureIdHouseChimneyTop]=4,
 				[TextureIdSand]=4,
+				[TextureIdShopCobbler]=4,
 			};
 
 			bool success=true;
