@@ -334,12 +334,14 @@ namespace Engine {
 
 			unsigned tx, ty;
 
+			const int doorW=2;
+
 			// Check arguments are reasonable.
 			if (totalW<5 || totalH<5)
 				return false;
 			if (roofHeight>=totalH-2)
 				return false;
-			if ((flags & AddHouseFullFlags::ShowDoor) && doorXOffset>=totalW)
+			if ((flags & AddHouseFullFlags::ShowDoor) && doorXOffset+doorW>totalW)
 				return false;
 			if ((flags & AddHouseFullFlags::ShowChimney) && chimneyXOffset>=totalW)
 				return false;
