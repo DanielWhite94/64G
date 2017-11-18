@@ -309,29 +309,49 @@ namespace Engine {
 				}
 		}
 
-		bool MapGen::addHouse(class Map *map, unsigned x, unsigned y, unsigned w, unsigned h, unsigned tileLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned tileLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+			assert(map!=NULL);
+
+			// Check arguments are reasonable.
+			if (totalW<=3 || totalH<=3)
+				return false;
+
+			// Choose parameters.
+			const double roofRatio=0.6;
+			unsigned roofHeight=(int)floor(roofRatio*totalH);
+
+			unsigned doorOffset=(rand()%(totalW-3))+1;
+			unsigned chimneyOffset=rand()%totalW;
+
+			// Call addHouseFull to do most of the work.
+			return addHouseFull(map, AddHouseFullFlags::All, baseX, baseY, totalW, totalH, roofHeight, tileLayer, doorOffset, chimneyOffset, testFunctor, testFunctorUserData);
+		}
+
+		bool MapGen::addHouseFull(class Map *map, AddHouseFullFlags flags, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned roofHeight, unsigned tileLayer, unsigned doorXOffset, unsigned chimneyXOffset, TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 
 			unsigned tx, ty;
 
-			// Choose parameters.
-			const double roofRatio=0.6;
-
-			// Check width and height are reasonable.
-			if (w<5 || h<5)
+			// Check arguments are reasonable.
+			if (totalW<5 || totalH<5)
+				return false;
+			if (roofHeight>=totalH-2)
+				return false;
+			if ((flags & AddHouseFullFlags::ShowDoor) && doorXOffset>=totalW)
+				return false;
+			if ((flags & AddHouseFullFlags::ShowChimney) && chimneyXOffset>=totalW)
 				return false;
 
 			// Check area is suitable.
-			if (testFunctor!=NULL && !testFunctor(map, x, y, w, h, testFunctorUserData))
+			if (testFunctor!=NULL && !testFunctor(map, baseX, baseY, totalW, totalH, testFunctorUserData))
 				return false;
 
 			// Calculate constants.
-			unsigned roofHeight=(int)floor(roofRatio*h);
-			unsigned wallHeight=h-roofHeight;
+			unsigned wallHeight=totalH-roofHeight;
 
 			// Add walls.
 			for(ty=0;ty<wallHeight;++ty)
-				for(tx=0;tx<w;++tx) {
+				for(tx=0;tx<totalW;++tx) {
 					MapTexture::Id texture;
 					switch(ty%4) {
 						case 0: texture=TextureIdHouseWall3; break;
@@ -339,32 +359,33 @@ namespace Engine {
 						case 2: texture=TextureIdHouseWall4; break;
 						case 3: texture=TextureIdHouseWall2; break;
 					}
-					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+h-1-ty)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=texture});
+					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+totalH-1-ty)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=texture});
 				}
 
 			// Add door.
-			if (showDoor) {
-				unsigned doorX=(rand()%(w-3))+x+1;
-
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBL});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBR});
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTL});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (y+h-2)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTR});
+			if (flags & AddHouseFullFlags::ShowDoor) {
+				int doorX=doorXOffset+baseX;
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBL});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBR});
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTL});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTR});
 			}
 
 			// Add main part of roof.
 			for(ty=0;ty<roofHeight-1;++ty) // -1 due to ridge tiles added later
-				for(tx=0;tx<w;++tx)
-					map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+1+ty)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseRoof});
+				for(tx=0;tx<totalW;++tx)
+					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+1+ty)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseRoof});
 
 			// Add roof top ridge.
-			for(tx=0;tx<w;++tx)
-				map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, y*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseRoofTop});
+			for(tx=0;tx<totalW;++tx)
+				map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseRoofTop});
 
 			// Add chimney.
-			unsigned chimneyX=rand()%w+x;
-			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, y*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseChimneyTop});
-			map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (y+1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseChimney});
+			if (flags & AddHouseFullFlags::ShowChimney) {
+				int chimneyX=chimneyXOffset+baseX;
+				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseChimneyTop});
+				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (baseY+1)*Physics::CoordsPerTile), true)->setLayer(tileLayer, {.textureId=TextureIdHouseChimney});
+			}
 
 			return true;
 		}
