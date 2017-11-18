@@ -56,10 +56,10 @@ namespace Engine {
 			map=gMap;
 
 			// TODO: improve using CoordVec functions/overloads
-			topLeft.x=Util::floordiv(camera->screenXOffsetToCoordX(-windowWidth/2), CoordsPerTile)*CoordsPerTile;
-			topLeft.y=Util::floordiv(camera->screenYOffsetToCoordY(-windowHeight/2), CoordsPerTile)*CoordsPerTile;
-			bottomRight.x=Util::floordiv(camera->screenXOffsetToCoordX(+windowWidth/2), CoordsPerTile)*CoordsPerTile;
-			bottomRight.y=Util::floordiv(camera->screenYOffsetToCoordY(+windowHeight/2), CoordsPerTile)*CoordsPerTile;
+			topLeft.x=(Util::floordiv(camera->screenXOffsetToCoordX(-windowWidth/2), CoordsPerTile)-1)*CoordsPerTile;
+			topLeft.y=(Util::floordiv(camera->screenYOffsetToCoordY(-windowHeight/2), CoordsPerTile)-1)*CoordsPerTile;
+			bottomRight.x=(Util::floordiv(camera->screenXOffsetToCoordX(+windowWidth/2), CoordsPerTile)+1)*CoordsPerTile;
+			bottomRight.y=(Util::floordiv(camera->screenYOffsetToCoordY(+windowHeight/2), CoordsPerTile)+1)*CoordsPerTile;
 
 			// Clear screen (to pink to highlight any areas not being drawn).
 			SDL_SetRenderDrawColor(renderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
