@@ -4,3 +4,6 @@ maps/*
 # Binaries
 bin/*
 build
+
+# Backup files
+*~
