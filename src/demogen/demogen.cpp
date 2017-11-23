@@ -161,7 +161,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 	callbackData->mapData=mapData;
 
 	// Create noise.
-	callbackData->noiseArray=new NoiseArray(mapData->width, mapData->height, 2048, 2048, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
+	callbackData->noiseArray=new NoiseArray(17, mapData->width, mapData->height, 2048, 2048, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
 	printf("\n");
 
 	// Create entry.
@@ -221,7 +221,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(int widt
 	assert(height>0);
 
 	// Create noise.
-	NoiseArray *noiseArray=new NoiseArray(width, height, 1024, 1024, 200.0, 16, &noiseArrayProgressFunctorString, (void *)"Forest: generating noise ");
+	NoiseArray *noiseArray=new NoiseArray(13, width, height, 1024, 1024, 200.0, 16, &noiseArrayProgressFunctorString, (void *)"Forest: generating noise ");
 	printf("\n");
 
 	// Create user data.

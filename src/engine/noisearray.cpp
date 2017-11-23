@@ -17,7 +17,7 @@ namespace Engine {
 		fflush(stdout);
 	}
 
-	NoiseArray::NoiseArray(double tileWidth, double tileHeight, unsigned gNoiseWidth, unsigned noiseHeight, double noiseResolution, unsigned progressDelta, ProgressFunctor *progressFunctor, void *progressUserData) {
+	NoiseArray::NoiseArray(unsigned seed, double tileWidth, double tileHeight, unsigned gNoiseWidth, unsigned noiseHeight, double noiseResolution, unsigned progressDelta, ProgressFunctor *progressFunctor, void *progressUserData) {
 		assert(tileWidth>0.0);
 		assert(tileHeight>0.0);
 		assert(gNoiseWidth>0);
@@ -38,7 +38,7 @@ namespace Engine {
 
 		unsigned x, y;
 
-		FbnNoise heightNose(8, 1.0/noiseResolution, 1.0, 2.0, 0.5);
+		FbnNoise heightNose(seed, 8, 1.0/noiseResolution, 1.0, 2.0, 0.5);
 		const float freqFactorX=(tileWidth/noiseWidth)/8.0;
 		const float freqFactorY=(tileHeight/noiseHeight)/8.0;
 		arrayPtr=array;

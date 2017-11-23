@@ -3,8 +3,8 @@
 #include "fbnnoise.h"
 
 namespace Engine {
-	FbnNoise::FbnNoise(unsigned gOctaves, double gFrequency, double gAmplitude, double gLacunarity, double gGain) {
-		baseNoise=new OpenSimplexNoise();
+	FbnNoise::FbnNoise(unsigned seed, unsigned gOctaves, double gFrequency, double gAmplitude, double gLacunarity, double gGain) {
+		baseNoise=new OpenSimplexNoise(seed);
 		octaves=gOctaves;
 		frequency=gFrequency;
 		amplitude=gAmplitude;
