@@ -149,6 +149,9 @@ int main(int argc, char **argv) {
 						case SDLK_SPACE:
 							playerRunning=false;
 						break;
+						case SDLK_F11:
+							renderer.toggleFullscreen();
+						break;
 					}
 				break;
 			}
