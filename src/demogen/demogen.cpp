@@ -40,7 +40,7 @@ typedef struct {
 	DemogenMapData *mapData;
 
 	NoiseArray *noiseArray;
-} DemogenGroundWaterLandModifyTilesData;
+} DemogenGroundModifyTilesData;
 
 /*
 bool demogenForestTestFunctorGroundIsTexture(class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
@@ -104,11 +104,11 @@ void addMixedForest(class Map *map, int x0, int y0, int x1, int y1) {
 }
 */
 
-void demogenGroundWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
-	const DemogenGroundWaterLandModifyTilesData *data=(const DemogenGroundWaterLandModifyTilesData *)userData;
+	const DemogenGroundModifyTilesData *data=(const DemogenGroundModifyTilesData *)userData;
 	DemogenMapData *mapData=data->mapData;
 	const NoiseArray *noiseArray=data->noiseArray;
 
@@ -152,11 +152,11 @@ void demogenGroundWaterLandModifyTilesFunctor(class Map *map, unsigned x, unsign
 	++mapData->totalCount;
 }
 
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(DemogenMapData *mapData) {
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData) {
 	assert(mapData!=NULL);
 
 	// Create callback data.
-	DemogenGroundWaterLandModifyTilesData *callbackData=(DemogenGroundWaterLandModifyTilesData *)malloc(sizeof(DemogenGroundWaterLandModifyTilesData));
+	DemogenGroundModifyTilesData *callbackData=(DemogenGroundModifyTilesData *)malloc(sizeof(DemogenGroundModifyTilesData));
 	assert(callbackData!=NULL); // TODO: Better
 	callbackData->mapData=mapData;
 
@@ -166,7 +166,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(Dem
 
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&demogenGroundWaterLandModifyTilesFunctor;
+	entry->functor=&demogenGroundModifyTilesFunctor;
 	entry->userData=(void *)callbackData;
 
 	return entry;
@@ -284,7 +284,7 @@ int main(int argc, char **argv) {
 	// Run modify tiles.
 	size_t modifyTilesArrayCount=2;
 	MapGen::ModifyTilesManyEntry *modifyTilesArray[modifyTilesArrayCount];
-	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGroundWaterLand(&mapData);
+	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGround(&mapData);
 	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryFullForest(mapData.width, mapData.height);
 
 	const char *progressString="Generating tiles (ground+forests) ";
