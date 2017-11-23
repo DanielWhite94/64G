@@ -9,7 +9,7 @@ using namespace Engine::Graphics;
 
 namespace Engine {
 	namespace Graphics {
-		Renderer::Renderer(unsigned gWindowWidth, unsigned gWindowHeight) {
+		Renderer::Renderer(unsigned windowWidth, unsigned windowHeight) {
 			// Set parameters.
 			drawTileGrid=false;
 			drawCoordGrid=false;
@@ -20,10 +20,6 @@ namespace Engine {
 			// Init SDL.
 			SDL_Init(SDL_INIT_VIDEO);
 			IMG_Init(IMG_INIT_PNG);
-
-			// Copy width and height.
-			windowWidth=gWindowWidth;
-			windowHeight=gWindowHeight;
 
 			// Create window.
 			window=SDL_CreateWindow("title", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, 0); // TODO: Check return and set a title.
@@ -50,6 +46,9 @@ namespace Engine {
 		void Renderer::refresh(const Camera *gCamera, class Map *gMap) {
 			assert(gCamera!=NULL);
 			assert(gMap!=NULL);
+
+			int windowWidth=getWidth();
+			int windowHeight=getHeight();
 
 			// Update fields.
 			camera=gCamera;
@@ -232,8 +231,27 @@ namespace Engine {
 			SDL_RenderPresent(renderer);
 		}
 
+		unsigned Renderer::getWidth(void) {
+			SDL_DisplayMode dm;
+			if (SDL_GetRendererOutputSize(renderer, &dm.w, &dm.h)==0)
+				return dm.w;
+			else
+				return 1024; // HACK?
+		}
+
+		unsigned Renderer::getHeight(void) {
+			SDL_DisplayMode dm;
+			if (SDL_GetRendererOutputSize(renderer, &dm.w, &dm.h)==0)
+				return dm.h;
+			else
+				return 512; // HACK?
+		}
+
 		void Renderer::renderGrid(const CoordVec &coordDelta) {
 			CoordVec sDelta=CoordVec(camera->coordLengthToScreenLength(coordDelta.x),camera->coordLengthToScreenLength(coordDelta.y));
+
+			int windowWidth=getWidth();
+			int windowHeight=getHeight();
 
 			// Draw vertical lines.
 			int x;

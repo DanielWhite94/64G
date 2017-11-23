@@ -26,9 +26,10 @@ namespace Engine {
 			~Renderer();
 
 			void refresh(const Engine::Graphics::Camera *camera, class Map *map);
-		private:
-			int windowWidth, windowHeight;
 
+			unsigned getWidth(void);
+			unsigned getHeight(void);
+		private:
 			SDL_Window *window;
 			SDL_Renderer *renderer;
 
