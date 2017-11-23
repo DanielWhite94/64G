@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
 	const int TilesHigh=18;
 	const double fps=120.0;
 
-	const int WindowWidth=(TilesWide*Physics::CoordsPerTile*defaultZoom);
-	const int WindowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
+	const int windowWidth=(TilesWide*Physics::CoordsPerTile*defaultZoom);
+	const int windowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
 	const int fpsDelay=1000.0/fps;
 
 	CoordVec playerDelta(0, 0);
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 	}
 
 	// Create renderer.
-	Renderer renderer(WindowWidth, WindowHeight);
+	Renderer renderer(windowWidth, windowHeight);
 
 	// Create camera variables.
 	Camera camera(CoordVec(0,0), defaultZoom);
