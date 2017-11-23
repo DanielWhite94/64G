@@ -161,7 +161,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGroundWaterLand(Dem
 	callbackData->mapData=mapData;
 
 	// Create noise.
-	callbackData->noiseArray=new NoiseArray(mapData->width, mapData->height, 4096, 4096, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
+	callbackData->noiseArray=new NoiseArray(mapData->width, mapData->height, 2048, 2048, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Water/land: generating height noise ");
 	printf("\n");
 
 	// Create entry.
