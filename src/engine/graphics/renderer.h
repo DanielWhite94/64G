@@ -27,6 +27,9 @@ namespace Engine {
 
 			void refresh(const Engine::Graphics::Camera *camera, class Map *map);
 
+			bool getFullscreen(void);
+			void toggleFullscreen(void);
+
 			unsigned getWidth(void);
 			unsigned getHeight(void);
 		private:

@@ -231,6 +231,16 @@ namespace Engine {
 			SDL_RenderPresent(renderer);
 		}
 
+		bool Renderer::getFullscreen(void) {
+			return (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
+		}
+
+		void Renderer::toggleFullscreen(void) {
+			bool isFs=getFullscreen();
+			SDL_SetWindowFullscreen(window, (isFs ? 0 : SDL_WINDOW_FULLSCREEN));
+			SDL_ShowCursor(isFs);
+		}
+
 		unsigned Renderer::getWidth(void) {
 			SDL_DisplayMode dm;
 			if (SDL_GetRendererOutputSize(renderer, &dm.w, &dm.h)==0)
