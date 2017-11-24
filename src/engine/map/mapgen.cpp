@@ -81,6 +81,17 @@ namespace Engine {
 				[TextureIdHouseChimneyTop]="../images/tiles/house/chimneytop.png",
 				[TextureIdSand]="../images/tiles/sand.png",
 				[TextureIdShopCobbler]="../images/tiles/shops/cobbler.png",
+				[TextureIdHeatMap0]="../images/tiles/heatmap/0.png",
+				[TextureIdHeatMap10]="../images/tiles/heatmap/10.png",
+				[TextureIdHeatMap20]="../images/tiles/heatmap/20.png",
+				[TextureIdHeatMap30]="../images/tiles/heatmap/30.png",
+				[TextureIdHeatMap40]="../images/tiles/heatmap/40.png",
+				[TextureIdHeatMap50]="../images/tiles/heatmap/50.png",
+				[TextureIdHeatMap60]="../images/tiles/heatmap/60.png",
+				[TextureIdHeatMap70]="../images/tiles/heatmap/70.png",
+				[TextureIdHeatMap80]="../images/tiles/heatmap/80.png",
+				[TextureIdHeatMap90]="../images/tiles/heatmap/90.png",
+				[TextureIdHeatMap100]="../images/tiles/heatmap/100.png",
 			};
 			const int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -114,6 +125,17 @@ namespace Engine {
 				[TextureIdHouseChimneyTop]=4,
 				[TextureIdSand]=4,
 				[TextureIdShopCobbler]=4,
+				[TextureIdHeatMap0]=4,
+				[TextureIdHeatMap10]=4,
+				[TextureIdHeatMap20]=4,
+				[TextureIdHeatMap30]=4,
+				[TextureIdHeatMap40]=4,
+				[TextureIdHeatMap50]=4,
+				[TextureIdHeatMap60]=4,
+				[TextureIdHeatMap70]=4,
+				[TextureIdHeatMap80]=4,
+				[TextureIdHeatMap90]=4,
+				[TextureIdHeatMap100]=4,
 			};
 
 			bool success=true;

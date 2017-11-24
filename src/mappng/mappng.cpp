@@ -169,6 +169,39 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdSand:
 								r=255,g=255,b=0;
 							break;
+							case MapGen::TextureIdHeatMap0:
+								r=g=b=(00/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap10:
+								r=g=b=(10/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap20:
+								r=g=b=(20/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap30:
+								r=g=b=(30/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap40:
+								r=g=b=(40/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap50:
+								r=g=b=(50/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap60:
+								r=g=b=(60/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap70:
+								r=g=b=(70/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap80:
+								r=g=b=(80/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap90:
+								r=g=b=(90/100.0)*255.0;
+							break;
+							case MapGen::TextureIdHeatMap100:
+								r=g=b=(100/100.0)*255.0;
+							break;
 							case MapGen::TextureIdNB:
 								assert(false);
 								continue; // Try next layer instead
