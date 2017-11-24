@@ -42,24 +42,6 @@ typedef struct {
 	NoiseArray *noiseArray;
 } DemogenGroundModifyTilesData;
 
-/*
-bool demogenForestTestFunctorGroundIsTexture(class Map *map, MapGen::BuiltinObject builtin, const CoordVec &position, void *userData) {
-	assert(map!=NULL);
-
-	MapTexture::Id textureId=(MapTexture::Id)(uintptr_t)userData;
-
-	const MapTile *tile=map->getTileAtCoordVec(position);
-	if (tile==NULL)
-		return false;
-
-	const MapTile::Layer *layer=tile->getLayer(DemoGenTileLayerGround);
-	if (layer==NULL)
-		return false;
-
-	return (layer->textureId==textureId);
-}
-*/
-
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
 	assert(map!=NULL);
 
@@ -89,20 +71,6 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 
 	return true;
 }
-
-/*
-void addMixedForest(class Map *map, int x0, int y0, int x1, int y1) {
-	assert(map!=NULL);
-	assert(x0<=x1);
-	assert(y0<=y1);
-
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree2, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(6*Physics::CoordsPerTile, 6*Physics::CoordsPerTile), &demogenForestTestFunctorGroundIsTexture, (void *)(uintptr_t)MapGen::TextureIdGrass0);
-
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Tree1, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorGroundIsTexture, (void *)(uintptr_t)MapGen::TextureIdGrass0);
-
-	MapGen::addBuiltinObjectForestWithTestFunctor(map, MapGen::BuiltinObject::Bush, CoordVec(x0*Physics::CoordsPerTile, y0*Physics::CoordsPerTile), CoordVec((x1-x0)*Physics::CoordsPerTile, (y1-y0)*Physics::CoordsPerTile), CoordVec(3*Physics::CoordsPerTile, 3*Physics::CoordsPerTile), &demogenForestTestFunctorGroundIsTexture, (void *)(uintptr_t)MapGen::TextureIdGrass0);
-}
-*/
 
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
@@ -308,30 +276,6 @@ int main(int argc, char **argv) {
 	setlocale(LC_NUMERIC, "");
 	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
 	printf("People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
-
-	// Add a test NPC.
-	/*
-	printf("Adding an NPC...\n");
-	MapObject *npc1=MapGen::addBuiltinObject(mapData.map, MapGen::BuiltinObject::OldBeardMan, CoordAngle0, CoordVec(200*Physics::CoordsPerTile, 523*Physics::CoordsPerTile));
-	if (npc1!=NULL)
-		npc1->setMovementModeConstantVelocity(CoordVec(2,1)); // east south east
-	*/
-
-	// Add forests.
-	/*
-	printf("Adding forests...\n");
-	addMixedForest(mapData.map, 2*0, 2*686, 2*411, 2*1023);
-	addMixedForest(mapData.map, 2*605, 2*0, 2*1023, 2*293);
-	*/
-
-	// Add houses.
-	/*
-	printf("Adding houses...\n");
-	MapGen::addHouse(mapData.map, 950, 730, 10, 8, DemoGenTileLayerFull);
-	MapGen::addHouse(mapData.map, 963, 725, 6, 11, DemoGenTileLayerFull);
-	MapGen::addHouse(mapData.map, 965, 737, 8, 7, DemoGenTileLayerFull);
-	MapGen::addHouse(mapData.map, 951, 740, 5, 5, DemoGenTileLayerFull);
-	*/
 
 	// Add towns.
 	printf("Adding towns...\n");
