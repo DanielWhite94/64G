@@ -92,6 +92,7 @@ namespace Engine {
 				[TextureIdHeatMap80]="../images/tiles/heatmap/80.png",
 				[TextureIdHeatMap90]="../images/tiles/heatmap/90.png",
 				[TextureIdHeatMap100]="../images/tiles/heatmap/100.png",
+				[TextureIdSnow]="../images/tiles/snow.png",
 			};
 			const int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -136,6 +137,7 @@ namespace Engine {
 				[TextureIdHeatMap80]=4,
 				[TextureIdHeatMap90]=4,
 				[TextureIdHeatMap100]=4,
+				[TextureIdSnow]=4,
 			};
 
 			bool success=true;

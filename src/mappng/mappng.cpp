@@ -202,6 +202,9 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdHeatMap100:
 								r=g=b=(100/100.0)*255.0;
 							break;
+							case MapGen::TextureIdSnow:
+								r=g=b=255;
+							break;
 							case MapGen::TextureIdNB:
 								assert(false);
 								continue; // Try next layer instead
