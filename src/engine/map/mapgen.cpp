@@ -405,7 +405,7 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, int townPop, TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
@@ -583,13 +583,13 @@ namespace Engine {
 						int townX1=townX+townSize/2;
 						if (townX0<0)
 							continue;
-						addedCount+=MapGen::addTown(map, townX0, townY, townX1, townY, roadTileLayer, houseTileLayer, testFunctor, testFunctorUserData);
+						addedCount+=MapGen::addTown(map, townX0, townY, townX1, townY, roadTileLayer, houseTileLayer, townPop, testFunctor, testFunctorUserData);
 					} else {
 						int townY0=townY-townSize/2;
 						int townY1=townY+townSize/2;
 						if (townY0<0)
 							continue;
-						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, roadTileLayer, houseTileLayer, testFunctor, testFunctorUserData);
+						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, roadTileLayer, houseTileLayer, townPop, testFunctor, testFunctorUserData);
 					}
 				}
 			}
