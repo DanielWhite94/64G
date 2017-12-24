@@ -32,7 +32,7 @@ typedef struct {
 	double landSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
-struct DemogenFullForestModifyTilesData {
+struct DemogenGrassForestModifyTilesData {
 	NoiseArray *moistureNoiseArray;
 };
 
@@ -44,10 +44,10 @@ typedef struct {
 } DemogenGroundModifyTilesData;
 
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData);
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(DemogenMapData *mapData);
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(DemogenMapData *mapData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
@@ -129,11 +129,11 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	++mapData->totalCount;
 }
 
-void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
-	const DemogenFullForestModifyTilesData *data=(const DemogenFullForestModifyTilesData *)userData;
+	const DemogenGrassForestModifyTilesData *data=(const DemogenGrassForestModifyTilesData *)userData;
 
 	// Compute constants..
 	double moisture=(data->moistureNoiseArray->eval(x, y)+1.0)/2.0;
@@ -191,12 +191,12 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 	return entry;
 }
 
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(DemogenMapData *mapData) {
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(DemogenMapData *mapData) {
 	assert(mapData!=NULL);
 
 
 	// Create user data.
-	DemogenFullForestModifyTilesData *callbackData=(DemogenFullForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
+	DemogenGrassForestModifyTilesData *callbackData=(DemogenGrassForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
 	assert(callbackData!=NULL); // TODO: better
 
 	// Create noise.
@@ -205,7 +205,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(DemogenM
 
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&demogenFullForestFullForestModifyTilesFunctor;
+	entry->functor=&demogenGrassForestModifyTilesFunctor;
 	entry->userData=callbackData;
 
 	return entry;
@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
 	size_t modifyTilesArrayCount=2;
 	MapGen::ModifyTilesManyEntry *modifyTilesArray[modifyTilesArrayCount];
 	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGround(&mapData);
-	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryFullForest(&mapData);
+	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryGrassForest(&mapData);
 
 	const char *progressString="Generating tiles (ground+forests) ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
