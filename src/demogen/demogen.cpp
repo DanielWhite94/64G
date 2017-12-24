@@ -200,7 +200,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(Demogen
 	assert(callbackData!=NULL); // TODO: better
 
 	// Create noise.
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating forest moisture noise ");
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating grass forest moisture noise ");
 	printf("\n");
 
 	// Create entry.
