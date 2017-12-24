@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 
 	// Add player object.
 	int startTileX=atoi(argv[2]);
-	int startTileY=atoi(argv[2]);
+	int startTileY=atoi(argv[3]);
 	MapObject objectPlayer(CoordAngle0, CoordVec(startTileX*Physics::CoordsPerTile, startTileY*Physics::CoordsPerTile), 1, 1);
 	HitMask playerHitmask;
 	const unsigned playerW=4, playerH=6;
