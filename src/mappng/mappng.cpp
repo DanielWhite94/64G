@@ -151,6 +151,7 @@ int main(int argc, char **argv) {
 							break;
 							case MapGen::TextureIdTree1:
 							case MapGen::TextureIdTree2:
+							case MapGen::TextureIdTree3:
 								r=0,g=100,b=0;
 							break;
 							case MapGen::TextureIdMan1:
