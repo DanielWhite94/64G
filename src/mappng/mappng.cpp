@@ -115,6 +115,14 @@ int main(int argc, char **argv) {
 
 					for(int z=MapTile::layersMax-1; z>=0; --z) {
 						const MapTile::Layer *layer=tile->getLayer(z);
+
+						// Special case for heatmap textures.
+						if (layer->textureId>=MapGen::TextureIdHeatMapMin && layer->textureId<MapGen::TextureIdHeatMapMax) {
+							unsigned index=layer->textureId-MapGen::TextureIdHeatMapMin;
+							r=g=b=(index*255)/(MapGen::TextureIdHeatMapRange-1);
+							break; // We have found something to draw
+						}
+
 						switch(layer->textureId) {
 							case MapGen::TextureIdNone:
 								continue; // Try next layer instead
@@ -168,39 +176,6 @@ int main(int argc, char **argv) {
 							break;
 							case MapGen::TextureIdSand:
 								r=255,g=255,b=0;
-							break;
-							case MapGen::TextureIdHeatMap0:
-								r=g=b=(00/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap10:
-								r=g=b=(10/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap20:
-								r=g=b=(20/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap30:
-								r=g=b=(30/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap40:
-								r=g=b=(40/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap50:
-								r=g=b=(50/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap60:
-								r=g=b=(60/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap70:
-								r=g=b=(70/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap80:
-								r=g=b=(80/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap90:
-								r=g=b=(90/100.0)*255.0;
-							break;
-							case MapGen::TextureIdHeatMap100:
-								r=g=b=(100/100.0)*255.0;
 							break;
 							case MapGen::TextureIdSnow:
 								r=g=b=255;
