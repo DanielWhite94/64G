@@ -33,7 +33,7 @@ typedef struct {
 } DemogenMapData;
 
 struct DemogenFullForestModifyTilesData {
-	NoiseArray *noiseArray;
+	NoiseArray *moistureNoiseArray;
 };
 
 typedef struct {
@@ -41,7 +41,6 @@ typedef struct {
 
 	NoiseArray *heightNoiseArray;
 	NoiseArray *temperatureNoiseArray;
-	NoiseArray *moistureNoiseArray;
 } DemogenGroundModifyTilesData;
 
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
@@ -70,7 +69,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	// Calculate constants.
 	double height=data->heightNoiseArray->eval(x, y);
 	double temperatureRandomOffset=data->temperatureNoiseArray->eval(x, y);
-	double moisture=(data->moistureNoiseArray->eval(x, y)+1.0)/2.0;
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
 	double poleDistance=1.0-fabs(latitude);
@@ -86,7 +84,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 
 	assert(height>=-1.0 & height<=1.0);
 	assert(temperatureRandomOffset>=-1.0 & temperatureRandomOffset<=1.0);
-	assert(moisture>=0.0 & moisture<=1.0);
 	assert(normalisedHeight>=0.0 && normalisedHeight<=1.0);
 	assert(latitude>=-1.0 && latitude<=1.0);
 	assert(poleDistance>=0.0 && poleDistance<=1.0);
@@ -138,22 +135,18 @@ void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, u
 
 	const DemogenFullForestModifyTilesData *data=(const DemogenFullForestModifyTilesData *)userData;
 
-	// Compute factor.
+	// Compute constants..
+	double moisture=(data->moistureNoiseArray->eval(x, y)+1.0)/2.0;
+
+	assert(moisture>=0.0 & moisture<=1.0);
+
+	// Not enough moisture to support a forest?
+	if (moisture<0.6)
+		return;
+
+	// Random chance of a tree.
 	double randomValue=(rand()/((double)RAND_MAX));
-
-	// Calculate height.
-	double height=data->noiseArray->eval(x, y);
-
-	// Cutoff based on height and random factor.
-	const double thresholdLimit=1/15.0;
-	double power=pow(2.0,128.0);
-	double offset=0.1-log(1/thresholdLimit)/log(power);
-	double exponent=height-offset;
-	double threshold=pow(power, exponent);
-	if (threshold>thresholdLimit)
-		threshold=thresholdLimit;
-
-	if (randomValue>threshold)
+	if (randomValue<0.9)
 		return;
 
 	// Grab tile.
@@ -188,9 +181,6 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 2048, 2048, 600.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
 	printf("\n");
 	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
-	// new: callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 4, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
-	printf("\n");
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
 	printf("\n");
 
 	// Create entry.
@@ -204,19 +194,19 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(DemogenMapData *mapData) {
 	assert(mapData!=NULL);
 
-	// Create noise.
-	NoiseArray *noiseArray=new NoiseArray(13, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating forest noise ");
-	printf("\n");
 
 	// Create user data.
-	DemogenFullForestModifyTilesData *fullModifyTilesData=(DemogenFullForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
-	assert(fullModifyTilesData!=NULL); // TODO: better
-	fullModifyTilesData->noiseArray=noiseArray;
+	DemogenFullForestModifyTilesData *callbackData=(DemogenFullForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
+	assert(callbackData!=NULL); // TODO: better
+
+	// Create noise.
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating forest moisture noise ");
+	printf("\n");
 
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
 	entry->functor=&demogenFullForestFullForestModifyTilesFunctor;
-	entry->userData=fullModifyTilesData;
+	entry->userData=callbackData;
 
 	return entry;
 }
@@ -296,9 +286,10 @@ int main(int argc, char **argv) {
 	}
 
 	// Run modify tiles.
-	size_t modifyTilesArrayCount=1;
+	size_t modifyTilesArrayCount=2;
 	MapGen::ModifyTilesManyEntry *modifyTilesArray[modifyTilesArrayCount];
 	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGround(&mapData);
+	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryFullForest(&mapData);
 
 	const char *progressString="Generating tiles (ground+forests) ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
