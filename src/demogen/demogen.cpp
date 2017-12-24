@@ -43,11 +43,17 @@ typedef struct {
 	NoiseArray *temperatureNoiseArray;
 } DemogenGroundModifyTilesData;
 
+typedef struct {
+	NoiseArray *moistureNoiseArray;
+} DemogenSandForestModifyTilesData;
+
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData);
 MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(DemogenMapData *mapData);
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntrySandForest(DemogenMapData *mapData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
@@ -169,6 +175,46 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	tile->setLayer(DemoGenTileLayerFull, layer);
 }
 
+void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData!=NULL);
+
+	const DemogenSandForestModifyTilesData *data=(const DemogenSandForestModifyTilesData *)userData;
+
+	// Compute constants..
+	double moisture=(data->moistureNoiseArray->eval(x, y)+1.0)/2.0;
+
+	assert(moisture>=0.0 & moisture<=1.0);
+
+	// Not enough moisture to support a forest?
+	if (moisture<0.7)
+		return;
+
+	// Random chance of a tree.
+	double randomValue=(rand()/((double)RAND_MAX));
+	if (randomValue<0.99)
+		return;
+
+	// Grab tile.
+	MapTile *tile=map->getTileAtOffset(x, y, false);
+	if (tile==NULL)
+		return;
+
+	// Check layers.
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdSand)
+		return;
+	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
+		return;
+	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapGen::TextureIdNone)
+		return;
+	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
+		return;
+
+	// Update tile layer.
+	MapTile::Layer layer={.textureId=MapGen::TextureIdTree3};
+	tile->setLayer(DemoGenTileLayerFull, layer);
+}
+
 MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData) {
 	assert(mapData!=NULL);
 
@@ -206,6 +252,26 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(Demogen
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
 	entry->functor=&demogenGrassForestModifyTilesFunctor;
+	entry->userData=callbackData;
+
+	return entry;
+}
+
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntrySandForest(DemogenMapData *mapData) {
+	assert(mapData!=NULL);
+
+
+	// Create user data.
+	DemogenSandForestModifyTilesData *callbackData=(DemogenSandForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
+	assert(callbackData!=NULL); // TODO: better
+
+	// Create noise.
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating sand forest moisture noise ");
+	printf("\n");
+
+	// Create entry.
+	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
+	entry->functor=&demogenSandForestModifyTilesFunctor;
 	entry->userData=callbackData;
 
 	return entry;
@@ -286,10 +352,11 @@ int main(int argc, char **argv) {
 	}
 
 	// Run modify tiles.
-	size_t modifyTilesArrayCount=2;
+	size_t modifyTilesArrayCount=3;
 	MapGen::ModifyTilesManyEntry *modifyTilesArray[modifyTilesArrayCount];
 	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGround(&mapData);
 	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryGrassForest(&mapData);
+	modifyTilesArray[2]=demogenMakeModifyTilesManyEntrySandForest(&mapData);
 
 	const char *progressString="Generating tiles (ground+forests) ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
