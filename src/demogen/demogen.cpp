@@ -160,11 +160,12 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 	callbackData->mapData=mapData;
 
 	// Create noise.
-	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 2048, 2048, 600.0, 16, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
+	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 2048, 2048, 600.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
 	printf("\n");
-	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
+	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
+	// new: callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 4, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
 	printf("\n");
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
 	printf("\n");
 
 	// Create entry.

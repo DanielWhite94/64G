@@ -10,7 +10,7 @@ namespace Engine {
 	public:
 		typedef void (ProgressFunctor)(unsigned noiseY, unsigned noiseHeight, void *userData);
 
-		NoiseArray(unsigned seed, double tileWidth, double tileHeight, unsigned noiseWidth, unsigned noiseHeight, double noiseResolution, unsigned progressDelta, ProgressFunctor *progressFunctor, void *progressUserData);
+		NoiseArray(unsigned seed, double tileWidth, double tileHeight, unsigned noiseWidth, unsigned noiseHeight, double noiseResolution, unsigned noiseOctaves, unsigned progressDelta, ProgressFunctor *progressFunctor, void *progressUserData);
 		~NoiseArray();
 
 		double eval(double x, double y) const;

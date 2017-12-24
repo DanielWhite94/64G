@@ -17,12 +17,13 @@ namespace Engine {
 		fflush(stdout);
 	}
 
-	NoiseArray::NoiseArray(unsigned seed, double tileWidth, double tileHeight, unsigned gNoiseWidth, unsigned noiseHeight, double noiseResolution, unsigned progressDelta, ProgressFunctor *progressFunctor, void *progressUserData) {
+	NoiseArray::NoiseArray(unsigned seed, double tileWidth, double tileHeight, unsigned gNoiseWidth, unsigned noiseHeight, double noiseResolution, unsigned noiseOctaves, unsigned progressDelta, ProgressFunctor *progressFunctor, void *progressUserData) {
 		assert(tileWidth>0.0);
 		assert(tileHeight>0.0);
 		assert(gNoiseWidth>0);
 		assert(noiseHeight>0);
 		assert(noiseResolution>0.0);
+		assert(noiseOctaves>0);
 		assert(progressFunctor==NULL || progressDelta>0);
 
 		// Init
@@ -38,7 +39,7 @@ namespace Engine {
 
 		unsigned x, y;
 
-		FbnNoise heightNose(seed, 8, 1.0/noiseResolution, 1.0, 2.0, 0.5);
+		FbnNoise heightNose(seed, noiseOctaves, 1.0/noiseResolution, 1.0, 2.0, 0.5);
 		const float freqFactorX=(tileWidth/noiseWidth)/8.0;
 		const float freqFactorY=(tileHeight/noiseHeight)/8.0;
 		arrayPtr=array;
