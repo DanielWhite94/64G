@@ -80,7 +80,10 @@ namespace Engine {
 					if (tile==NULL)
 						continue;
 
+					// Loop over layers.
+					SDL_Rect rect={.x=sx, .y=sy, .w=delta, .h=delta};
 					for(z=0; z<MapTile::layersMax; ++z) {
+
 						// Find layer for this (x,y,z).
 						const MapTile::Layer *layer=tile->getLayer(z);
 						assert(layer!=NULL);
@@ -94,7 +97,6 @@ namespace Engine {
 							continue;
 
 						// Draw texture.
-						SDL_Rect rect={.x=sx, .y=sy, .w=delta, .h=delta};
 						SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), NULL, &rect);
 					}
 				}
