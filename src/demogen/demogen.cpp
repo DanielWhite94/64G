@@ -44,35 +44,13 @@ typedef struct {
 	NoiseArray *moistureNoiseArray;
 } DemogenGroundModifyTilesData;
 
-bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
-	assert(map!=NULL);
+void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
-	// Loop over tiles.
-	int tx, ty;
-	for(ty=0; ty<h; ++ty)
-		for(tx=0; tx<w; ++tx) {
-			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile), false);
-			if (tile==NULL)
-				return false;
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData);
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(DemogenMapData *mapData);
 
-			// Look for grass ground layer.
-			MapTexture::Id layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
-			if (layerGround<MapGen::TextureIdGrass0 || layerGround>MapGen::TextureIdGrass5)
-				return false;
-
-			// Look for road decoration.
-			MapTexture::Id layerDecoration=tile->getLayer(DemoGenTileLayerDecoration)->textureId;
-			if (layerDecoration==MapGen::TextureIdBrickPath || layerDecoration==MapGen::TextureIdDirt)
-				return false;
-
-			// Look for full obstacles.
-			MapTexture::Id layerFull=tile->getLayer(DemoGenTileLayerFull)->textureId;
-			if (layerFull!=MapGen::TextureIdNone)
-				return false;
-		}
-
-	return true;
-}
+bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
@@ -154,32 +132,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	++mapData->totalCount;
 }
 
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData) {
-	assert(mapData!=NULL);
-
-	// Create callback data.
-	DemogenGroundModifyTilesData *callbackData=(DemogenGroundModifyTilesData *)malloc(sizeof(DemogenGroundModifyTilesData));
-	assert(callbackData!=NULL); // TODO: Better
-	callbackData->mapData=mapData;
-
-	// Create noise.
-	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 2048, 2048, 600.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
-	printf("\n");
-	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
-	// new: callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 4, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
-	printf("\n");
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
-	printf("\n");
-
-	// Create entry.
-	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&demogenGroundModifyTilesFunctor;
-	entry->userData=(void *)callbackData;
-
-	return entry;
-}
-
-/*
 void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
@@ -224,12 +176,36 @@ void demogenFullForestFullForestModifyTilesFunctor(class Map *map, unsigned x, u
 	tile->setLayer(DemoGenTileLayerFull, layer);
 }
 
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(int width, int height) {
-	assert(width>0);
-	assert(height>0);
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData) {
+	assert(mapData!=NULL);
+
+	// Create callback data.
+	DemogenGroundModifyTilesData *callbackData=(DemogenGroundModifyTilesData *)malloc(sizeof(DemogenGroundModifyTilesData));
+	assert(callbackData!=NULL); // TODO: Better
+	callbackData->mapData=mapData;
 
 	// Create noise.
-	NoiseArray *noiseArray=new NoiseArray(13, width, height, 1024, 1024, 200.0, 16, &noiseArrayProgressFunctorString, (void *)"Generating forest noise ");
+	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 2048, 2048, 600.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
+	printf("\n");
+	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
+	// new: callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 4, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
+	printf("\n");
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
+	printf("\n");
+
+	// Create entry.
+	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
+	entry->functor=&demogenGroundModifyTilesFunctor;
+	entry->userData=(void *)callbackData;
+
+	return entry;
+}
+
+MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(DemogenMapData *mapData) {
+	assert(mapData!=NULL);
+
+	// Create noise.
+	NoiseArray *noiseArray=new NoiseArray(13, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating forest noise ");
 	printf("\n");
 
 	// Create user data.
@@ -244,7 +220,36 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryFullForest(int widt
 
 	return entry;
 }
-*/
+
+bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
+	assert(map!=NULL);
+
+	// Loop over tiles.
+	int tx, ty;
+	for(ty=0; ty<h; ++ty)
+		for(tx=0; tx<w; ++tx) {
+			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile), false);
+			if (tile==NULL)
+				return false;
+
+			// Look for grass ground layer.
+			MapTexture::Id layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
+			if (layerGround<MapGen::TextureIdGrass0 || layerGround>MapGen::TextureIdGrass5)
+				return false;
+
+			// Look for road decoration.
+			MapTexture::Id layerDecoration=tile->getLayer(DemoGenTileLayerDecoration)->textureId;
+			if (layerDecoration==MapGen::TextureIdBrickPath || layerDecoration==MapGen::TextureIdDirt)
+				return false;
+
+			// Look for full obstacles.
+			MapTexture::Id layerFull=tile->getLayer(DemoGenTileLayerFull)->textureId;
+			if (layerFull!=MapGen::TextureIdNone)
+				return false;
+		}
+
+	return true;
+}
 
 int main(int argc, char **argv) {
 	DemogenMapData mapData={
