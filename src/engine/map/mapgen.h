@@ -105,6 +105,18 @@ namespace Engine {
 				void *userData;
 			};
 
+			enum AddTownsShopType {
+				Shoemaker,
+				Furrier,
+				Tailor,
+				Barber,
+				Jeweler,
+				Tavern,
+				Carpenters,
+				Bakers,
+				NB,
+			};
+
 			enum AddHouseFullFlags {
 				None=0x0,
 				ShowDoor=0x1,

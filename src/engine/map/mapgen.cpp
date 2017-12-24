@@ -497,7 +497,8 @@ namespace Engine {
 			if (roads.size()<3)
 				return false;
 
-			// Generate houses along roads.
+			// Generate buildings along roads.
+			vector<AddTownHouseData> houses;
 			for(const auto road: roads) {
 				int minWidth=4;
 				int maxWidth=std::min(road.width+7, road.getLen()-1);
@@ -545,8 +546,72 @@ namespace Engine {
 						if (!addHouseFull(map, houseData.flags, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseData.roofHeight, houseTileLayer, houseData.doorOffset, houseData.chimneyOffset, NULL, NULL))
 							continue;
 
+						// Add to array of houses.
+						houses.push_back(houseData);
+
 						break;
 					}
+				}
+			}
+
+			// Calculate number of shops desired.
+			const int peoplePerShopType[AddTownsShopType::NB]={
+				[AddTownsShopType::Shoemaker]=150,
+				[AddTownsShopType::Furrier]=250,
+				[AddTownsShopType::Tailor]=250,
+				[AddTownsShopType::Barber]=350,
+				[AddTownsShopType::Jeweler]=400,
+				[AddTownsShopType::Tavern]=400,
+				[AddTownsShopType::Carpenters]=550,
+				[AddTownsShopType::Bakers]=800,
+			};
+			unsigned shopsPeopleTotal=0;
+			for(int i=0; i<AddTownsShopType::NB; ++i)
+				shopsPeopleTotal+=peoplePerShopType[i];
+
+			// Give buildings some purpose.
+			for(auto houseData : houses) {
+				// Give the building a purpose (e.g. a shop).
+				if (houseData.flags & AddHouseFullFlags::ShowDoor) {
+					// Choose sign.
+					MapTexture::Id signTextureId;
+					int r=rand()%shopsPeopleTotal;
+					int total=0;
+					int i;
+					for(i=0; i<AddTownsShopType::NB; ++i) {
+						total+=peoplePerShopType[i];
+						if (r<total)
+							break;
+					}
+
+					switch(i) {
+						case 0:
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+						case 6:
+						case 7:
+						case 8:
+						case 9:
+							signTextureId=TextureIdShopCobbler;
+						break;
+						default:
+							signTextureId=TextureIdHouseWall2;
+						break;
+					}
+
+					// Compute sign position.
+					int signOffset;
+					if (houseData.doorOffset<houseData.mapW/2)
+						signOffset=2;
+					else
+						signOffset=-1;
+					int signX=signOffset+houseData.doorOffset+houseData.x;
+
+					// Add sign.
+					map->getTileAtCoordVec(CoordVec(signX*Physics::CoordsPerTile, (houseData.y+houseData.mapH-2)*Physics::CoordsPerTile), true)->setLayer(houseTileLayer, {.textureId=signTextureId});
 				}
 			}
 
