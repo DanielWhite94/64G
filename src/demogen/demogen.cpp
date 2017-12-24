@@ -96,8 +96,11 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
 	double poleDistance=1.0-fabs(latitude);
-	double temperature=(5*(2*poleDistance-1)+3*temperatureRandomOffset+3-3*((height+1)/2))/11;
-	temperature*=2;
+
+	double adjustedPoleDistance=2*poleDistance-1; // -1..1
+	double adjustedHeight=2*normalisedHeight-1;
+	double temperature=(4*adjustedPoleDistance+2*adjustedHeight+2*temperatureRandomOffset)/8;
+	temperature=2*temperature+2.0/3; // HACK to get reasonable range.
 	if (temperature<-1.0)
 		temperature=-1.0;
 	if (temperature>1.0)
