@@ -141,18 +141,26 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 
 	const DemogenGrassForestModifyTilesData *data=(const DemogenGrassForestModifyTilesData *)userData;
 
+	// Choose parameters.
+	const double temperateThreshold=0.6;
+	const double hotThreshold=0.7;
+
+	assert(0.0<=temperateThreshold);
+	assert(temperateThreshold<=hotThreshold);
+	assert(hotThreshold<=1.0);
+
 	// Compute constants..
 	double moisture=(data->moistureNoiseArray->eval(x, y)+1.0)/2.0;
 
 	assert(moisture>=0.0 & moisture<=1.0);
 
-	// Not enough moisture to support a forest?
-	if (moisture<0.6)
+	// Not enough moisture to support anything?
+	if (moisture<temperateThreshold)
 		return;
 
-	// Random chance of a tree.
+	// Random chance of a 'tree'.
 	double randomValue=(rand()/((double)RAND_MAX));
-	if (randomValue<0.9)
+	if (randomValue<0.90)
 		return;
 
 	// Grab tile.
@@ -161,7 +169,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 		return;
 
 	// Check layers.
-	if (tile->getLayer(DemoGenTileLayerGround)->textureId<MapGen::TextureIdGrass0 || tile->getLayer(DemoGenTileLayerGround)->textureId>MapGen::TextureIdGrass5)
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdGrass0)
 		return;
 	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
 		return;
@@ -170,8 +178,20 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
 		return;
 
+	// Choose new texture.
+	MapTexture::Id textureId=MapGen::TextureIdNone;
+
+	if (moisture<hotThreshold) {
+		const double probabilities[]={0.3,0.2,0.2,0.2,0.1};
+		unsigned index=Util::chooseWithProb(probabilities, sizeof(probabilities)/sizeof(probabilities[0]));
+		textureId=MapGen::TextureIdGrass1+index;
+	} else
+		textureId=MapGen::TextureIdTree1;
+
+	assert(textureId!=MapGen::TextureIdNone);
+
 	// Update tile layer.
-	MapTile::Layer layer={.textureId=MapGen::TextureIdTree1};
+	MapTile::Layer layer={.textureId=textureId};
 	tile->setLayer(DemoGenTileLayerFull, layer);
 }
 
