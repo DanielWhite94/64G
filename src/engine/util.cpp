@@ -38,3 +38,31 @@ double Util::randInInterval(double min, double max) {
 
 	return (((double)rand())/RAND_MAX)*(max-min)+min;
 }
+
+unsigned Util::chooseWithProb(const double *probabilities, size_t count) {
+	assert(probabilities!=NULL);
+
+	// One or fewer items?
+	if (count<2)
+		return 0;
+
+	// Find total.
+	double probabilityTotal=0.0;
+	for(size_t i=0; i<count; ++i) {
+		assert(probabilities[i]>0.0);
+		probabilityTotal+=probabilities[i];
+	}
+	assert(probabilityTotal>0.0);
+
+	// .....
+	double randomValue=(rand()/((double)RAND_MAX));
+	randomValue*=probabilityTotal;
+	double loopTotal=0.0;
+	for(size_t i=0; i<count; ++i) {
+		loopTotal+=probabilities[i];
+		if (loopTotal>=randomValue)
+			return i;
+	}
+	assert(false);
+	return 0;
+}

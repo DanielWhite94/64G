@@ -11,6 +11,8 @@ namespace Engine {
 		static void clearConsoleLine();
 
 		static double randInInterval(double min, double max);
+
+		static unsigned chooseWithProb(const double *probabilities, size_t count);
 	};
 };
 
