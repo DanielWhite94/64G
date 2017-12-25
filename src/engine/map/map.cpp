@@ -30,6 +30,8 @@ namespace Engine {
 			regionsByIndexNext=0;
 			for(i=0; i<regionsLoadedMax; ++i)
 				regionsByIndex[i]=NULL;
+			for(i=0; i<regionsLoadedMax; ++i)
+				regionsByAge[i]=NULL;
 			for(i=0; i<regionsHigh; ++i)
 				for(j=0; j<regionsWide; ++j)
 					regionsByOffset[i][j].ptr=NULL;
@@ -328,6 +330,9 @@ namespace Engine {
 						}
 					}
 				}
+			} else {
+				// Exists already - simply update age.
+				updateRegionAge(regionsByOffset[regionY][regionX].ptr);
 			}
 
 			// Return region (or NULL if we could not load/create).
@@ -551,7 +556,11 @@ namespace Engine {
 			regionsByOffset[regionY][regionX].offsetX=regionX;
 			regionsByOffset[regionY][regionX].offsetY=regionY;
 			regionsByIndex[regionsByIndexNext]=&(regionsByOffset[regionY][regionX]);
+			assert(regionsByAge[regionsByIndexNext]==NULL);
+			regionsByAge[regionsByIndexNext]=regionsByIndex[regionsByIndexNext];
 			regionsByIndexNext++;
+
+			updateRegionAge(region);
 
 			return true;
 		}
@@ -560,19 +569,35 @@ namespace Engine {
 			// Do we need to evict something?
 			assert(regionsByIndexNext<=regionsLoadedMax);
 			if (regionsByIndexNext==regionsLoadedMax) {
-				// Find the least-recently used region.
-				unsigned oldestRegionIndex=(rand()%regionsByIndexNext); // TODO: this
-				MapRegion *region=getRegionAtIndex(oldestRegionIndex);
+				// Find the last-recently used region.
+				RegionData *regionData=regionsByAge[regionsByIndexNext-1];
+				assert(regionData!=NULL);
+				MapRegion *region=regionData->ptr;
 
 				// If this region is dirty, save it back to disk.
 				if (region->getIsDirty())
-					region->save(getRegionsDir(), regionsByIndex[oldestRegionIndex]->offsetX, regionsByIndex[oldestRegionIndex]->offsetY); // TODO: Check return - don't want to lose data.
+					region->save(getRegionsDir(), regionsByIndex[regionData->index]->offsetX, regionsByIndex[regionData->index]->offsetY); // TODO: Check return - don't want to lose data.
 
 				// Unload the region.
-				regionUnload(oldestRegionIndex);
+				regionUnload(regionData->index);
 			}
 
 			return (regionsByIndexNext<regionsLoadedMax);
+		}
+
+		void Map::updateRegionAge(const MapRegion *region) {
+			assert(region!=NULL);
+
+			for(int i=0; i<regionsByIndexNext; i++) {
+				if (regionsByAge[i]->ptr==region) {
+					// Found - move to front.
+					RegionData *regionDataPtr=regionsByAge[i];
+					memmove(regionsByAge+1, regionsByAge, i*sizeof(RegionData *));
+					regionsByAge[0]=regionDataPtr;
+					return;
+				}
+			}
+			assert(false);
 		}
 
 		bool Map::isDir(const char *path) {
@@ -584,6 +609,15 @@ namespace Engine {
 
 		void Map::regionUnload(unsigned index) {
 			assert(index<regionsByIndexNext);
+
+			// Remove from regionsByAge array.
+			for(unsigned i=0; i<regionsByIndexNext; ++i) {
+				if (regionsByAge[i]==regionsByIndex[index]) {
+					memmove(regionsByAge+i, regionsByAge+i+1, (regionsByIndexNext-1-i)*sizeof(RegionData *));
+					regionsByAge[regionsByIndexNext-1]=NULL;
+					break;
+				}
+			}
 
 			// Free the region and clear the RegionData pointer.
 			MapRegion *region=getRegionAtIndex(index);

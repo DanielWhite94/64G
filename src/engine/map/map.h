@@ -63,6 +63,7 @@ namespace Engine {
 
 			unsigned regionsByIndexNext;
 			RegionData *regionsByIndex[regionsLoadedMax]; // These are pointers into regionsByOffset array.
+			RegionData *regionsByAge[regionsLoadedMax]; // These are pointers into regionsByOffset array.
 			RegionData regionsByOffset[regionsHigh][regionsWide];
 
 			vector<MapObject *> objects;
@@ -80,6 +81,7 @@ namespace Engine {
 
 			bool createBlankRegion(unsigned regionX, unsigned regionY);
 			bool ensureSpaceForRegion(void); // If our regions array is full, evict something.
+			void updateRegionAge(const MapRegion *region);
 
 			static bool isDir(const char *path);
 
