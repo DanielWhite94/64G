@@ -159,7 +159,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 		return;
 
 	// Random chance of a 'tree'.
-	double randomValue=(rand()/((double)RAND_MAX));
+	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	if (randomValue<0.90)
 		return;
 
@@ -211,7 +211,7 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 		return;
 
 	// Random chance of a tree.
-	double randomValue=(rand()/((double)RAND_MAX));
+	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	if (randomValue<0.99)
 		return;
 

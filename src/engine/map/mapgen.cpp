@@ -310,7 +310,7 @@ namespace Engine {
 					unsigned i;
 					for(i=0; i<4; ++i) {
 						// Calculate exact position.
-						CoordVec randomOffset=CoordVec(rand()%interval.x, rand()%interval.y);
+						CoordVec randomOffset=CoordVec(Util::randIntInInterval(0,interval.x), Util::randIntInInterval(0,interval.y));
 						CoordVec exactPosition=pos+randomOffset;
 
 						// Run test functor.
@@ -335,8 +335,8 @@ namespace Engine {
 			const double roofRatio=0.6;
 			unsigned roofHeight=(int)floor(roofRatio*totalH);
 
-			unsigned doorOffset=(rand()%(totalW-3))+1;
-			unsigned chimneyOffset=rand()%totalW;
+			unsigned doorOffset=Util::randIntInInterval(1, totalW-2);
+			unsigned chimneyOffset=Util::randIntInInterval(0, totalW);
 
 			// Call addHouseFull to do most of the work.
 			return addHouseFull(map, AddHouseFullFlags::All, baseX, baseY, totalW, totalH, roofHeight, tileLayer, doorOffset, chimneyOffset, testFunctor, testFunctorUserData);
@@ -473,14 +473,14 @@ namespace Engine {
 				// Add potential child roads.
 				MapGenRoad newRoad;
 				for(unsigned i=0; i<16; ++i) {
-					newRoad.width=(road.width*((rand()%5)+5))/10;
+					newRoad.width=(road.width*Util::randIntInInterval(5, 10))/10;
 					int offset, jump=std::max(newRoad.width+8,road.getLen()/6);
-					for(offset=jump; offset<=road.getLen()-newRoad.width; offset+=jump/2+rand()%jump) {
+					for(offset=jump; offset<=road.getLen()-newRoad.width; offset+=jump/2+Util::randIntInInterval(0, jump)) {
 						// Create candidate child road.
-						int newLen=rand()%(4*((1u)<<(newRoad.width)));
+						int newLen=Util::randIntInInterval(0, 4*((1u)<<(newRoad.width)));
 						newRoad.weight=newLen*newRoad.width;
 
-						bool greater=rand()%2;
+						bool greater=Util::randBool();
 						int randOffset=0;
 						newRoad.x0=(road.isHorizontal() ? road.x0+offset+randOffset : (greater ? road.trueX1 : road.x0-newLen-1));
 						newRoad.y0=(road.isVertical() ? road.y0+offset+randOffset : (greater ? road.trueY1 : road.y0-newLen-1));
@@ -511,14 +511,14 @@ namespace Engine {
 				houseData.isHorizontal=road.isHorizontal();
 
 				for(unsigned i=0; i<100; ++i) {
-					houseData.genWidth=rand()%(maxWidth-minWidth)+minWidth;
-					houseData.genDepth=rand()%road.width+5; // distance from edge with road to opposite edge
+					houseData.genWidth=Util::randIntInInterval(minWidth, maxWidth);
+					houseData.genDepth=Util::randIntInInterval(5, 5+road.width);
 
 					unsigned j;
 					for(j=0; j<20; ++j) {
 						// Choose house position.
-						houseData.side=(rand()%2==0);
-						int offset=rand()%(road.getLen()-houseData.genWidth);
+						houseData.side=Util::randBool();
+						int offset=Util::randIntInInterval(0, road.getLen()-houseData.genWidth);
 
 						houseData.x=(road.isHorizontal() ? road.x0+offset : (houseData.side ? road.trueX1 : road.x0-houseData.genDepth));
 						houseData.y=(road.isVertical() ? road.y0+offset : (houseData.side ? road.trueY1 : road.y0-houseData.genDepth));
@@ -541,8 +541,8 @@ namespace Engine {
 						const double houseRoofRatio=0.6;
 						houseData.roofHeight=(int)floor(houseRoofRatio*houseData.mapH);
 
-						houseData.doorOffset=(rand()%(houseData.mapW-3))+1;
-						houseData.chimneyOffset=rand()%houseData.mapW;
+						houseData.doorOffset=Util::randIntInInterval(1, houseData.mapW-2);
+						houseData.chimneyOffset=Util::randIntInInterval(0, houseData.mapW);
 
 						// Attempt to add the house.
 						if (!addHouseFull(map, houseData.flags, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseData.roofHeight, houseTileLayer, houseData.doorOffset, houseData.chimneyOffset, NULL, NULL))
@@ -577,7 +577,7 @@ namespace Engine {
 				if (houseData.flags & AddHouseFullFlags::ShowDoor) {
 					// Choose sign.
 					MapTexture::Id signTextureId;
-					int r=rand()%shopsPeopleTotal;
+					int r=Util::randIntInInterval(0, shopsPeopleTotal);
 					int total=0;
 					int i;
 					for(i=0; i<AddTownsShopType::NB; ++i) {
@@ -629,8 +629,8 @@ namespace Engine {
 
 			const double peoplePerSqKm=20000.0;
 
-			const double initialTownPop=Util::randInInterval(10.0,20.0)*sqrt(totalPopulation);
-			for(double townPop=initialTownPop; townPop>=30; townPop*=Util::randInInterval(0.6,0.8)) {
+			const double initialTownPop=Util::randFloatInInterval(10.0,20.0)*sqrt(totalPopulation);
+			for(double townPop=initialTownPop; townPop>=30; townPop*=Util::randFloatInInterval(0.6,0.8)) {
 				const double townSizeSqKm=townPop/peoplePerSqKm;
 
 				const int townSize=1000.0*sqrt(townSizeSqKm);
@@ -641,9 +641,9 @@ namespace Engine {
 				const unsigned attemptMax=desiredCount*4;
 				unsigned addedCount=0;
 				for(unsigned i=0; i<attemptMax && addedCount<desiredCount; ++i) {
-					int townX=Util::randInInterval(x0, x1);
-					int townY=Util::randInInterval(y0, y1);
-					bool horizontal=(rand()%2==0);
+					int townX=Util::randIntInInterval(x0, x1);
+					int townY=Util::randIntInInterval(y0, y1);
+					bool horizontal=Util::randBool();
 
 					if (horizontal) {
 						int townX0=townX-townSize/2;

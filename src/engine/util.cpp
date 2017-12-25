@@ -33,11 +33,22 @@ void Util::clearConsoleLine() {
 	fflush(stdout);
 }
 
-double Util::randInInterval(double min, double max) {
+bool Util::randBool(void) {
+	return (Util::randIntInInterval(0, 2)==0);
+}
+
+long long Util::randIntInInterval(long long min, long long max) {
+	assert(min<max);
+
+	return (long long)floor(Util::randFloatInInterval(min, max));
+}
+
+double Util::randFloatInInterval(double min, double max) {
 	assert(min<max);
 
 	return (((double)rand())/RAND_MAX)*(max-min)+min;
 }
+
 
 unsigned Util::chooseWithProb(const double *probabilities, size_t count) {
 	assert(probabilities!=NULL);
@@ -54,8 +65,8 @@ unsigned Util::chooseWithProb(const double *probabilities, size_t count) {
 	}
 	assert(probabilityTotal>0.0);
 
-	// .....
-	double randomValue=(rand()/((double)RAND_MAX));
+	// Choose random value and return index associated with it.
+	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	randomValue*=probabilityTotal;
 	double loopTotal=0.0;
 	for(size_t i=0; i<count; ++i) {

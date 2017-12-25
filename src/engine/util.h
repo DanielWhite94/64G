@@ -10,7 +10,9 @@ namespace Engine {
 
 		static void clearConsoleLine();
 
-		static double randInInterval(double min, double max);
+		static bool randBool(void);
+		static long long randIntInInterval(long long min, long long max);
+		static double randFloatInInterval(double min, double max);
 
 		static unsigned chooseWithProb(const double *probabilities, size_t count);
 	};
