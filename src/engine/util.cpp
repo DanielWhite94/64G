@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cmath>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "util.h"
@@ -76,4 +78,13 @@ unsigned Util::chooseWithProb(const double *probabilities, size_t count) {
 	}
 	assert(false);
 	return 0;
+}
+
+bool Util::isDir(const char *path) {
+	assert(path!=NULL);
+
+	struct stat pathStat;
+	if (stat(path, &pathStat)!=0)
+		return false;
+	return S_ISDIR(pathStat.st_mode);
 }

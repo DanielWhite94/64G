@@ -148,7 +148,7 @@ namespace Engine {
 		bool Map::saveMetadata(void) const {
 			// Do we need to create the base directory?
 			const char *mapBaseDirPath=getBaseDir();
-			if (!isDir(mapBaseDirPath)) {
+			if (!Util::isDir(mapBaseDirPath)) {
 				if (mkdir(mapBaseDirPath, 0777)!=0) {
 					perror(NULL);
 					fprintf(stderr, "error: could not create map base dir at '%s'\n", mapBaseDirPath);
@@ -158,7 +158,7 @@ namespace Engine {
 
 			// Do we need to create regions directory?
 			const char *regionsDirPath=getRegionsDir();
-			if (!isDir(regionsDirPath)) {
+			if (!Util::isDir(regionsDirPath)) {
 				if (mkdir(regionsDirPath, 0777)!=0) {
 					fprintf(stderr,"error: could not create map regions dir at '%s'\n", regionsDirPath);
 					return false;
@@ -167,7 +167,7 @@ namespace Engine {
 
 			// Do we need to create textures directory?
 			const char *texturesDirPath=getTexturesDir();
-			if (!isDir(texturesDirPath)) {
+			if (!Util::isDir(texturesDirPath)) {
 				if (mkdir(texturesDirPath, 0777)!=0) {
 					fprintf(stderr,"error: could not create map textures dir at '%s'\n", texturesDirPath);
 					return false;
@@ -598,13 +598,6 @@ namespace Engine {
 				}
 			}
 			assert(false);
-		}
-
-		bool Map::isDir(const char *path) {
-			struct stat pathStat;
-			if (stat(path, &pathStat)!=0)
-				return false;
-			return S_ISDIR(pathStat.st_mode);
 		}
 
 		void Map::regionUnload(unsigned index) {

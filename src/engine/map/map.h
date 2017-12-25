@@ -83,8 +83,6 @@ namespace Engine {
 			bool ensureSpaceForRegion(void); // If our regions array is full, evict something.
 			void updateRegionAge(const MapRegion *region);
 
-			static bool isDir(const char *path);
-
 			void regionUnload(unsigned index);
 		};
 	};
