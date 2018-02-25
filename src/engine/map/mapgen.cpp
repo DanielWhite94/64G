@@ -642,7 +642,6 @@ namespace Engine {
 				const double townSizeSqKm=townPop/peoplePerSqKm;
 
 				const int townSize=1000.0*sqrt(townSizeSqKm);
-				//const unsigned desiredCount=1;
 				const unsigned desiredCount=ceil(initialTownPop/townPop);
 				printf("	attempting to add %u towns, each with pop %.0f, size %.3fkm^2 (%'im per side)\n", desiredCount, townPop, townSizeSqKm, townSize);
 
