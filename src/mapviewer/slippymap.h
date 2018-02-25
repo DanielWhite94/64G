@@ -23,6 +23,7 @@ namespace MapViewer {
 		static int imageSize;
 		static int tilesPerPixelMax;
 		char *imageDir;
+		const class Map *map;
 
 		static int tileXToOffsetX(unsigned tileX, int tilesPerPixel);
 		static int tileYToOffsetY(unsigned tileY, int tilesPerPixel);

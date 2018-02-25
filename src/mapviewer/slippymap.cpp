@@ -10,7 +10,7 @@ namespace MapViewer {
 	int SlippyMap::imageSize=1024;
 	int SlippyMap::tilesPerPixelMax=(Engine::Map::Map::regionsWide*MapRegion::tilesWide)/imageSize; // TODO: Think about how Y comes into this.
 
-	SlippyMap::SlippyMap(const class Map *map, const char *gImageDir) {
+	SlippyMap::SlippyMap(const class Map *map, const char *gImageDir): map(map) {
 		imageDir=(char *)malloc(strlen(gImageDir)+1); // TODO: Improve this
 		strcpy(imageDir, gImageDir);
 	}
