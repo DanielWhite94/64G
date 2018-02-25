@@ -71,6 +71,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 
 	// Choose parameters.
 	const double seaLevel=0.05;
+	const double alpineLevel=0.33;
 
 	// Calculate constants.
 	double height=data->heightNoiseArray->eval(x, y);
@@ -100,23 +101,43 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	double factor;
 	if (height<=seaLevel) {
 		// water
-		idA=MapGen::TextureIdWater;
+		idA=MapGen::TextureIdDeepWater;
 		idB=MapGen::TextureIdWater;
-		factor=0.0;
-	} else {
+		factor=((height+1.0)/(seaLevel+1.0));
+
+		double skewThreshold=0.7; // >0.5 shifts towards idA
+		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
+	} else if (height<=alpineLevel) {
 		// land
 		const double temperatureThreshold=0.5;
+		const double temperatureThreshold2=0.8;
 		if (temperature<=temperatureThreshold) {
 			// between snow and grass
 			idA=MapGen::TextureIdSnow;
 			idB=MapGen::TextureIdGrass0;
 			factor=(temperature+1)/(temperatureThreshold+1);
-		} else {
+		} else if (temperature<=temperatureThreshold2) {
 			// between grass and sand
 			idA=MapGen::TextureIdGrass0;
 			idB=MapGen::TextureIdSand;
-			factor=(temperature-temperatureThreshold)/(1-temperatureThreshold);
+			factor=(temperature-temperatureThreshold)/(temperatureThreshold2-temperatureThreshold);
+		} else {
+			// between sand and hot sand
+			idA=MapGen::TextureIdSand;
+			idB=MapGen::TextureIdHotSand;
+			factor=(temperature-temperatureThreshold2)/(1.0-temperatureThreshold2);
+
+			double skewThreshold=0.7; // >0.5 shifts towards idA
+			factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 		}
+	} else {
+		// alpine
+		idA=MapGen::TextureIdLowAlpine;
+		idB=MapGen::TextureIdHighAlpine;
+		factor=(height-alpineLevel)/(1.0-alpineLevel);
+
+		double skewThreshold=0.2; // >0.5 shifts towards idA
+		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 	}
 	assert(factor>=0.0 && factor<=1.0);
 
@@ -128,7 +149,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	tile->setLayer(DemoGenTileLayerGround, layer);
 
 	// Update map data.
-	if (textureId==MapGen::TextureIdWater)
+	if (textureId==MapGen::TextureIdWater || textureId==MapGen::TextureIdDeepWater)
 		++mapData->waterCount;
 	else
 		++mapData->landCount;
@@ -221,7 +242,7 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 		return;
 
 	// Check layers.
-	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdSand)
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdSand && tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdHotSand)
 		return;
 	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
 		return;

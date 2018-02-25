@@ -166,6 +166,9 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdWater:
 								r=0,g=0,b=255;
 							break;
+							case MapGen::TextureIdDeepWater:
+								r=0,g=0,b=140;
+							break;
 							case MapGen::TextureIdTree1:
 							case MapGen::TextureIdTree2:
 							case MapGen::TextureIdTree3:
@@ -195,8 +198,17 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdSand:
 								r=255,g=255,b=0;
 							break;
+							case MapGen::TextureIdHotSand:
+								r=232,g=197,b=136;
+							break;
 							case MapGen::TextureIdSnow:
 								r=g=b=255;
+							break;
+							case MapGen::TextureIdHighAlpine:
+								r=g=b=25;
+							break;
+							case MapGen::TextureIdLowAlpine:
+								r=g=b=80;
 							break;
 							case MapGen::TextureIdNB:
 								assert(false);

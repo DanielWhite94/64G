@@ -81,8 +81,12 @@ namespace Engine {
 				[TextureIdHouseChimney]="../images/tiles/house/chimney.png",
 				[TextureIdHouseChimneyTop]="../images/tiles/house/chimneytop.png",
 				[TextureIdSand]="../images/tiles/sand.png",
+				[TextureIdHotSand]="../images/tiles/hotsand.png",
 				[TextureIdSnow]="../images/tiles/snow.png",
 				[TextureIdShopCobbler]="../images/tiles/shops/cobbler.png",
+				[TextureIdDeepWater]="../images/tiles/deepwater.png",
+				[TextureIdHighAlpine]="../images/tiles/highalpine.png",
+				[TextureIdLowAlpine]="../images/tiles/lowalpine.png",
 			};
 			int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -116,8 +120,12 @@ namespace Engine {
 				[TextureIdHouseChimney]=4,
 				[TextureIdHouseChimneyTop]=4,
 				[TextureIdSand]=4,
+				[TextureIdHotSand]=4,
 				[TextureIdShopCobbler]=4,
+				[TextureIdDeepWater]=4,
 				[TextureIdSnow]=4,
+				[TextureIdHighAlpine]=4,
+				[TextureIdLowAlpine]=4,
 			};
 
 			unsigned textureId;
