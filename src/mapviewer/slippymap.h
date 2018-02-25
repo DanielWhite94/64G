@@ -8,8 +8,12 @@
 namespace MapViewer {
 	class SlippyMap {
 	public:
+		typedef void (GenAllProgressFunctor)(double progress, void *userData);
+
 		SlippyMap(const class Map *map, unsigned mapSize, const char *imageDir);
 		~SlippyMap();
+
+		bool genAll(GenAllProgressFunctor *progressFunctor, void *progressUserData); // A faster special case function to allow progress reporting. Similar to calling getImageByZoom(0,0,0) and discarding the result.
 
 		char *getImagePath(unsigned tileX, unsigned tileY, int tilesPerPixel) const ; // tilesPerPixel should be a power of two. Result should be passed to free
 		char *getImage(unsigned tileX, unsigned tileY, int tilesPerPixel); // tilesPerPixel should be a power of two. Result should be passed to free

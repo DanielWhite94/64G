@@ -1,7 +1,15 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "../engine/util.h"
+
 #include "slippymap.h"
+
+void slippyMapGenAllProgressFunctor(double progress, void *userData) {
+	Util::clearConsoleLine();
+	printf("Generating tile images %.2f%%...", progress*100.0);
+	fflush(stdout);
+}
 
 int main(int argc, char *argv[]) {
 	// Grab arguments.
@@ -24,9 +32,9 @@ int main(int argc, char *argv[]) {
 	// Create slippy map instance.
 	MapViewer::SlippyMap slippyMap(map, mapSize, "slippymapdata");
 
-	// Create slippy map image for whole world (causing all others to also be generated).
-	printf("Generating tile images... (this may take a while)\n");
-	slippyMap.getImageByZoom(0, 0, 0);
+	// Generate slippy map tiles.
+	slippyMap.genAll(&slippyMapGenAllProgressFunctor, NULL);
+	printf("\n");
 
 	// Tidy up.
 	delete map;

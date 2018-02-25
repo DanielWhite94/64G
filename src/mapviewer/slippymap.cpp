@@ -39,6 +39,93 @@ namespace MapViewer {
 		free(imageDir);
 	}
 
+	bool SlippyMap::genAll(GenAllProgressFunctor *progressFunctor, void *progressUserData) {
+		int maxZoom=getMaxZoom();
+
+		double totalBaseImages=pow(4.0, maxZoom);
+		double totalDerivedImages=(pow(4.0, maxZoom)-1.0)/3.0;
+		double totalImages=totalBaseImages+totalDerivedImages;
+		assert(totalImages==(pow(4.0, maxZoom+1)-1.0)/3.0);
+
+		double imageCount=0.0;
+
+		// First generate all base level images using mappng.
+		int baseSize=((1llu)<<maxZoom);
+		int x, y;
+		for(y=0; y<baseSize; ++y) {
+			for(x=0; x<baseSize; ++x) {
+				// Create image path.
+				char imagePath[1024]; // TODO: Improve this
+				sprintf(imagePath, "%s/%u/%u/%u.png", imageDir, maxZoom, x, y);
+
+				// Does the image already exist?
+				if (fileExists(imagePath))
+					continue;
+
+				// Compute mappng arguments.
+				int mapX=offsetXToTileX(x, 1);
+				int mapY=offsetYToTileY(y, 1);
+				int mapW=imageSize;
+				int mapH=imageSize;
+
+				// Create mappng command.
+				char command[1024];
+				sprintf(command, "./mappng --quiet %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
+
+				// Run mappng command.
+				system(command); // TODO: This better (silence output, check for errors etc).
+
+				++imageCount;
+			}
+
+			// Call progress functor to give an update.
+			double progress=imageCount/totalImages;
+			progressFunctor(progress, progressUserData);
+		}
+
+		// Now generate all larger images.
+		for(int zoom=maxZoom-1; zoom>=0; --zoom) {
+			int zoomSize=((1llu)<<zoom);
+			//int tilesPerPixel=getTilesPerPixelForZoom(zoom);
+			int x, y;
+			for(y=0; y<zoomSize; ++y) {
+				for(x=0; x<zoomSize; ++x) {
+					// Create image path.
+					char imagePath[1024]; // TODO: Improve this
+					sprintf(imagePath, "%s/%u/%u/%u.png", imageDir, zoom, x, y);
+
+					// Does the image already exist?
+					if (fileExists(imagePath))
+						continue;
+
+					// Compute child parameters.
+					int childOffsetX=x*2;
+					int childOffsetY=y*2;
+					int childZoom=zoom+1;
+
+					// Generate child paths.
+					char childPaths[2][2][1024]; // TODO: Improve this.
+					for(int ty=0; ty<2; ++ty)
+						for(int tx=0; tx<2; ++tx)
+							sprintf(childPaths[tx][ty], "%s/%u/%u/%u.png", imageDir, childZoom, childOffsetX+tx, childOffsetY+ty);
+
+					// Shrink 4 child images in half and stitch them together.
+					char command[1024];
+					sprintf(command, "montage -geometry 50%%x50%%+0+0 %s %s %s %s %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], imagePath);
+					system(command);
+
+					++imageCount;
+				}
+
+				// Call progress functor to give an update.
+				double progress=imageCount/totalImages;
+				progressFunctor(progress, progressUserData);
+			}
+		}
+
+		return true;
+	}
+
 	char *SlippyMap::getImagePath(unsigned tileX, unsigned tileY, int tilesPerPixel) const {
 		// Ensure tileX/Y are in range.
 		if (tileX>=Engine::Map::Map::regionsWide*MapRegion::tilesWide || tileY>=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh)
