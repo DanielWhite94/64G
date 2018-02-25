@@ -78,10 +78,13 @@ int main(int argc, char **argv) {
 
 	// Setup PNG image.
 	png_structp pngPtr=png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	png_infop infoPtr=png_create_info_struct(pngPtr);
 	png_init_io(pngPtr, file);
+
+	png_infop infoPtr=png_create_info_struct(pngPtr);
 	png_set_IHDR(pngPtr, infoPtr, imageWidth, imageHeight, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 	png_write_info(pngPtr, infoPtr);
+
+	png_set_compression_level(pngPtr, Z_NO_COMPRESSION);
 
 	// Create rows.
 	png_bytep pngRows=(png_bytep)malloc(imageHeight*imageWidth*3*sizeof(png_byte));
