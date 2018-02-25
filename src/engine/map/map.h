@@ -48,6 +48,8 @@ namespace Engine {
 			bool addTexture(MapTexture *texture); // These functions will free texture later.
 			void removeTexture(unsigned id);
 			const MapTexture *getTexture(unsigned id) const;
+
+			const char *getBaseDir(void) const;
 		private:
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 
@@ -72,7 +74,6 @@ namespace Engine {
 
 			void initclean(void);
 
-			const char *getBaseDir(void) const;
 			const char *getRegionsDir(void) const;
 			const char *getTexturesDir(void) const;
 
