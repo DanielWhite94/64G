@@ -79,7 +79,7 @@ namespace MapViewer {
 
 				// Create mappng command.
 				char command[4*1024];
-				sprintf(command, "./mappng %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
+				sprintf(command, "./mappng --quiet %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
 
 				// Run mappng command.
 				system(command); // TODO: This better (silence output, check for errors etc).

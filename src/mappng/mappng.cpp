@@ -15,12 +15,19 @@ using namespace Engine::Map;
 
 int main(int argc, char **argv) {
 	// Grab arguments.
-	if (argc!=9) {
-		printf("Usage: %s mappath mapx mapy mapw maph imagewidth imageheight imagepath\n", argv[0]);
+	if (argc!=9 && argc!=10) {
+		printf("Usage: %s [--quiet] mappath mapx mapy mapw maph imagewidth imageheight imagepath\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	int arg=1;
+
+	bool quiet=false;
+	if (strcmp(argv[arg], "--quiet")==0) {
+		quiet=true;
+		++arg;
+	}
+
 	const char *mapPath=argv[arg++];
 	int mapTileX=atoi(argv[arg++]);
 	int mapTileY=atoi(argv[arg++]);
@@ -31,35 +38,42 @@ int main(int argc, char **argv) {
 	const char *imagePath=argv[arg++];
 
 	if (mapTileX<0 || mapTileX>=Engine::Map::Map::regionsWide*MapRegion::tilesWide) {
-		printf("Bad mapX (%i)", mapTileX);
+		if (!quiet)
+			printf("Bad mapX (%i)", mapTileX);
 		return EXIT_FAILURE;
 	}
 
 	if (mapTileY<0 || mapTileY>=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh) {
-		printf("Bad mapY (%i)", mapTileY);
+		if (!quiet)
+			printf("Bad mapY (%i)", mapTileY);
 		return EXIT_FAILURE;
 	}
 
 	if (mapTileWidth<=0 || mapTileHeight<=0) {
-		printf("Bad map width or height (%i and %i)", mapTileWidth, mapTileHeight);
+		if (!quiet)
+			printf("Bad map width or height (%i and %i)", mapTileWidth, mapTileHeight);
 		return EXIT_FAILURE;
 	}
 
 	if (imageWidth<=0 || imageHeight<=0) {
-		printf("Bad image width or height (%i and %i)", imageWidth, imageHeight);
+		if (!quiet)
+			printf("Bad image width or height (%i and %i)", imageWidth, imageHeight);
 		return EXIT_FAILURE;
 	}
 
 	// Load map.
-	printf("Loading map at '%s'.\n", mapPath);
+	if (!quiet)
+		printf("Loading map at '%s'.\n", mapPath);
 	class Map *map=new class Map(mapPath);
 	if (map==NULL || !map->initialized) {
-		printf("Could not load map.\n");
+		if (!quiet)
+			printf("Could not load map.\n");
 		return EXIT_FAILURE;
 	}
 
 	// Create file for writing.
-	printf("Creating image at '%s'.\n", imagePath);
+	if (!quiet)
+		printf("Creating image at '%s'.\n", imagePath);
 	FILE *file=fopen(imagePath, "wb"); // TODO: Check return.
 
 	// Setup PNG image.
@@ -198,25 +212,31 @@ int main(int argc, char **argv) {
 			}
 
 			// Update progress.
-			Util::clearConsoleLine();
+			if (!quiet)
+				Util::clearConsoleLine();
 			double progress=100.0*((regionX-regionX0)+(regionY-regionY0)*(regionX1-regionX0))/((regionY1-regionY0)*(regionX1-regionX0));
-			printf("Creating rows... %.1f%%", progress);
+			if (!quiet)
+				printf("Creating rows... %.1f%%", progress);
 			fflush(stdout);
 		}
 	}
-	printf("\n");
+	if (!quiet)
+		printf("\n");
 
 	// Write pixels.
 	int pngY;
 	for(pngY=0; pngY<imageHeight; ++pngY) {
 		png_write_row(pngPtr, &pngRows[(pngY*imageWidth+0)*3*sizeof(png_byte)]);
 
-		Util::clearConsoleLine();
-		double progress=100.0*pngY/imageHeight;
-		printf("Writing pixel data... %.1f%%", progress);
-		fflush(stdout);
+		if (!quiet) {
+			Util::clearConsoleLine();
+			double progress=100.0*pngY/imageHeight;
+			printf("Writing pixel data... %.1f%%", progress);
+			fflush(stdout);
+		}
 	}
-	printf("\n");
+	if (!quiet)
+		printf("\n");
 
 	free(pngRows);
 
@@ -226,7 +246,8 @@ int main(int argc, char **argv) {
 	png_free_data(pngPtr, infoPtr, PNG_FREE_ALL, -1);
 	png_destroy_write_struct(&pngPtr, (png_infopp)NULL);
 
-	printf("Done!\n");
+	if (!quiet)
+		printf("Done!\n");
 
 	// Tidy up.
 	delete map;
