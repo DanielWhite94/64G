@@ -8,9 +8,9 @@
 
 namespace MapViewer {
 	int SlippyMap::imageSize=1024;
-	int SlippyMap::tilesPerPixelMax=(Engine::Map::Map::regionsWide*MapRegion::tilesWide)/imageSize; // TODO: Think about how Y comes into this.
 
-	SlippyMap::SlippyMap(const class Map *map, const char *gImageDir): map(map) {
+	SlippyMap::SlippyMap(const class Map *map, unsigned mapSize, const char *gImageDir): map(map), mapSize(mapSize) {
+		// Copy imageDir.
 		imageDir=(char *)malloc(strlen(gImageDir)+1); // TODO: Improve this
 		strcpy(imageDir, gImageDir);
 	}
@@ -92,7 +92,7 @@ namespace MapViewer {
 
 	void SlippyMap::invalidateTile(unsigned tileX, unsigned tileY) {
 		// Loop over every zoom level, clearing any images which contain the given tileX/Y/
-		for(int tilesPerPixel=1; tilesPerPixel<=tilesPerPixelMax; ++tilesPerPixel) {
+		for(int tilesPerPixel=1; tilesPerPixel<=getTilesPerPixelMax(); ++tilesPerPixel) {
 			char *imagePath=getImagePath(tileX, tileY, tilesPerPixel);
 			if (imagePath==NULL)
 				continue;
@@ -109,9 +109,9 @@ namespace MapViewer {
 		// TODO: Simply clear whole directory.
 	}
 
-	bool SlippyMap::tilesPerPixelIsValid(int tilesPerPixel) {
+	bool SlippyMap::tilesPerPixelIsValid(int tilesPerPixel) const {
 		// Ensure range is OK.
-		if (tilesPerPixel<1 || tilesPerPixel>tilesPerPixelMax)
+		if (tilesPerPixel<1 || tilesPerPixel>getTilesPerPixelMax())
 			return false;
 
 		// Ensure it is a power of two.
@@ -121,22 +121,26 @@ namespace MapViewer {
 		return true;
 	}
 
-	int SlippyMap::tileXToOffsetX(unsigned tileX, int tilesPerPixel) {
+	int SlippyMap::getTilesPerPixelMax(void) const {
+		return mapSize/imageSize;
+	}
+
+	int SlippyMap::tileXToOffsetX(unsigned tileX, int tilesPerPixel) const {
 		assert(tilesPerPixelIsValid(tilesPerPixel));
 
 		return tileX/(tilesPerPixel*imageSize);
 	}
-	int SlippyMap::tileYToOffsetY(unsigned tileY, int tilesPerPixel) {
+	int SlippyMap::tileYToOffsetY(unsigned tileY, int tilesPerPixel) const {
 		assert(tilesPerPixelIsValid(tilesPerPixel));
 
 		return tileY/(tilesPerPixel*imageSize);
 	}
-	int SlippyMap::offsetXToTileX(unsigned offsetX, int tilesPerPixel) {
+	int SlippyMap::offsetXToTileX(unsigned offsetX, int tilesPerPixel) const {
 		assert(tilesPerPixelIsValid(tilesPerPixel));
 
 		return offsetX*(tilesPerPixel*imageSize);
 	}
-	int SlippyMap::offsetYToTileY(unsigned offsetY, int tilesPerPixel) {
+	int SlippyMap::offsetYToTileY(unsigned offsetY, int tilesPerPixel) const {
 		assert(tilesPerPixelIsValid(tilesPerPixel));
 
 		return offsetY*(tilesPerPixel*imageSize);
