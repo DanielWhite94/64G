@@ -61,7 +61,29 @@ namespace MapViewer {
 				// Run mappng command.
 				system(command); // TODO: This better (silence output, check for errors etc).
 			} else {
-				// TODO: call getImage on 4 child images and then shrink and stitch them together.
+				int offsetX=tileXToOffsetX(tileX, tilesPerPixel);
+				int offsetY=tileYToOffsetY(tileY, tilesPerPixel);
+
+				int childOffsetX=offsetX*2;
+				int childOffsetY=offsetY*2;
+				int childTilesPerPixel=tilesPerPixel/2;
+
+				// Generate images for 4 children.
+				char *childPaths[2][2];
+				for(int ty=0; ty<2; ++ty)
+					for(int tx=0; tx<2; ++tx) {
+						childPaths[tx][ty]=getImage(offsetXToTileX(childOffsetX+tx, childTilesPerPixel), offsetYToTileY(childOffsetY+ty, childTilesPerPixel), childTilesPerPixel);
+					}
+
+				// Shrink 4 child images in half and stitch them together.
+				char command[4*1024];
+				sprintf(command, "montage -geometry %ux%u+0+0 %s %s %s %s %s", imageSize/2, imageSize/2, childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], imagePath);
+				system(command);
+
+				// Free child paths.
+				for(int ty=0; ty<2; ++ty)
+					for(int tx=0; tx<2; ++tx)
+						free(childPaths[tx][ty]);
 			}
 		}
 
