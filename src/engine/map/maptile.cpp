@@ -23,9 +23,6 @@ namespace Engine {
 			assert(gFileData!=NULL);
 
 			fileData=gFileData;
-
-			for(unsigned i=0; i<layersMax; ++i)
-				fileData->layers[i].textureId=0;
 		}
 
 		const MapTile::Layer *MapTile::getLayer(unsigned z) const {

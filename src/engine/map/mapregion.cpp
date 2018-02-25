@@ -1,6 +1,7 @@
 #include <cassert>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "mapregion.h"
 
@@ -10,6 +11,11 @@ using namespace Engine::Physics;
 namespace Engine {
 	MapRegion::MapRegion() {
 		isDirty=false;
+
+		// Set file data to all zeros.
+		memset(tileFileData, 0, sizeof(tileFileData));
+
+		// Update tile instances with their file data.
 		unsigned tileX, tileY;
 		for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
 			for(tileX=0; tileX<MapRegion::tilesWide; ++tileX)
