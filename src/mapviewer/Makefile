@@ -1,17 +1,18 @@
 CPP = clang++
-CFLAGS = `pkg-config --cflags gtkmm-3.0` -Wall -std=c++11
-LFLAGS = `pkg-config --libs gtkmm-3.0` -rdynamic
+CFLAGS = -Wall -std=c++11
+LFLAGS =
 
-OBJS = ../engine/map/map.o ../engine/map/mapgen.o ../engine/map/mapobject.o ../engine/map/mapregion.o ../engine/map/maptexture.o ../engine/map/maptile.o ../engine/physics/hitmask.o ../engine/physics/coord.o ../engine/fbnnoise.o ../engine/noisearray.o ../engine/opensimplexnoise.o ../engine/util.o mainwindow.o mapviewer.o slippymap.o
+OBJS = ../engine/map/map.o ../engine/map/mapgen.o ../engine/map/mapobject.o ../engine/map/mapregion.o ../engine/map/maptexture.o ../engine/map/maptile.o ../engine/physics/hitmask.o ../engine/physics/coord.o ../engine/fbnnoise.o ../engine/noisearray.o ../engine/opensimplexnoise.o ../engine/util.o main.o slippymap.o
 
 debug: CFLAGS += -O0 -g -ggdb3
 release: CFLAGS += -O3 -DNDEBUG
 
 debug: $(OBJS)
-	$(CPP) $(CFLAGS) $(OBJS) -o ../../bin/mapviewer $(LFLAGS)
+	$(CPP) $(CFLAGS) $(OBJS) -o ../../bin/slippymapgen $(LFLAGS)
+	mkdir -p ../../bin/slippymapdata
 
 release: $(OBJS)
-	$(CPP) $(CFLAGS) $(OBJS) -o ../../bin/mapviewer $(LFLAGS)
+	$(CPP) $(CFLAGS) $(OBJS) -o ../../bin/slippymapgen $(LFLAGS)
 
 %.o: %.cpp %.h
 	$(CPP) $(CFLAGS) -c -o $@ $<
