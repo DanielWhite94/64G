@@ -1,5 +1,8 @@
-all:
-	cd src && make
+debug:
+	cd src && make debug
+
+release:
+	cd src && make release
 
 clean:
 	cd src && make clean
