@@ -1,8 +1,8 @@
 CPP = clang++
-CFLAGS = -Wall -std=c++11
-LFLAGS =
+CFLAGS = `pkg-config --cflags gtkmm-3.0` -Wall -std=c++11
+LFLAGS = `pkg-config --libs gtkmm-3.0` -rdynamic
 
-OBJS = ../engine/map/map.o ../engine/map/mapgen.o ../engine/map/mapobject.o ../engine/map/mapregion.o ../engine/map/maptexture.o ../engine/map/maptile.o ../engine/physics/hitmask.o ../engine/physics/coord.o ../engine/fbnnoise.o ../engine/noisearray.o ../engine/opensimplexnoise.o ../engine/util.o mapviewer.o
+OBJS = ../engine/map/map.o ../engine/map/mapgen.o ../engine/map/mapobject.o ../engine/map/mapregion.o ../engine/map/maptexture.o ../engine/map/maptile.o ../engine/physics/hitmask.o ../engine/physics/coord.o ../engine/fbnnoise.o ../engine/noisearray.o ../engine/opensimplexnoise.o ../engine/util.o mainwindow.o mapviewer.o slippymap.o
 
 debug: CFLAGS += -O0 -g -ggdb3
 release: CFLAGS += -O3 -DNDEBUG
