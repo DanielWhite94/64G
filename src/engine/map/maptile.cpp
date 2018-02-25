@@ -11,46 +11,41 @@ using namespace Engine::Map;
 namespace Engine {
 	namespace Map {
 		MapTile::MapTile() {
-			for(unsigned i=0; i<layersMax; ++i)
-				layers[i].textureId=0;
-
-			objectsNext=0;
-		}
-
-		MapTile::MapTile(MapTexture::Id textureId) {
-			for(unsigned i=0; i<layersMax; ++i)
-				layers[i].textureId=0;
-			layers[0].textureId=textureId;
-
-			objectsNext=0;
-		}
-
-		MapTile::MapTile(MapTexture::Id textureId, unsigned layer) {
-			assert(layer<layersMax);
-
-			for(unsigned i=0; i<layersMax; ++i)
-				layers[i].textureId=0;
-			layers[layer].textureId=textureId;
-
+			fileData=NULL;
 			objectsNext=0;
 		}
 
 		MapTile::~MapTile() {
+		}
 
+		void MapTile::setFileData(FileData *gFileData) {
+			assert(fileData==NULL);
+			assert(gFileData!=NULL);
+
+			fileData=gFileData;
+
+			for(unsigned i=0; i<layersMax; ++i)
+				fileData->layers[i].textureId=0;
 		}
 
 		const MapTile::Layer *MapTile::getLayer(unsigned z) const {
+			assert(fileData!=NULL);
 			assert(z<layersMax);
-			return &layers[z];
+
+			return &fileData->layers[z];
 		}
 
 		MapTile::Layer *MapTile::getLayer(unsigned z) {
+			assert(fileData!=NULL);
 			assert(z<layersMax);
-			return &layers[z];
+
+			return &fileData->layers[z];
 		}
 
 		const MapTile::Layer *MapTile::getLayers(void) const {
-			return layers;
+			assert(fileData!=NULL);
+
+			return fileData->layers;
 		}
 
 		const MapObject *MapTile::getObject(unsigned n) const {
@@ -71,9 +66,10 @@ namespace Engine {
 		}
 
 		void MapTile::setLayer(unsigned z, const Layer &layer) {
+			assert(fileData!=NULL);
 			assert(z<layersMax);
 
-			layers[z]=layer;
+			fileData->layers[z]=layer;
 		}
 
 		bool MapTile::addObject(MapObject *object) {

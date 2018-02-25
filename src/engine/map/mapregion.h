@@ -28,12 +28,12 @@ namespace Engine {
 
 			bool getIsDirty(void) const;
 
-			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
 			void setDirty(void);
 		private:
 			bool isDirty;
 
-			MapTile tiles[tilesHigh][tilesWide];
+			MapTile tileInstances[tilesHigh][tilesWide];
+			MapTile::FileData tileFileData[tilesHigh][tilesWide];
 		};
 	};
 };

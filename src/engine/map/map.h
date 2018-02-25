@@ -40,8 +40,6 @@ namespace Engine {
 			MapRegion *getRegionAtCoordVec(const CoordVec &vec, bool create);
 			MapRegion *getRegionAtOffset(unsigned regionX, unsigned regionY, bool create);
 
-			void setTileAtCoordVec(const CoordVec &vec, const MapTile &tile);
-
 			bool addObject(MapObject *object);
 			bool moveObject(MapObject *object, const CoordVec &newPos);
 

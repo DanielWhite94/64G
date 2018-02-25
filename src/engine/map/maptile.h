@@ -9,17 +9,21 @@ namespace Engine {
 
 		class MapTile {
 		public:
+			static const unsigned layersMax=4;
+			static const unsigned objectsMax=8;
+
 			struct Layer {
 				MapTexture::Id textureId;
 			};
 
-			static const unsigned layersMax=4;
-			static const unsigned objectsMax=8;
+			struct FileData {
+				Layer layers[layersMax];
+			};
 
 			MapTile();
-			MapTile(MapTexture::Id textureId);
-			MapTile(MapTexture::Id textureId, unsigned layer);
 			~MapTile();
+
+			void setFileData(FileData *fileData);
 
 			Layer *getLayer(unsigned z);
 			const Layer *getLayer(unsigned z) const;
@@ -35,7 +39,7 @@ namespace Engine {
 			void removeObject(MapObject *object);
 			bool isObjectsFull(void) const;
 		private:
-			Layer layers[layersMax];
+			FileData *fileData;
 
 			MapObject *objects[objectsMax];
 			unsigned objectsNext;

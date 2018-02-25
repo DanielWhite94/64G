@@ -10,6 +10,10 @@ using namespace Engine::Physics;
 namespace Engine {
 	MapRegion::MapRegion() {
 		isDirty=false;
+		unsigned tileX, tileY;
+		for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
+			for(tileX=0; tileX<MapRegion::tilesWide; ++tileX)
+				tileInstances[tileY][tileX].setFileData(&(tileFileData[tileY][tileX]));
 	}
 
 	MapRegion::~MapRegion() {
@@ -74,33 +78,18 @@ namespace Engine {
 		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
 		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
 
-		return &tiles[offsetY][offsetX];
+		return &tileInstances[offsetY][offsetX];
 	}
 
 	const MapTile *MapRegion::getTileAtOffset(unsigned offsetX, unsigned offsetY) const  {
 		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
 		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
 
-		return &tiles[offsetY][offsetX];
+		return &tileInstances[offsetY][offsetX];
 	}
 
 	bool MapRegion::getIsDirty(void) const {
 		return isDirty;
-	}
-
-	void MapRegion::setTileAtCoordVec(const CoordVec &vec, const MapTile &tile) {
-		CoordComponent tileX=vec.x/CoordsPerTile;
-		CoordComponent tileY=vec.y/CoordsPerTile;
-		CoordComponent offsetX=tileX%tilesWide;
-		CoordComponent offsetY=tileY%tilesHigh;
-		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
-		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
-
-		// Update.
-		tiles[offsetY][offsetX]=tile;
-
-		// Set dirty flag.
-		isDirty=true;
 	}
 
 	void MapRegion::setDirty(void) {

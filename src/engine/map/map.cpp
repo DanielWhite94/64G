@@ -243,17 +243,16 @@ namespace Engine {
 					break;
 				}
 
-				// Create tile.
-				MapTile tile;
+				// Grab tile from region.
+				CoordVec vec((tileX+regionX*MapRegion::tilesWide)*Physics::CoordsPerTile, (tileY+regionY*MapRegion::tilesHigh)*Physics::CoordsPerTile);
+				MapTile *tile=getTileAtCoordVec(vec, true);
+
+				// Update tile.
 				for(unsigned z=0; z<MapTile::layersMax; ++z) {
 					MapTile::Layer layer;
 					layer.textureId=textureIdArray[z];
-					tile.setLayer(z, layer);
+					tile->setLayer(z, layer);
 				}
-
-				// Set tile in region.
-				CoordVec vec((tileX+regionX*MapRegion::tilesWide)*Physics::CoordsPerTile, (tileY+regionY*MapRegion::tilesHigh)*Physics::CoordsPerTile);
-				setTileAtCoordVec(vec, tile);
 			}
 
 			// Close region file.
@@ -337,14 +336,6 @@ namespace Engine {
 
 			// Return region (or NULL if we could not load/create).
 			return regionsByOffset[regionY][regionX].ptr;
-		}
-
-		void Map::setTileAtCoordVec(const CoordVec &vec, const MapTile &tile) {
-			MapRegion *region=getRegionAtCoordVec(vec, true);
-			if (region==NULL)
-				return; // TODO: Warn?
-
-			region->setTileAtCoordVec(vec, tile);
 		}
 
 		bool Map::addObject(MapObject *object) {
