@@ -234,31 +234,14 @@ namespace Engine {
 				return false;
 
 			// Read tile data.
-			unsigned tileX, tileY;
-			for(tileX=0,tileY=0; tileX<256 && tileY<256; tileX=(tileX+1)%256,tileY+=(tileX==0)) {
-				// Read layers in.
-				MapTexture::Id textureIdArray[MapTile::layersMax];
-				if (fread(&textureIdArray, sizeof(MapTexture::Id), MapTile::layersMax, regionFile)!=MapTile::layersMax) {
-					printf("skipping...\n"); // TODO: better
-					break;
-				}
-
-				// Grab tile from region.
-				CoordVec vec((tileX+regionX*MapRegion::tilesWide)*Physics::CoordsPerTile, (tileY+regionY*MapRegion::tilesHigh)*Physics::CoordsPerTile);
-				MapTile *tile=getTileAtCoordVec(vec, true);
-
-				// Update tile.
-				for(unsigned z=0; z<MapTile::layersMax; ++z) {
-					MapTile::Layer layer;
-					layer.textureId=textureIdArray[z];
-					tile->setLayer(z, layer);
-				}
-			}
+			MapRegion *region=getRegionAtOffset(regionX, regionY, false);
+			size_t tileCount=MapRegion::tilesWide*MapRegion::tilesHigh;
+			bool result=(fread(&(region->tileFileData), sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
 
 			// Close region file.
 			fclose(regionFile);
 
-			return true;
+			return result;
 		}
 
 		void Map::tick(void) {

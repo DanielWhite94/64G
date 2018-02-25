@@ -29,11 +29,12 @@ namespace Engine {
 			bool getIsDirty(void) const;
 
 			void setDirty(void);
+
+			MapTile::FileData tileFileData[tilesHigh][tilesWide];
 		private:
 			bool isDirty;
 
 			MapTile tileInstances[tilesHigh][tilesWide];
-			MapTile::FileData tileFileData[tilesHigh][tilesWide];
 		};
 	};
 };
