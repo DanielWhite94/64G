@@ -100,7 +100,7 @@ namespace MapViewer {
 
 				// Shrink 4 child images in half and stitch them together.
 				char command[4*1024];
-				sprintf(command, "montage -geometry %ux%u+0+0 %s %s %s %s %s", imageSize/2, imageSize/2, childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], imagePath);
+				sprintf(command, "montage -geometry 50%%x50%%+0+0 %s %s %s %s %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], imagePath);
 				system(command);
 
 				// Free child paths.
