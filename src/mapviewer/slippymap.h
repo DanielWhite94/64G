@@ -1,6 +1,8 @@
 #ifndef MAPVIEWER_SLIPPYMAP_H
 #define MAPVIEWER_SLIPPYMAP_H
 
+#include <sys/stat.h>
+
 #include "../engine/map/map.h"
 
 namespace MapViewer {
@@ -26,6 +28,11 @@ namespace MapViewer {
 		static int tileYToOffsetY(unsigned tileY, int tilesPerPixel);
 		static int offsetXToTileX(unsigned offsetX, int tilesPerPixel);
 		static int offsetYToTileY(unsigned offsetY, int tilesPerPixel);
+
+		static bool fileExists(const char *name) {
+			struct stat buffer;
+			return (stat(name, &buffer)==0);
+		}
 	};
 
 };
