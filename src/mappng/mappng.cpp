@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 
 			// Update progress.
 			Util::clearConsoleLine();
-			double progress=100.0*(regionX+regionY*(regionX1-regionX0))/((regionY1-regionY0)*(regionX1-regionX0));
+			double progress=100.0*((regionX-regionX0)+(regionY-regionY0)*(regionX1-regionX0))/((regionY1-regionY0)*(regionX1-regionX0));
 			printf("Creating rows... %.1f%%", progress);
 			fflush(stdout);
 		}
