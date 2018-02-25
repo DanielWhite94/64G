@@ -3,7 +3,7 @@
 
 #include "slippymap.h"
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	// Grab arguments.
 	if (argc!=3) {
 		printf("Usage: %s mappath mapsize\n", argv[0]);
