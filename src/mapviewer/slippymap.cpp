@@ -46,16 +46,24 @@ namespace MapViewer {
 			return NULL;
 
 		// Do we need to (re)generate the image?
-		/*
-		TODO: this
-		if (..... file does not exist) {
+		if (!fileExists(imagePath)) {
 			if (tilesPerPixel==1) {
-				..... most zoomed in - simply call mappng with the right arguments
+				// Compute mappng arguments.
+				int mapX=offsetXToTileX(tileXToOffsetX(tileX, tilesPerPixel), tilesPerPixel);
+				int mapY=offsetYToTileY(tileYToOffsetY(tileY, tilesPerPixel), tilesPerPixel);
+				int mapW=imageSize*tilesPerPixel;
+				int mapH=imageSize*tilesPerPixel;
+
+				// Create mappng command.
+				char command[1024];
+				sprintf(command, "./mappng %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
+
+				// Run mappng command.
+				system(command); // TODO: This better (silence output, check for errors etc).
 			} else {
-				.... call getImage on 4 child images and then stitch them together
+				// TODO: call getImage on 4 child images and then shrink and stitch them together.
 			}
 		}
-		*/
 
 		return imagePath;
 	}
