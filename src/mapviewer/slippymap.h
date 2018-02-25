@@ -20,6 +20,9 @@ namespace MapViewer {
 
 		bool tilesPerPixelIsValid(int tilesPerPixel) const;
 		int getTilesPerPixelMax(void) const;
+		int getMaxZoom(void) const;
+		int getZoomForTilesPerPixel(int tilesPerPixel) const;
+		int getTilesPerPixelForZoom(int zoom) const;
 	private:
 		static int imageSize;
 		char *imageDir;

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -123,6 +124,18 @@ namespace MapViewer {
 
 	int SlippyMap::getTilesPerPixelMax(void) const {
 		return mapSize/imageSize;
+	}
+
+	int SlippyMap::getMaxZoom(void) const  {
+		return getZoomForTilesPerPixel(1);
+	}
+
+	int SlippyMap::getZoomForTilesPerPixel(int tilesPerPixel) const {
+		return log2(getTilesPerPixelMax()/tilesPerPixel);
+	}
+
+	int SlippyMap::getTilesPerPixelForZoom(int zoom) const {
+		return ((unsigned)getTilesPerPixelMax())>>((unsigned)zoom);
 	}
 
 	int SlippyMap::tileXToOffsetX(unsigned tileX, int tilesPerPixel) const {
