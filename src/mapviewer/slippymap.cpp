@@ -49,6 +49,10 @@ namespace MapViewer {
 
 		double imageCount=0.0;
 
+		// Call progress functor to give an initial update.
+		double progress=imageCount/totalImages;
+		progressFunctor(progress, progressUserData);
+
 		// First generate all base level images using mappng.
 		int baseSize=((1llu)<<maxZoom);
 		int x, y;
@@ -79,7 +83,7 @@ namespace MapViewer {
 			}
 
 			// Call progress functor to give an update.
-			double progress=imageCount/totalImages;
+			progress=imageCount/totalImages;
 			progressFunctor(progress, progressUserData);
 		}
 
@@ -118,7 +122,7 @@ namespace MapViewer {
 				}
 
 				// Call progress functor to give an update.
-				double progress=imageCount/totalImages;
+				progress=imageCount/totalImages;
 				progressFunctor(progress, progressUserData);
 			}
 		}

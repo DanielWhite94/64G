@@ -7,7 +7,7 @@
 
 void slippyMapGenAllProgressFunctor(double progress, void *userData) {
 	Util::clearConsoleLine();
-	printf("Generating tile images %.2f%%...", progress*100.0);
+	printf("Generating tile images... %.2f%%", progress*100.0);
 	fflush(stdout);
 }
 
