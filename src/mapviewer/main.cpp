@@ -25,6 +25,7 @@ int main (int argc, char *argv[]) {
 	MapViewer::SlippyMap slippyMap(map, mapSize, "slippymapdata");
 
 	// Create slippy map image for whole world (causing all others to also be generated).
+	printf("Generating tile images... (this may take a while)\n");
 	slippyMap.getImageByZoom(0, 0, 0);
 
 	// Tidy up.
