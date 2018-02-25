@@ -28,28 +28,18 @@ namespace Engine {
 		FILE *regionFile=fopen(regionFilePath, "w");
 
 		// Save all tiles.
-		unsigned tileX, tileY;
-		size_t written=0, target=0;
-		for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
-			for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
-				// Grab tile and save all layers.
-				const MapTile *tile=getTileAtOffset(tileX, tileY);
-				const MapTile::Layer *layers=tile->getLayers();
-				written+=sizeof(MapTile::Layer)*fwrite(layers, sizeof(MapTile::Layer), MapTile::layersMax, regionFile);
-				target+=sizeof(MapTile::Layer)*MapTile::layersMax;
-			}
+		size_t tileCount=tilesWide*tilesHigh;
+
+		bool result=(fwrite(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
 
 		// Close file.
 		fclose(regionFile);
 
-		// Success?
-		bool success=(written==target);
-
 		// Potentially update 'isDirty' flag.
-		if (success)
+		if (result)
 			isDirty=false;
 
-		return success;
+		return result;
 	}
 
 	MapTile *MapRegion::getTileAtCoordVec(const CoordVec &vec) {
