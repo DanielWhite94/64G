@@ -13,6 +13,7 @@ namespace MapViewer {
 
 		char *getImagePath(unsigned tileX, unsigned tileY, int tilesPerPixel) const ; // tilesPerPixel should be a power of two. Result should be passed to free
 		char *getImage(unsigned tileX, unsigned tileY, int tilesPerPixel); // tilesPerPixel should be a power of two. Result should be passed to free
+		char *getImageByZoom(unsigned tileX, unsigned tileY, int zoom);
 
 		void invalidateTile(unsigned tileX, unsigned tileY);
 		void invalidateRegion(unsigned regionX, unsigned regionY);

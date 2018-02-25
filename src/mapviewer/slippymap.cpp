@@ -10,12 +10,29 @@
 #include "slippymap.h"
 
 namespace MapViewer {
-	int SlippyMap::imageSize=1024;
+	int SlippyMap::imageSize=256;
 
 	SlippyMap::SlippyMap(const class Map *map, unsigned mapSize, const char *gImageDir): map(map), mapSize(mapSize) {
 		// Copy imageDir.
 		imageDir=(char *)malloc(strlen(gImageDir)+1); // TODO: Improve this
 		strcpy(imageDir, gImageDir);
+
+		// Create sub-dirs.
+		for(int zoom=0; zoom<=getMaxZoom(); ++zoom) {
+			// Create zoom-level dir.
+			char dirName[1024];
+			sprintf(dirName, "%s/%i", imageDir, zoom);
+			mkdir(dirName, S_IRWXU);
+
+			// Loop over y coordinates/
+			int imageCount=((1llu)<<zoom);
+			for(int y=0; y<imageCount; ++y) {
+				// Create y-level dir.
+				char dirName[1024];
+				sprintf(dirName, "%s/%i/%i", imageDir, zoom, y);
+				mkdir(dirName, S_IRWXU);
+			}
+		}
 	}
 
 	SlippyMap::~SlippyMap() {
@@ -35,9 +52,12 @@ namespace MapViewer {
 		unsigned offsetX=tileXToOffsetX(tileX, tilesPerPixel);
 		unsigned offsetY=tileYToOffsetY(tileY, tilesPerPixel);
 
+		// Calculate equivalent zoom factor for the given tilesPerPixel.
+		int zoom=getZoomForTilesPerPixel(tilesPerPixel);
+
 		// Generate the image path.
 		char *imagePath=(char *)malloc(128); // TODO: Improve this.
-		sprintf(imagePath, "%s/%ux%u,%u.png", imageDir, tilesPerPixel, offsetX, offsetY);
+		sprintf(imagePath, "%s/%u/%u/%u.png", imageDir, zoom, offsetX, offsetY);
 
 		return imagePath;
 	}
@@ -58,7 +78,7 @@ namespace MapViewer {
 				int mapH=imageSize*tilesPerPixel;
 
 				// Create mappng command.
-				char command[1024];
+				char command[4*1024];
 				sprintf(command, "./mappng %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
 
 				// Run mappng command.
@@ -91,6 +111,10 @@ namespace MapViewer {
 		}
 
 		return imagePath;
+	}
+
+	char *SlippyMap::getImageByZoom(unsigned tileX, unsigned tileY, int zoom) {
+		return getImage(tileX, tileY, getTilesPerPixelForZoom(zoom));
 	}
 
 	void SlippyMap::invalidateTile(unsigned tileX, unsigned tileY) {
