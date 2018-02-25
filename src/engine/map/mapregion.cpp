@@ -19,6 +19,22 @@ namespace Engine {
 	MapRegion::~MapRegion() {
 	}
 
+	bool MapRegion::load(const char *regionPath) {
+		// Open region file.
+		FILE *regionFile=fopen(regionPath, "r");
+		if (regionFile==NULL)
+			return false;
+
+		// Read tile data.
+		size_t tileCount=tilesWide*tilesHigh;
+		bool result=(fread(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
+
+		// Close region file.
+		fclose(regionFile);
+
+		return result;
+	}
+
 	bool MapRegion::save(const char *regionsDirPath, unsigned regionX, unsigned regionY) {
 		assert(regionsDirPath!=NULL);
 

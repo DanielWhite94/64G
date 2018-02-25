@@ -16,6 +16,7 @@ namespace Engine {
 			MapRegion();
 			~MapRegion();
 
+			bool load(const char *regionsDirPath);
 			bool save(const char *regionsDirPath, unsigned regionX, unsigned regionY);
 
 			static unsigned coordXToRegionXBase(CoordComponent x);
@@ -30,11 +31,11 @@ namespace Engine {
 
 			void setDirty(void);
 
-			MapTile::FileData tileFileData[tilesHigh][tilesWide];
 		private:
 			bool isDirty;
 
 			MapTile tileInstances[tilesHigh][tilesWide];
+			MapTile::FileData tileFileData[tilesHigh][tilesWide];
 		};
 	};
 };

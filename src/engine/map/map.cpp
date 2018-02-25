@@ -227,21 +227,9 @@ namespace Engine {
 			if (!createBlankRegion(regionX, regionY))
 				return false;
 
-			// Open region file.
-			FILE *regionFile=fopen(regionPath, "r");
-			if (regionFile==NULL)
-				// TODO: error msg
-				return false;
-
-			// Read tile data.
+			// Attempt to load.
 			MapRegion *region=getRegionAtOffset(regionX, regionY, false);
-			size_t tileCount=MapRegion::tilesWide*MapRegion::tilesHigh;
-			bool result=(fread(&(region->tileFileData), sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
-
-			// Close region file.
-			fclose(regionFile);
-
-			return result;
+			return region->load(regionPath);
 		}
 
 		void Map::tick(void) {
