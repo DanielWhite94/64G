@@ -239,23 +239,29 @@ namespace Engine {
 			}
 		}
 
-		MapTile *Map::getTileAtCoordVec(const CoordVec &vec, bool create) {
-			MapRegion *region=getRegionAtCoordVec(vec, create);
+		MapTile *Map::getTileAtCoordVec(const CoordVec &vec, GetTileFlag flags) {
+			MapRegion *region=getRegionAtCoordVec(vec, (flags & GetTileFlag::Create)!=0);
 			if (region==NULL)
 				return NULL;
+
+			if (flags & GetTileFlag::Dirty)
+				region->setDirty();
 
 			return region->getTileAtCoordVec(vec);
 		}
 
-		MapTile *Map::getTileAtOffset(unsigned offsetX, unsigned offsetY, bool create) {
+		MapTile *Map::getTileAtOffset(unsigned offsetX, unsigned offsetY, GetTileFlag flags) {
 			assert(offsetX>=0 && offsetX<regionsWide*MapRegion::tilesWide);
 			assert(offsetY>=0 && offsetY<regionsHigh*MapRegion::tilesHigh);
 
 			unsigned regionX=offsetX/MapRegion::tilesWide;
 			unsigned regionY=offsetY/MapRegion::tilesHigh;
-			MapRegion *region=getRegionAtOffset(regionX, regionY, create);
+			MapRegion *region=getRegionAtOffset(regionX, regionY, (flags & GetTileFlag::Create)!=0);
 			if (region==NULL)
 				return NULL;
+
+			if (flags & GetTileFlag::Dirty)
+				region->setDirty();
 
 			unsigned regionTileOffsetX=offsetX%MapRegion::tilesWide;
 			unsigned regionTileOffsetY=offsetY%MapRegion::tilesHigh;
@@ -325,7 +331,7 @@ namespace Engine {
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile) {
 					// Is there even a tile here?
-					MapTile *tile=getTileAtCoordVec(vec, false);
+					MapTile *tile=getTileAtCoordVec(vec, GetTileFlag::None);
 					if (tile==NULL)
 						return false;
 
@@ -344,7 +350,7 @@ namespace Engine {
 			// Add to tiles.
 			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
-					getTileAtCoordVec(vec, false)->addObject(object);
+					getTileAtCoordVec(vec, GetTileFlag::Dirty)->addObject(object);
 
 			return true;
 		}
@@ -373,7 +379,7 @@ namespace Engine {
 			// Remove from tiles.
 			for(vec.y=oldVec1.y; vec.y<=oldVec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=oldVec1.x; vec.x<=oldVec2.x; vec.x+=Physics::CoordsPerTile)
-					getTileAtCoordVec(vec, false)->removeObject(object);
+					getTileAtCoordVec(vec, GetTileFlag::Dirty)->removeObject(object);
 
 			// Move object.
 			double angle=(180.0/M_PI)*Util::angleFromXYToXY(object->getCoordTopLeft().x, object->getCoordTopLeft().y, newPos.x, newPos.y);
@@ -406,7 +412,7 @@ namespace Engine {
 			for(vec.y=newVec1.y; vec.y<=newVec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=newVec1.x; vec.x<=newVec2.x; vec.x+=Physics::CoordsPerTile) {
 					// Is there even a tile here?
-					MapTile *tile=getTileAtCoordVec(vec, false);
+					MapTile *tile=getTileAtCoordVec(vec, GetTileFlag::None);
 					if (tile==NULL) {
 						result=false;
 						break;
@@ -432,7 +438,7 @@ namespace Engine {
 				// Add to old tiles.
 				for(vec.y=oldVec1.y; vec.y<=oldVec2.y; vec.y+=Physics::CoordsPerTile)
 					for(vec.x=oldVec1.x; vec.x<=oldVec2.x; vec.x+=Physics::CoordsPerTile)
-						getTileAtCoordVec(vec, false)->addObject(object);
+						getTileAtCoordVec(vec, GetTileFlag::Dirty)->addObject(object);
 
 				return false;
 			}
@@ -440,7 +446,7 @@ namespace Engine {
 			// Add to new tiles.
 			for(vec.y=newVec1.y; vec.y<=newVec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=newVec1.x; vec.x<=newVec2.x; vec.x+=Physics::CoordsPerTile)
-					getTileAtCoordVec(vec, false)->addObject(object);
+					getTileAtCoordVec(vec, GetTileFlag::Dirty)->addObject(object);
 
 			return result;
 		}

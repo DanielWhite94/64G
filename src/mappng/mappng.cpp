@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 					CoordComponent imageTileY=imageY*yScale+mapTileY;
 
 					CoordVec vec={imageTileX*Physics::CoordsPerTile, imageTileY*Physics::CoordsPerTile};
-					const MapTile *tile=map->getTileAtCoordVec(vec, false);
+					const MapTile *tile=map->getTileAtCoordVec(vec, Engine::Map::Map::GetTileFlag::None);
 					if (tile==NULL)
 						continue; // TODO: Handle better
 

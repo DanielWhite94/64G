@@ -65,7 +65,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	DemogenMapData *mapData=data->mapData;
 
 	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y, false);
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
 	if (tile==NULL)
 		return;
 
@@ -185,7 +185,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 		return;
 
 	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y, false);
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
 	if (tile==NULL)
 		return;
 
@@ -237,7 +237,7 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 		return;
 
 	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y, false);
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
 	if (tile==NULL)
 		return;
 
@@ -325,7 +325,7 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 	int tx, ty;
 	for(ty=0; ty<h; ++ty)
 		for(tx=0; tx<w; ++tx) {
-			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile), false);
+			const MapTile *tile=map->getTileAtCoordVec(CoordVec((x+tx)*Physics::CoordsPerTile, (y+ty)*Physics::CoordsPerTile), Engine::Map::Map::GetTileFlag::None);
 			if (tile==NULL)
 				return false;
 

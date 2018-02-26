@@ -19,6 +19,13 @@ namespace Engine {
 	namespace Map {
 		class Map {
 		public:
+			enum GetTileFlag {
+				None=0,
+				Create=1, // If the given coordinates point to a non-existant region, attempt to create it first.
+				Dirty=2, // Mark the region containing this tile as dirty.
+				CreateDirty=3,
+			};
+
 			static const unsigned regionsWide=256, regionsHigh=256;
 
 			bool initialized;
@@ -35,8 +42,8 @@ namespace Engine {
 
 			void tick(void);
 
-			MapTile *getTileAtCoordVec(const CoordVec &vec, bool create);
-			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY, bool create);
+			MapTile *getTileAtCoordVec(const CoordVec &vec, GetTileFlag flags);
+			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY, GetTileFlag flags);
 			MapRegion *getRegionAtCoordVec(const CoordVec &vec, bool create);
 			MapRegion *getRegionAtOffset(unsigned regionX, unsigned regionY, bool create);
 
