@@ -25,6 +25,10 @@ typedef struct {
 	class Map *map;
 	int width, height;
 
+	FbnNoise *heightNoise;
+	FbnNoise *temperatureNoise;
+	NoiseArray *moistureNoise;
+
 	// These are computed after ground water/land modify tiles stage.
 	unsigned long long landCount, waterCount, totalCount;
 	double landFraction;
@@ -32,28 +36,9 @@ typedef struct {
 	double landSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
-struct DemogenGrassForestModifyTilesData {
-	NoiseArray *moistureNoiseArray;
-};
-
-typedef struct {
-	DemogenMapData *mapData;
-
-	FbnNoise *heightNoise;
-	FbnNoise *temperatureNoise;
-} DemogenGroundModifyTilesData;
-
-typedef struct {
-	NoiseArray *moistureNoiseArray;
-} DemogenSandForestModifyTilesData;
-
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData);
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(DemogenMapData *mapData);
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntrySandForest(DemogenMapData *mapData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
@@ -61,8 +46,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
-	const DemogenGroundModifyTilesData *data=(const DemogenGroundModifyTilesData *)userData;
-	DemogenMapData *mapData=data->mapData;
+	DemogenMapData *mapData=(DemogenMapData *)userData;
 
 	// Grab tile.
 	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
@@ -74,8 +58,8 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	const double alpineLevel=0.33;
 
 	// Calculate constants.
-	double height=data->heightNoise->eval(x, y);
-	double temperatureRandomOffset=data->temperatureNoise->eval(x, y);
+	double height=mapData->heightNoise->eval(x, y);
+	double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
 	double poleDistance=1.0-fabs(latitude);
@@ -160,7 +144,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
-	const DemogenGrassForestModifyTilesData *data=(const DemogenGrassForestModifyTilesData *)userData;
+	const DemogenMapData *mapData=(const DemogenMapData *)userData;
 
 	// Choose parameters.
 	const double temperateThreshold=0.6;
@@ -171,7 +155,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	assert(hotThreshold<=1.0);
 
 	// Compute constants..
-	double moisture=(data->moistureNoiseArray->eval(x, y)+1.0)/2.0;
+	double moisture=(mapData->moistureNoise->eval(x, y)+1.0)/2.0;
 
 	assert(moisture>=0.0 & moisture<=1.0);
 
@@ -220,10 +204,10 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
-	const DemogenSandForestModifyTilesData *data=(const DemogenSandForestModifyTilesData *)userData;
+	const DemogenMapData *mapData=(const DemogenMapData *)userData;
 
 	// Compute constants..
-	double moisture=(data->moistureNoiseArray->eval(x, y)+1.0)/2.0;
+	double moisture=(mapData->moistureNoise->eval(x, y)+1.0)/2.0;
 
 	assert(moisture>=0.0 & moisture<=1.0);
 
@@ -254,64 +238,6 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=MapGen::TextureIdTree3};
 	tile->setLayer(DemoGenTileLayerFull, layer);
-}
-
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapData *mapData) {
-	assert(mapData!=NULL);
-
-	// Create callback data.
-	DemogenGroundModifyTilesData *callbackData=(DemogenGroundModifyTilesData *)malloc(sizeof(DemogenGroundModifyTilesData));
-	assert(callbackData!=NULL); // TODO: Better
-	callbackData->mapData=mapData;
-
-	// Create noise.
-	callbackData->heightNoise=new FbnNoise(17, 8, 1.0/4096.0, 1.0, 2.0, 0.5);
-	callbackData->temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0, 1.0, 2.0, 0.5);
-
-	// Create entry.
-	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&demogenGroundModifyTilesFunctor;
-	entry->userData=(void *)callbackData;
-
-	return entry;
-}
-
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(DemogenMapData *mapData) {
-	assert(mapData!=NULL);
-
-	// Create user data.
-	DemogenGrassForestModifyTilesData *callbackData=(DemogenGrassForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
-	assert(callbackData!=NULL); // TODO: better
-
-	// Create noise.
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 4*1024, 4*1024, 50.0/*.....200.0*/, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating grass forest moisture noise ");
-	printf("\n");
-
-	// Create entry.
-	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&demogenGrassForestModifyTilesFunctor;
-	entry->userData=callbackData;
-
-	return entry;
-}
-
-MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntrySandForest(DemogenMapData *mapData) {
-	assert(mapData!=NULL);
-
-	// Create user data.
-	DemogenSandForestModifyTilesData *callbackData=(DemogenSandForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
-	assert(callbackData!=NULL); // TODO: better
-
-	// Create noise.
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 2*1024, 2*1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating sand forest moisture noise ");
-	printf("\n");
-
-	// Create entry.
-	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
-	entry->functor=&demogenSandForestModifyTilesFunctor;
-	entry->userData=callbackData;
-
-	return entry;
 }
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
@@ -388,20 +314,33 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
+	// Create noise.
+	mapData.heightNoise=new FbnNoise(17, 8, 1.0/(8.0*1024.0), 1.0, 2.0, 0.5);
+	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0, 1.0, 2.0, 0.5);
+	mapData.moistureNoise=new NoiseArray(23, mapData.width, mapData.height, 4*1024, 4*1024, 1024.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
+	printf("\n");
+
 	// Run modify tiles.
 	size_t modifyTilesArrayCount=3;
-	MapGen::ModifyTilesManyEntry *modifyTilesArray[modifyTilesArrayCount];
-	modifyTilesArray[0]=demogenMakeModifyTilesManyEntryGround(&mapData);
-	modifyTilesArray[1]=demogenMakeModifyTilesManyEntryGrassForest(&mapData);
-	modifyTilesArray[2]=demogenMakeModifyTilesManyEntrySandForest(&mapData);
+	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
+	modifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
+	modifyTilesArray[0].userData=&mapData;
+	modifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
+	modifyTilesArray[1].userData=&mapData;
+	modifyTilesArray[2].functor=&demogenSandForestModifyTilesFunctor;
+	modifyTilesArray[2].userData=&mapData;
 
 	const char *progressString="Generating tiles (ground+forests) ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
 	printf("\n");
 
-	size_t i;
-	for(i=0; i<modifyTilesArrayCount; ++i)
-		free(modifyTilesArray[i]);
+	// Tidy up noise.
+	delete mapData.heightNoise;
+	mapData.heightNoise=NULL;
+	delete mapData.temperatureNoise;
+	mapData.temperatureNoise=NULL;
+	delete mapData.moistureNoise;
+	mapData.moistureNoise=NULL;
 
 	// Compute more map data.
 	if (mapData.totalCount>0)
@@ -418,11 +357,9 @@ int main(int argc, char **argv) {
 	printf("People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add towns.
-	/*
 	printf("Adding towns...\n");
 	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerDecoration, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
 	printf("\n");
-	*/
 
 	// Save map.
 	if (!mapData.map->save()) {

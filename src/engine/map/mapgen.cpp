@@ -677,16 +677,14 @@ namespace Engine {
 			assert(map!=NULL);
 			assert(functor!=NULL);
 
-			MapGen::ModifyTilesManyEntry entry={
-				.functor=functor,
-				.userData=functorUserData,
-			};
-			MapGen::ModifyTilesManyEntry *functorArray[1]={&entry};
+			MapGen::ModifyTilesManyEntry functorEntry;
+			functorEntry.functor=functor,
+			functorEntry.userData=functorUserData,
 
-			MapGen::modifyTilesMany(map, x, y, width, height, 1, functorArray, progressFunctor, progressUserData);
+			MapGen::modifyTilesMany(map, x, y, width, height, 1, &functorEntry, progressFunctor, progressUserData);
 		}
 
-		void MapGen::modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, ModifyTilesManyEntry *functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void MapGen::modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, ModifyTilesManyEntry functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functorArrayCount>0);
 			assert(functorArray!=NULL);
@@ -719,7 +717,7 @@ namespace Engine {
 						for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
 							// Loop over functors.
 							for(size_t functorId=0; functorId<functorArrayCount; ++functorId)
-								functorArray[functorId]->functor(map, regionXOffset+tileX, regionYOffset+tileY, functorArray[functorId]->userData);
+								functorArray[functorId].functor(map, regionXOffset+tileX, regionYOffset+tileY, functorArray[functorId].userData);
 						}
 					}
 				}
