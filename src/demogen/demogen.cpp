@@ -301,7 +301,6 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(Demogen
 MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntrySandForest(DemogenMapData *mapData) {
 	assert(mapData!=NULL);
 
-
 	// Create user data.
 	DemogenSandForestModifyTilesData *callbackData=(DemogenSandForestModifyTilesData *)malloc(sizeof(MapGen::GenerateBinaryNoiseModifyTilesData));
 	assert(callbackData!=NULL); // TODO: better
