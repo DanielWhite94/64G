@@ -265,9 +265,9 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 	callbackData->mapData=mapData;
 
 	// Create noise.
-	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 2048, 2048, 600.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
+	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 4*2048, 4*2048, 1200.0, 32, 8, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
 	printf("\n");
-	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
+	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
 	printf("\n");
 
 	// Create entry.
@@ -287,7 +287,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(Demogen
 	assert(callbackData!=NULL); // TODO: better
 
 	// Create noise.
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating grass forest moisture noise ");
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating grass forest moisture noise ");
 	printf("\n");
 
 	// Create entry.
@@ -307,7 +307,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntrySandForest(DemogenM
 	assert(callbackData!=NULL); // TODO: better
 
 	// Create noise.
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 100.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating sand forest moisture noise ");
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating sand forest moisture noise ");
 	printf("\n");
 
 	// Create entry.

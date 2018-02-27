@@ -37,11 +37,10 @@ namespace Engine {
 		assert(array!=NULL); // TODO: better
 		double *arrayPtr;
 
-		unsigned x, y;
-
 		FbnNoise heightNose(seed, noiseOctaves, 1.0/noiseResolution, 1.0, 2.0, 0.5);
-		const float freqFactorX=(tileWidth/noiseWidth)/8.0;
-		const float freqFactorY=(tileHeight/noiseHeight)/8.0;
+		const float freqFactorX=tileWidth/noiseWidth;
+		const float freqFactorY=tileHeight/noiseHeight;
+		unsigned x, y;
 		arrayPtr=array;
 		for(y=0;y<noiseHeight;++y) {
 			for(x=0;x<noiseWidth;++x,++arrayPtr)
