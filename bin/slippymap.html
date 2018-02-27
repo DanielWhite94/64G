@@ -12,12 +12,24 @@
 <div id="mapid" style="height:100%;"></div>
 
 <script>
+	if (typeof(Number.prototype.toRad) === "undefined") {
+	  Number.prototype.toRad = function() {
+	    return this * Math.PI / 180;
+	  }
+	}
+
+	function getTileURL(lat, lon, zoom) {
+		var xtile = parseInt(Math.floor( (lon + 180) / 360 * (1<<zoom) ));
+		var ytile = parseInt(Math.floor( (1 - Math.log(Math.tan(lat.toRad()) + 1 / Math.cos(lat.toRad())) / Math.PI) / 2 * (1<<zoom) ));
+		return "" + zoom + "/" + xtile + "/" + ytile;
+	}
+
 	var map=L.map('mapid');
 
 	L.tileLayer('slippymapdata/{z}/{x}/{y}.png', {
 		attribution: 'me',
 		minZoom: 1,
-		maxZoom: 6,
+		maxZoom: 7,
 		noWrap: true,
 	}).addTo(map);
 
