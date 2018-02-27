@@ -1,4 +1,5 @@
-#include <assert.h>
+#include <cassert>
+#include <cmath>
 
 #include "fbnnoise.h"
 
@@ -18,16 +19,15 @@ namespace Engine {
 
 	double FbnNoise::eval(double x, double y) {
 		double result=0.0;
-		double freq=frequency;
-		double amp=amplitude;
 		double dividend=0.0;
 
-		unsigned i;
-		for(i=0;i<octaves;++i) {
+		// Loop in reverse so that when gain<1.0, and thus amp is very small, we do not lose as much precision when summing result.
+		for(int i=octaves-1;i>=0;--i) {
+			// TODO: Is calculating these each time needed? (or can we just do e.g. amp*=gain each time)
+			double amp=amplitude*pow(gain, i);
+			double freq=frequency*pow(lacunarity, i);
 			result+=amp*baseNoise->eval(x*freq, y*freq);
 			dividend+=amp;
-			freq*=lacunarity;
-			amp*=gain;
 		}
 
 		result/=dividend;
