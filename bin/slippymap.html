@@ -20,7 +20,10 @@
 		return "" + zoom + "/" + xtile + "/" + ytile;
 	}
 
-	var map=L.map('mapid');
+	var map=L.map('mapid', {
+        zoomDelta: 0.25,
+        zoomSnap: 0,
+	});
 
 	L.tileLayer('slippymapdata/{z}/{x}/{y}.png', {
 		attribution: 'me',
