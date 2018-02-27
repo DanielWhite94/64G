@@ -645,11 +645,11 @@ namespace Engine {
 				const unsigned desiredCount=ceil(initialTownPop/townPop);
 				printf("	attempting to add %u towns, each with pop %.0f, size %.3fkm^2 (%'im per side)\n", desiredCount, townPop, townSizeSqKm, townSize);
 
-				const unsigned attemptMax=desiredCount*4;
+				const unsigned attemptMax=desiredCount*64;
 				unsigned addedCount=0;
 				for(unsigned i=0; i<attemptMax && addedCount<desiredCount; ++i) {
-					int townX=Util::randIntInInterval(x0, x1);
-					int townY=Util::randIntInInterval(y0, y1);
+					int townX=Util::randIntInInterval(x0+townSize/2, x1-townSize/2);
+					int townY=Util::randIntInInterval(y0+townSize/2, y1-townSize/2);
 					bool horizontal=Util::randBool();
 
 					if (horizontal) {
@@ -666,6 +666,8 @@ namespace Engine {
 						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, roadTileLayer, houseTileLayer, townPop, testFunctor, testFunctorUserData);
 					}
 				}
+
+				printf("		added %u\n", addedCount);
 			}
 
 			return true;
