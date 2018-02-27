@@ -40,7 +40,7 @@ typedef struct {
 	DemogenMapData *mapData;
 
 	FbnNoise *heightNoise;
-	NoiseArray *temperatureNoiseArray;
+	FbnNoise *temperatureNoise;
 } DemogenGroundModifyTilesData;
 
 typedef struct {
@@ -75,7 +75,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 
 	// Calculate constants.
 	double height=data->heightNoise->eval(x, y);
-	double temperatureRandomOffset=data->temperatureNoiseArray->eval(x, y);
+	double temperatureRandomOffset=data->temperatureNoise->eval(x, y);
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
 	double poleDistance=1.0-fabs(latitude);
@@ -265,10 +265,8 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 	callbackData->mapData=mapData;
 
 	// Create noise.
-	callbackData->heightNoise=new FbnNoise(17, 8/*32*/, 1.0/1200.0, 1.0, 2.0, 0.5);
-	printf("\n");
-	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
-	printf("\n");
+	callbackData->heightNoise=new FbnNoise(17, 8, 1.0/4096.0, 1.0, 2.0, 0.5);
+	callbackData->temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0, 1.0, 2.0, 0.5);
 
 	// Create entry.
 	MapGen::ModifyTilesManyEntry *entry=(MapGen::ModifyTilesManyEntry *)malloc(sizeof(MapGen::ModifyTilesManyEntry));
@@ -286,7 +284,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGrassForest(Demogen
 	assert(callbackData!=NULL); // TODO: better
 
 	// Create noise.
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating grass forest moisture noise ");
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 4*1024, 4*1024, 50.0/*.....200.0*/, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating grass forest moisture noise ");
 	printf("\n");
 
 	// Create entry.
@@ -305,7 +303,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntrySandForest(DemogenM
 	assert(callbackData!=NULL); // TODO: better
 
 	// Create noise.
-	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating sand forest moisture noise ");
+	callbackData->moistureNoiseArray=new NoiseArray(23, mapData->width, mapData->height, 2*1024, 2*1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating sand forest moisture noise ");
 	printf("\n");
 
 	// Create entry.
