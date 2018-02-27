@@ -39,7 +39,7 @@ struct DemogenGrassForestModifyTilesData {
 typedef struct {
 	DemogenMapData *mapData;
 
-	NoiseArray *heightNoiseArray;
+	FbnNoise *heightNoise;
 	NoiseArray *temperatureNoiseArray;
 } DemogenGroundModifyTilesData;
 
@@ -74,7 +74,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	const double alpineLevel=0.33;
 
 	// Calculate constants.
-	double height=data->heightNoiseArray->eval(x, y);
+	double height=data->heightNoise->eval(x, y);
 	double temperatureRandomOffset=data->temperatureNoiseArray->eval(x, y);
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
@@ -265,7 +265,7 @@ MapGen::ModifyTilesManyEntry *demogenMakeModifyTilesManyEntryGround(DemogenMapDa
 	callbackData->mapData=mapData;
 
 	// Create noise.
-	callbackData->heightNoiseArray=new NoiseArray(17, mapData->width, mapData->height, 4*2048, 4*2048, 1200.0, 32, 8, &noiseArrayProgressFunctorString, (void *)"Generating ground height noise ");
+	callbackData->heightNoise=new FbnNoise(17, 8/*32*/, 1.0/1200.0, 1.0, 2.0, 0.5);
 	printf("\n");
 	callbackData->temperatureNoiseArray=new NoiseArray(19, mapData->width, mapData->height, 1024, 1024, 200.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating temperature noise ");
 	printf("\n");
