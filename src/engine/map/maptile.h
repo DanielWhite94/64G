@@ -31,6 +31,8 @@ namespace Engine {
 			const Layer *getLayers(void) const;
 			const MapObject *getObject(unsigned n) const;
 			unsigned getObjectCount(void) const;
+			double getHeight(void) const;
+			double getMoisture(void) const;
 
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 

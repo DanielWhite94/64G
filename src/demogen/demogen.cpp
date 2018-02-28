@@ -27,7 +27,7 @@ typedef struct {
 
 	FbnNoise *heightNoise;
 	FbnNoise *temperatureNoise;
-	NoiseArray *moistureNoise;
+	NoiseArray *evaporationNoise;
 
 	// These are computed after ground water/land modify tiles stage.
 	unsigned long long landCount, waterCount, totalCount;
@@ -60,7 +60,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	// Calculate constants.
 	double height=mapData->heightNoise->eval(x, y);
 	double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
-	double moisture=mapData->moistureNoise->eval(x, y);
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
 	double poleDistance=1.0-fabs(latitude);
@@ -133,7 +132,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	MapTile::Layer layer={.textureId=textureId};
 	tile->setLayer(DemoGenTileLayerGround, layer);
 	tile->setHeight(height);
-	tile->setMoisture(moisture);
+	tile->setMoisture(0.0);
 
 	// Update map data.
 	if (textureId==MapGen::TextureIdWater || textureId==MapGen::TextureIdDeepWater)
@@ -157,9 +156,12 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	assert(temperateThreshold<=hotThreshold);
 	assert(hotThreshold<=1.0);
 
-	// Compute constants..
-	double moisture=(mapData->moistureNoise->eval(x, y)+1.0)/2.0;
+	// Grab tile and moisture.
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
+	if (tile==NULL)
+		return;
 
+	double moisture=tile->getMoisture();
 	assert(moisture>=0.0 & moisture<=1.0);
 
 	// Not enough moisture to support anything?
@@ -169,11 +171,6 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	// Random chance of a 'tree'.
 	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	if (randomValue<0.90)
-		return;
-
-	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
-	if (tile==NULL)
 		return;
 
 	// Check layers.
@@ -209,9 +206,12 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 
 	const DemogenMapData *mapData=(const DemogenMapData *)userData;
 
-	// Compute constants..
-	double moisture=(mapData->moistureNoise->eval(x, y)+1.0)/2.0;
+	// Grab tile and moisture.
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
+	if (tile==NULL)
+		return;
 
+	double moisture=tile->getMoisture();
 	assert(moisture>=0.0 & moisture<=1.0);
 
 	// Not enough moisture to support a forest?
@@ -221,11 +221,6 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	// Random chance of a tree.
 	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	if (randomValue<0.99)
-		return;
-
-	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
-	if (tile==NULL)
 		return;
 
 	// Check layers.
@@ -320,7 +315,7 @@ int main(int argc, char **argv) {
 	// Create noise.
 	mapData.heightNoise=new FbnNoise(17, 8, 1.0/(8.0*1024.0));
 	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0);
-	mapData.moistureNoise=new NoiseArray(23, mapData.width, mapData.height, 4*1024, 4*1024, 1024.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
+	mapData.evaporationNoise=new NoiseArray(23, mapData.width, mapData.height, 1024, 1024, 1024.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
 	printf("\n");
 
 	// Run modify tiles.
@@ -342,8 +337,8 @@ int main(int argc, char **argv) {
 	mapData.heightNoise=NULL;
 	delete mapData.temperatureNoise;
 	mapData.temperatureNoise=NULL;
-	delete mapData.moistureNoise;
-	mapData.moistureNoise=NULL;
+	delete mapData.evaporationNoise;
+	mapData.evaporationNoise=NULL;
 
 	// Compute more map data.
 	if (mapData.totalCount>0)

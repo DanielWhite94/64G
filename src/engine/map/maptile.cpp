@@ -54,6 +54,14 @@ namespace Engine {
 			return objectsNext;
 		}
 
+		double MapTile::getHeight(void) const {
+			return fileData->height;
+		}
+
+		double MapTile::getMoisture(void) const {
+			return fileData->moisture;
+		}
+
 		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
 			HitMask hitMask;
 			unsigned i, max=getObjectCount();
