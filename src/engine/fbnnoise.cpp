@@ -15,14 +15,16 @@ namespace Engine {
 	}
 
 	double FbnNoise::eval(double x, double y) {
-		double result=0.0;
+		// Premultiply x and y.
+		x*=frequency;
+		y*=frequency;
 
 		// Loop in reverse so that we start with amp small, so that we do not lose as much precision when summing result.
+		double result=0.0;
+		double exp2I=exp2(octaves-1);
 		for(int i=octaves-1;i>=0;--i) {
-			// TODO: Is calculating these each time needed? (or can we just do e.g. amp*=0.5 each time)
-			double exp2I=exp2(i);
-			double freq=frequency*exp2I;
-			result+=baseNoise->eval(x*freq, y*freq)/exp2I;
+			result+=baseNoise->eval(x*exp2I, y*exp2I)/exp2I;
+			exp2I/=2.0;
 		}
 
 		double dividend=2.0-pow(0.5, octaves-1);
