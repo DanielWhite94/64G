@@ -315,8 +315,8 @@ int main(int argc, char **argv) {
 	}
 
 	// Create noise.
-	mapData.heightNoise=new FbnNoise(17, 8, 1.0/(8.0*1024.0), 1.0, 2.0, 0.5);
-	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0, 1.0, 2.0, 0.5);
+	mapData.heightNoise=new FbnNoise(17, 8, 1.0/(8.0*1024.0));
+	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0);
 	mapData.moistureNoise=new NoiseArray(23, mapData.width, mapData.height, 4*1024, 4*1024, 1024.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
 	printf("\n");
 
