@@ -324,18 +324,24 @@ int main(int argc, char **argv) {
 	mapData.evaporationNoise=new NoiseArray(23, mapData.width, mapData.height, 1024, 1024, 1024.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating moisture noise ");
 	printf("\n");
 
-	// Run modify tiles.
-	size_t modifyTilesArrayCount=3;
-	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
-	modifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
-	modifyTilesArray[0].userData=&mapData;
-	modifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
-	modifyTilesArray[1].userData=&mapData;
-	modifyTilesArray[2].functor=&demogenSandForestModifyTilesFunctor;
-	modifyTilesArray[2].userData=&mapData;
+	// Run modify tiles for ground.
+	const char *progressStringGround="Generating tiles (water/ground) ";
+	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenGroundModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringGround);
+	printf("\n");
 
-	const char *progressString="Generating tiles (ground+forests) ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressString);
+	// Run moisture/river calculation.
+	// TODO: this
+
+	// Run modify tiles for forests.
+	size_t modifyTilesArrayCount=2;
+	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
+	modifyTilesArray[0].functor=&demogenGrassForestModifyTilesFunctor;
+	modifyTilesArray[0].userData=&mapData;
+	modifyTilesArray[1].functor=&demogenSandForestModifyTilesFunctor;
+	modifyTilesArray[1].userData=&mapData;
+
+	const char *progressStringForests="Generating tiles (grass+sand forests) ";
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringForests);
 	printf("\n");
 
 	// Tidy up noise.
