@@ -157,7 +157,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	assert(hotThreshold<=1.0);
 
 	// Grab tile and moisture.
-	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
 	if (tile==NULL)
 		return;
 
@@ -195,6 +195,9 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 
 	assert(textureId!=MapGen::TextureIdNone);
 
+	// Grab tile again to mark dirty.
+	map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=textureId};
 	tile->setLayer(DemoGenTileLayerFull, layer);
@@ -207,7 +210,7 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	const DemogenMapData *mapData=(const DemogenMapData *)userData;
 
 	// Grab tile and moisture.
-	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None); // TODO: Mark region dirty (but wait until we are sure we are going to make a change).
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
 	if (tile==NULL)
 		return;
 
@@ -232,6 +235,9 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 		return;
 	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
 		return;
+
+	// Grab tile again to mark dirty.
+	map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
 
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=MapGen::TextureIdTree3};
