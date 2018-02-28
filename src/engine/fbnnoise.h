@@ -15,7 +15,7 @@ namespace Engine {
 	private:
 		OpenSimplexNoise *baseNoise;
 		unsigned octaves;
-		double frequency;
+		double inputFactor, outputDivisor;
 	};
 };
 

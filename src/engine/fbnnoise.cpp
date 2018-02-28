@@ -4,10 +4,14 @@
 #include "fbnnoise.h"
 
 namespace Engine {
-	FbnNoise::FbnNoise(unsigned seed, unsigned gOctaves, double gFrequency) {
+	FbnNoise::FbnNoise(unsigned seed, unsigned octaves, double frequency): octaves(octaves) {
+		assert(octaves>0);
+
 		baseNoise=new OpenSimplexNoise(seed);
-		octaves=gOctaves;
-		frequency=gFrequency;
+
+		double exp2Octaves=exp2(octaves-1);
+		inputFactor=frequency*exp2Octaves;
+		outputDivisor=2.0-1.0/exp2Octaves;
 	}
 
 	FbnNoise::~FbnNoise() {
@@ -15,23 +19,20 @@ namespace Engine {
 	}
 
 	double FbnNoise::eval(double x, double y) {
-		// Premultiply x and y.
-		x*=frequency;
-		y*=frequency;
+		// Premultiply x and y for speed.
+		x*=inputFactor;
+		y*=inputFactor;
 
 		// Loop in reverse so that we start with amp small, so that we do not lose as much precision when summing result.
 		double result=0.0;
-		double exp2I=exp2(octaves-1);
-		for(int i=octaves-1;i>=0;--i) {
-			result+=baseNoise->eval(x*exp2I, y*exp2I)/exp2I;
-			exp2I/=2.0;
+		for(unsigned i=0;i<octaves;++i) {
+			result=result/2+baseNoise->eval(x, y);
+			x/=2.0;
+			y/=2.0;
 		}
-
-		double dividend=2.0-pow(0.5, octaves-1);
-		result/=dividend;
+		result/=outputDivisor;
 
 		assert(result>=-1.0 && result<=1.0);
-
 		return result;
 	}
 };
