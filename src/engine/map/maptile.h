@@ -18,6 +18,7 @@ namespace Engine {
 
 			struct FileData {
 				Layer layers[layersMax];
+				double height, moisture;
 			};
 
 			MapTile();
@@ -34,6 +35,8 @@ namespace Engine {
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
 			void setLayer(unsigned z, const Layer &layer);
+			void setHeight(double height);
+			void setMoisture(double moisture);
 
 			bool addObject(MapObject *object);
 			void removeObject(MapObject *object);

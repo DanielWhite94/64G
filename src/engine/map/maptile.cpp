@@ -69,6 +69,14 @@ namespace Engine {
 			fileData->layers[z]=layer;
 		}
 
+		void MapTile::setHeight(double height) {
+			fileData->height=height;
+		}
+
+		void MapTile::setMoisture(double moisture) {
+			fileData->moisture=moisture;
+		}
+
 		bool MapTile::addObject(MapObject *object) {
 			assert(object!=NULL);
 

@@ -60,6 +60,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	// Calculate constants.
 	double height=mapData->heightNoise->eval(x, y);
 	double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
+	double moisture=mapData->moistureNoise->eval(x, y);
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
 	double poleDistance=1.0-fabs(latitude);
@@ -131,6 +132,8 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=textureId};
 	tile->setLayer(DemoGenTileLayerGround, layer);
+	tile->setHeight(height);
+	tile->setMoisture(moisture);
 
 	// Update map data.
 	if (textureId==MapGen::TextureIdWater || textureId==MapGen::TextureIdDeepWater)
