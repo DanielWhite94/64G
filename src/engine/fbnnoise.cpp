@@ -16,7 +16,6 @@ namespace Engine {
 
 	double FbnNoise::eval(double x, double y) {
 		double result=0.0;
-		double dividend=0.0;
 
 		// Loop in reverse so that we start with amp small, so that we do not lose as much precision when summing result.
 		for(int i=octaves-1;i>=0;--i) {
@@ -24,9 +23,9 @@ namespace Engine {
 			double amp=pow(0.5, i);
 			double freq=frequency*pow(2.0, i);
 			result+=amp*baseNoise->eval(x*freq, y*freq);
-			dividend+=amp;
 		}
 
+		double dividend=2.0-pow(0.5, octaves-1);
 		result/=dividend;
 
 		assert(result>=-1.0 && result<=1.0);
