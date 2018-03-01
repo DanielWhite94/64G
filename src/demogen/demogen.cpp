@@ -36,11 +36,31 @@ typedef struct {
 	double landSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
+void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
+
+void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData!=NULL);
+
+	DemogenMapData *mapData=(DemogenMapData *)userData;
+
+	// Grab tile.
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+	if (tile==NULL)
+		return;
+
+	// Calculate height.
+	double height=mapData->heightNoise->eval(x, y);
+
+	// Update tile.
+	tile->setHeight(height);
+	tile->setMoisture(0.0);
+}
 
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
@@ -58,7 +78,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	const double alpineLevel=0.33;
 
 	// Calculate constants.
-	double height=mapData->heightNoise->eval(x, y);
+	double height=tile->getHeight();
 	double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
 	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
 	double latitude=2.0*((double)y)/mapData->height-1.0;
@@ -131,8 +151,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=textureId};
 	tile->setLayer(DemoGenTileLayerGround, layer);
-	tile->setHeight(height);
-	tile->setMoisture(0.0);
 
 	// Update map data.
 	if (textureId==MapGen::TextureIdWater || textureId==MapGen::TextureIdDeepWater)
@@ -324,9 +342,9 @@ int main(int argc, char **argv) {
 	mapData.precipitationNoise=new NoiseArray(23, mapData.width, mapData.height, 1024, 1024, 1024.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating precipiation noise ");
 	printf("\n");
 
-	// Run modify tiles for ground.
-	const char *progressStringGround="Generating tiles (water/ground) ";
-	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenGroundModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringGround);
+	// Run init modify tiles function.
+	const char *progressStringInit="Initializing tiles ";
+	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
 	printf("\n");
 
 	// Run moisture/river calculation.
@@ -334,16 +352,18 @@ int main(int argc, char **argv) {
 	MapGen::RiverGen riverGen(*mapData.precipitationNoise);
 	riverGen.dropParticles(mapData.map, 0, 0, mapData.width, mapData.height);
 
-	// Run modify tiles for forests.
-	size_t modifyTilesArrayCount=2;
+	// Run modify tiles for bimomes and forests.
+	size_t modifyTilesArrayCount=3;
 	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
-	modifyTilesArray[0].functor=&demogenGrassForestModifyTilesFunctor;
+	modifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
 	modifyTilesArray[0].userData=&mapData;
-	modifyTilesArray[1].functor=&demogenSandForestModifyTilesFunctor;
+	modifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
 	modifyTilesArray[1].userData=&mapData;
+	modifyTilesArray[2].functor=&demogenSandForestModifyTilesFunctor;
+	modifyTilesArray[2].userData=&mapData;
 
-	const char *progressStringForests="Generating tiles (grass+sand forests) ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringForests);
+	const char *progressStringBiomesForests="Generating tiles (biomes and forests) ";
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomesForests);
 	printf("\n");
 
 	// Tidy up noise.
