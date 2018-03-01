@@ -15,7 +15,7 @@ namespace Engine {
 			int x, y;
 			for(y=y0; y<y1; ++y)
 				for(x=x0; x<x1; ++x)
-					dropParticle(map, x, y, (evaporationNoise.eval(x,y)+1.0)/2.0);
+					dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
 		}
 
 		void MapGen::RiverGen::dropParticle(class Map *map, unsigned x, unsigned y, double rainfall) {

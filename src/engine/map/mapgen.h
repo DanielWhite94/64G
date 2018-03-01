@@ -147,14 +147,14 @@ namespace Engine {
 
 			class RiverGen {
 			public:
-				RiverGen(const NoiseArray &evaporationNoise): evaporationNoise(evaporationNoise) {};
+				RiverGen(const NoiseArray &precipitationNoise): precipitationNoise(precipitationNoise) {};
 				~RiverGen() {};
 
 				void dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1);
 				void dropParticle(class Map *map, unsigned x, unsigned y, double rainfall);
 
 			private:
-				const NoiseArray &evaporationNoise;
+				const NoiseArray &precipitationNoise;
 			};
 
 			MapGen(unsigned width, unsigned height);
