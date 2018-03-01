@@ -368,7 +368,7 @@ int main(int argc, char **argv) {
 	modifyTilesArray[2].functor=&demogenSandForestModifyTilesFunctor;
 	modifyTilesArray[2].userData=&mapData;
 
-	const char *progressStringBiomesForests="Generating tiles (biomes and forests) ";
+	const char *progressStringBiomesForests="Assigning tile textures (biomes and forests) ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomesForests);
 	printf("\n");
 
