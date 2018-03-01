@@ -232,6 +232,21 @@ namespace Engine {
 			return region->load(regionPath);
 		}
 
+		bool Map::markRegionDirtyAtTileOffset(unsigned offsetX, unsigned offsetY, bool create) {
+			assert(offsetX>=0 && offsetX<regionsWide*MapRegion::tilesWide);
+			assert(offsetY>=0 && offsetY<regionsHigh*MapRegion::tilesHigh);
+
+			unsigned regionX=offsetX/MapRegion::tilesWide;
+			unsigned regionY=offsetY/MapRegion::tilesHigh;
+			MapRegion *region=getRegionAtOffset(regionX, regionY, create);
+			if (region==NULL)
+				return false;
+
+			region->setDirty();
+
+			return true;
+		}
+
 		void Map::tick(void) {
 			for(unsigned i=0; i<objects.size(); i++) {
 				CoordVec delta=objects[i]->tick();

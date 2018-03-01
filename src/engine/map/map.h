@@ -39,6 +39,7 @@ namespace Engine {
 			bool saveRegions(void); // Only saves regions (requires directory exists).
 
 			bool loadRegion(unsigned regionX, unsigned regionY, const char *regionPath);
+			bool markRegionDirtyAtTileOffset(unsigned offsetX, unsigned offsetY, bool create);
 
 			void tick(void);
 
