@@ -151,7 +151,7 @@ namespace Engine {
 				~RiverGen() {};
 
 				void dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times, with 0.0<=coverage<=1.0 (and sensible coordinates given).
-				void dropParticle(class Map *map, unsigned x, unsigned y, double rainfall);
+				void dropParticle(class Map *map, unsigned x, unsigned y, double precipitation);
 
 			private:
 				const NoiseArray &precipitationNoise;

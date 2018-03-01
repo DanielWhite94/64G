@@ -25,9 +25,9 @@ namespace Engine {
 			}
 		}
 
-		void MapGen::RiverGen::dropParticle(class Map *map, unsigned x, unsigned y, double rainfall) {
+		void MapGen::RiverGen::dropParticle(class Map *map, unsigned x, unsigned y, double precipitation) {
 			assert(map!=NULL);
-			assert(rainfall>=0.0 && rainfall<=1.0);
+			assert(precipitation>=0.0 && precipitation<=1.0);
 
 			// Grab tile.
 			MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::Dirty);
@@ -35,7 +35,7 @@ namespace Engine {
 				return;
 
 			// Update moisture.
-			tile->setMoisture(tile->getMoisture()+rainfall);
+			tile->setMoisture(tile->getMoisture()+precipitation);
 
 			// TODO: Rest of this (spilling into neighbouring tiles, moving sediment, etc)
 		};
