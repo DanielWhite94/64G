@@ -10,7 +10,7 @@
 
 namespace Engine {
 	namespace Map {
-		void mapGenModifyTilesProgressString(class Map *map, unsigned y, unsigned height, Util::TimeMs elapsedTimeMs, void *userData);
+		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 		struct MapGenRoad {
@@ -104,7 +104,7 @@ namespace Engine {
 			typedef bool (TileTestFunctor)(class Map *map, int x, int y, int w, int h, void *userData);
 
 			typedef void (ModifyTilesFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
-			typedef void (ModifyTilesProgress)(class Map *map, unsigned regionY, unsigned regionHeight, Util::TimeMs elapsedTimeMs, void *userData);
+			typedef void (ModifyTilesProgress)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 			struct ModifyTilesManyEntry {
 				ModifyTilesFunctor *functor;

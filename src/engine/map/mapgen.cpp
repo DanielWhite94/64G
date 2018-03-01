@@ -30,15 +30,16 @@ namespace Engine {
 			unsigned rY0=y0/MapRegion::tilesHigh;
 			unsigned rX1=x1/MapRegion::tilesWide;
 			unsigned rY1=y1/MapRegion::tilesHigh;
+			unsigned rIMax=(rX1-rX0)*(rY1-rY0);
 
 			// Run progress functor initially (if needed).
 			if (progressFunctor!=NULL) {
 				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(map, 0, rY1-rY0, elapsedTimeMs, progressUserData);
+				progressFunctor(map, 0.0, elapsedTimeMs, progressUserData);
 			}
 
 			// Loop over regions (this saves unnecessary loading and saving of regions compared to picking random locations across the whole area given).
-			unsigned rX, rY;
+			unsigned rX, rY, rI=0;
 			for(rY=rY0; rY<rY1; ++rY) {
 				for(rX=rX0; rX<rX1; ++rX) {
 					// Compute number of trials to perform for this region (may be 0).
@@ -52,12 +53,15 @@ namespace Engine {
 						unsigned y=tileOffsetBaseY+Util::randIntInInterval(0, MapRegion::tilesHigh);
 						dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
 					}
-				}
 
-				// Call progress functor (if needed).
-				if (progressFunctor!=NULL) {
-					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-					progressFunctor(map, rY-rY0, rY1-rY0, elapsedTimeMs, progressUserData);
+					// Call progress functor (if needed).
+					if (progressFunctor!=NULL) {
+						double progress=(rI+1)/((double)rIMax);
+						Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+						progressFunctor(map, progress, elapsedTimeMs, progressUserData);
+					}
+
+					++rI;
 				}
 			}
 		}
@@ -94,15 +98,12 @@ namespace Engine {
 			}
 		}
 
-		void mapGenModifyTilesProgressString(class Map *map, unsigned regionY, unsigned regionHeight, Util::TimeMs elapsedTimeMs, void *userData) {
+		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(map!=NULL);
-			assert(regionY<regionHeight);
+			assert(progress>=0.0 && progress<=1.0);
 			assert(userData!=NULL);
 
 			const char *string=(const char *)userData;
-
-			// Calculate progress.
-			const double progress=(regionY+1)/((double)regionHeight);
 
 			// Clear old line.
 			Util::clearConsoleLine();
@@ -815,15 +816,16 @@ namespace Engine {
 			const unsigned regionY0=y/MapRegion::tilesHigh;
 			const unsigned regionX1=(x+width)/MapRegion::tilesWide;
 			const unsigned regionY1=(y+height)/MapRegion::tilesHigh;
+			const unsigned regionIMax=(regionX1-regionX0)*(regionY1-regionY0);
 
 			// Initial progress update (if needed).
 			if (progressFunctor!=NULL) {
 				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(map, 0, regionY1-regionY0, elapsedTimeMs, progressUserData);
+				progressFunctor(map, 0.0, elapsedTimeMs, progressUserData);
 			}
 
 			// Loop over each region
-			unsigned regionX, regionY;
+			unsigned regionX, regionY, regionI=0;
 			for(regionY=regionY0; regionY<regionY1; ++regionY) {
 				const unsigned regionYOffset=regionY*MapRegion::tilesHigh;
 				for(regionX=regionX0; regionX<regionX1; ++regionX) {
@@ -839,12 +841,15 @@ namespace Engine {
 								functorArray[functorId].functor(map, regionXOffset+tileX, regionYOffset+tileY, functorArray[functorId].userData);
 						}
 					}
-				}
 
-				// Update progress (if needed).
-				if (progressFunctor!=NULL) {
-					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-					progressFunctor(map, regionY-regionY0, regionY1-regionY0, elapsedTimeMs, progressUserData);
+					// Update progress (if needed).
+					if (progressFunctor!=NULL) {
+						Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+						double progress=(regionI+1)/((double)regionIMax);
+						progressFunctor(map, progress, elapsedTimeMs, progressUserData);
+					}
+
+					++regionI;
 				}
 			}
 		}
