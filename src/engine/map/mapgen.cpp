@@ -11,7 +11,7 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
-		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage) {
+		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesFunctor *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
@@ -43,6 +43,10 @@ namespace Engine {
 						dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
 					}
 				}
+
+				// Call progress functor (if needed).
+				if (progressFunctor!=NULL)
+					progressFunctor(map, rY-rY0, rY1-rY0, progressUserData);
 			}
 		}
 
