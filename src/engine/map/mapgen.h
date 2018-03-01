@@ -148,7 +148,7 @@ namespace Engine {
 
 			class RiverGen {
 			public:
-				RiverGen(const NoiseArray &precipitationNoise): precipitationNoise(precipitationNoise) {};
+				RiverGen(const NoiseArray &precipitationNoise, double seaLevel): precipitationNoise(precipitationNoise), seaLevel(seaLevel) {};
 				~RiverGen() {};
 
 				void dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times, with 0.0<=coverage<=1.0 (and sensible coordinates given).
@@ -156,6 +156,7 @@ namespace Engine {
 
 			private:
 				const NoiseArray &precipitationNoise;
+				double seaLevel;
 			};
 
 			MapGen(unsigned width, unsigned height);
