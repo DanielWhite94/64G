@@ -17,11 +17,32 @@ namespace Engine {
 			assert(y0<=y1);
 			assert(coverage>=0.0 && coverage<=1.0);
 
-			unsigned trials=(unsigned)floor(coverage*(x1-x0)*(y1-y0));
-			for(unsigned i=0; i<trials; ++i) {
-				unsigned x=Util::randIntInInterval(x0, x1);
-				unsigned y=Util::randIntInInterval(y0, y1);
-				dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
+			// TODO: Fix the distribution and calculations if the given area is not a multiple of the region size (in either direction).
+
+			// Calculate average number of trials we should do per region.
+			double trialsPerRegion=coverage*MapRegion::tilesWide*MapRegion::tilesHigh;
+
+			// Loop over regions (this saves unnecessary loading and saving of regions compared to picking random locations across the whole area given).
+			unsigned rX0=x0/MapRegion::tilesWide;
+			unsigned rY0=y0/MapRegion::tilesHigh;
+			unsigned rX1=x1/MapRegion::tilesWide;
+			unsigned rY1=y1/MapRegion::tilesHigh;
+
+			unsigned rX, rY;
+			for(rY=rY0; rY<rY1; ++rY) {
+				for(rX=rX0; rX<rX1; ++rX) {
+					// Compute number of trials to perform for this region (may be 0).
+					unsigned trials=floor(trialsPerRegion)+(trialsPerRegion>Util::randFloatInInterval(0.0, 1.0) ? 1 : 0);
+
+					// Runs said number of trials.
+					unsigned tileOffsetBaseX=rX*MapRegion::tilesWide;
+					unsigned tileOffsetBaseY=rY*MapRegion::tilesHigh;
+					for(unsigned i=0; i<trials; ++i) {
+						unsigned x=tileOffsetBaseX+Util::randIntInInterval(0, MapRegion::tilesWide);
+						unsigned y=tileOffsetBaseY+Util::randIntInInterval(0, MapRegion::tilesHigh);
+						dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
+					}
+				}
 			}
 		}
 
