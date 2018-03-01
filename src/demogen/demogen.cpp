@@ -350,7 +350,7 @@ int main(int argc, char **argv) {
 	// Run moisture/river calculation.
 	printf("Generating moisture/river data...\n");
 	MapGen::RiverGen riverGen(*mapData.precipitationNoise);
-	riverGen.dropParticles(mapData.map, 0, 0, mapData.width, mapData.height);
+	riverGen.dropParticles(mapData.map, 0, 0, mapData.width, mapData.height, 1.0/256.0);
 
 	// Run modify tiles for bimomes and forests.
 	size_t modifyTilesArrayCount=3;

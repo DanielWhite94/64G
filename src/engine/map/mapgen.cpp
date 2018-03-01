@@ -11,11 +11,18 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
-		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1) {
-			int x, y;
-			for(y=y0; y<y1; ++y)
-				for(x=x0; x<x1; ++x)
-					dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
+		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage) {
+			assert(map!=NULL);
+			assert(x0<=x1);
+			assert(y0<=y1);
+			assert(coverage>=0.0 && coverage<=1.0);
+
+			unsigned trials=(unsigned)floor(coverage*(x1-x0)*(y1-y0));
+			for(unsigned i=0; i<trials; ++i) {
+				unsigned x=Util::randIntInInterval(x0, x1);
+				unsigned y=Util::randIntInInterval(y0, y1);
+				dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
+			}
 		}
 
 		void MapGen::RiverGen::dropParticle(class Map *map, unsigned x, unsigned y, double rainfall) {
