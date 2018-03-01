@@ -133,7 +133,7 @@ namespace Engine {
 
 			// Attempt to compute estimated total time.
 			Util::TimeMs estimatedTimeS;
-			if (progress>=0.0001 && (estimatedTimeS=elapsedTimeMs/(1000.0*progress))<365llu*24llu*60llu*60llu && estimatedTimeS>0) {
+			if (progress>=0.0001 && progress<=0.9999 && (estimatedTimeS=elapsedTimeMs/(1000.0*progress))<365llu*24llu*60llu*60llu && estimatedTimeS>0) {
 				printf(" (est. ");
 				Util::TimeMs remainder=estimatedTimeS;
 				if (remainder>24*60*60) {
