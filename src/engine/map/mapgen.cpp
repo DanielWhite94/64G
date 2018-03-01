@@ -35,7 +35,7 @@ namespace Engine {
 				return;
 
 			// Update moisture.
-			tile->setMoisture(tile->getMoisture()+precipitation);
+			tile->setMoisture(std::min(1.0, tile->getMoisture()+precipitation));
 
 			// TODO: Rest of this (spilling into neighbouring tiles, moving sediment, etc)
 		};
