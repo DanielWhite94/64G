@@ -58,7 +58,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 		return;
 
 	// Calculate height and temperature.
-	const double height=tile->getHeight();
+	const double height=mapData->heightNoise->eval(x,y);
 	const double normalisedHeight=(height>demogenSeaLevel ? (height-demogenSeaLevel)/(1.0-demogenSeaLevel) : 0.0);
 	assert(normalisedHeight>=0.0 && normalisedHeight<=1.0);
 
