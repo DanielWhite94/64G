@@ -6,10 +6,11 @@
 
 #include "map.h"
 #include "../noisearray.h"
+#include "../util.h"
 
 namespace Engine {
 	namespace Map {
-		void mapGenModifyTilesProgressString(class Map *map, unsigned y, unsigned height, void *userData);
+		void mapGenModifyTilesProgressString(class Map *map, unsigned y, unsigned height, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 		struct MapGenRoad {
@@ -103,7 +104,7 @@ namespace Engine {
 			typedef bool (TileTestFunctor)(class Map *map, int x, int y, int w, int h, void *userData);
 
 			typedef void (ModifyTilesFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
-			typedef void (ModifyTilesProgress)(class Map *map, unsigned regionY, unsigned regionHeight, void *userData);
+			typedef void (ModifyTilesProgress)(class Map *map, unsigned regionY, unsigned regionHeight, Util::TimeMs elapsedTimeMs, void *userData);
 
 			struct ModifyTilesManyEntry {
 				ModifyTilesFunctor *functor;
@@ -150,7 +151,7 @@ namespace Engine {
 				RiverGen(const NoiseArray &precipitationNoise): precipitationNoise(precipitationNoise) {};
 				~RiverGen() {};
 
-				void dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesFunctor *progressFunctor, void *progressUserData); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times, with 0.0<=coverage<=1.0 (and sensible coordinates given).
+				void dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times, with 0.0<=coverage<=1.0 (and sensible coordinates given).
 				void dropParticle(class Map *map, unsigned x, unsigned y, double precipitation);
 
 			private:

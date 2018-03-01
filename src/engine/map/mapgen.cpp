@@ -11,7 +11,7 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
-		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesFunctor *progressFunctor, void *progressUserData) {
+		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
@@ -19,15 +19,25 @@ namespace Engine {
 
 			// TODO: Fix the distribution and calculations if the given area is not a multiple of the region size (in either direction).
 
+			// Record start time.
+			Util::TimeMs startTime=Util::getTimeMs();
+
 			// Calculate average number of trials we should do per region.
 			double trialsPerRegion=coverage*MapRegion::tilesWide*MapRegion::tilesHigh;
 
-			// Loop over regions (this saves unnecessary loading and saving of regions compared to picking random locations across the whole area given).
+			// Compute region loop bounds.
 			unsigned rX0=x0/MapRegion::tilesWide;
 			unsigned rY0=y0/MapRegion::tilesHigh;
 			unsigned rX1=x1/MapRegion::tilesWide;
 			unsigned rY1=y1/MapRegion::tilesHigh;
 
+			// Run progress functor initially (if needed).
+			if (progressFunctor!=NULL) {
+				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+				progressFunctor(map, 0, rY1-rY0, elapsedTimeMs, progressUserData);
+			}
+
+			// Loop over regions (this saves unnecessary loading and saving of regions compared to picking random locations across the whole area given).
 			unsigned rX, rY;
 			for(rY=rY0; rY<rY1; ++rY) {
 				for(rX=rX0; rX<rX1; ++rX) {
@@ -45,8 +55,10 @@ namespace Engine {
 				}
 
 				// Call progress functor (if needed).
-				if (progressFunctor!=NULL)
-					progressFunctor(map, rY-rY0, rY1-rY0, progressUserData);
+				if (progressFunctor!=NULL) {
+					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+					progressFunctor(map, rY-rY0, rY1-rY0, elapsedTimeMs, progressUserData);
+				}
 			}
 		}
 
@@ -82,15 +94,67 @@ namespace Engine {
 			}
 		}
 
-		void mapGenModifyTilesProgressString(class Map *map, unsigned regionY, unsigned regionHeight, void *userData) {
+		void mapGenModifyTilesProgressString(class Map *map, unsigned regionY, unsigned regionHeight, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(map!=NULL);
 			assert(regionY<regionHeight);
 			assert(userData!=NULL);
 
 			const char *string=(const char *)userData;
 
+			// Calculate progress.
+			const double progress=(regionY+1)/((double)regionHeight);
+
+			// Clear old line.
 			Util::clearConsoleLine();
-			printf("%s%.1f%%", string, ((regionY+1)*100.0)/regionHeight);
+
+			// Print start of new line, including users message and the percentage complete.
+			printf("%s%.1f%% ", string, progress*100.0);
+
+			// Append time elapsed so far.
+			Util::TimeMs remainder=elapsedTimeMs/1000;
+			if (remainder>24*60*60) {
+				Util::TimeMs days=remainder/24*60*60;
+				remainder-=days*24*60*60;
+				printf("%llud", days);
+			}
+			if (remainder>60*60) {
+				Util::TimeMs hours=remainder/60*60;
+				remainder-=hours*60*60;
+				printf("%lluh", hours);
+			}
+			if (remainder>60) {
+				Util::TimeMs minutes=remainder/60;
+				remainder-=minutes*60;
+				printf("%llum", minutes);
+			}
+			Util::TimeMs seconds=remainder;
+			printf("%llus", seconds);
+
+			// Attempt to compute estimated total time.
+			Util::TimeMs estimatedTimeS;
+			if (progress>=0.0001 && (estimatedTimeS=elapsedTimeMs/(1000.0*progress))<365llu*24llu*60llu*60llu && estimatedTimeS>0) {
+				printf(" (est. ");
+				Util::TimeMs remainder=estimatedTimeS;
+				if (remainder>24*60*60) {
+					Util::TimeMs days=remainder/24*60*60;
+					remainder-=days*24*60*60;
+					printf("%llud", days);
+				}
+				if (remainder>60*60) {
+					Util::TimeMs hours=remainder/60*60;
+					remainder-=hours*60*60;
+					printf("%lluh", hours);
+				}
+				if (remainder>60) {
+					Util::TimeMs minutes=remainder/60;
+					remainder-=minutes*60;
+					printf("%llum", minutes);
+				}
+				Util::TimeMs seconds=remainder;
+				printf("%llus)", seconds);
+			}
+
+			// Flush output manually (as we are not printing a newline).
 			fflush(stdout);
 		}
 
@@ -743,6 +807,9 @@ namespace Engine {
 			assert(functorArrayCount>0);
 			assert(functorArray!=NULL);
 
+			// Record start time.
+			const Util::TimeMs startTime=Util::getTimeMs();
+
 			// Calculate constants.
 			const unsigned regionX0=x/MapRegion::tilesWide;
 			const unsigned regionY0=y/MapRegion::tilesHigh;
@@ -750,8 +817,10 @@ namespace Engine {
 			const unsigned regionY1=(y+height)/MapRegion::tilesHigh;
 
 			// Initial progress update (if needed).
-			if (progressFunctor!=NULL)
-				progressFunctor(map, 0, regionY1-regionY0, progressUserData);
+			if (progressFunctor!=NULL) {
+				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+				progressFunctor(map, 0, regionY1-regionY0, elapsedTimeMs, progressUserData);
+			}
 
 			// Loop over each region
 			unsigned regionX, regionY;
@@ -773,8 +842,10 @@ namespace Engine {
 				}
 
 				// Update progress (if needed).
-				if (progressFunctor!=NULL)
-					progressFunctor(map, regionY-regionY0, regionY1-regionY0, progressUserData);
+				if (progressFunctor!=NULL) {
+					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+					progressFunctor(map, regionY-regionY0, regionY1-regionY0, elapsedTimeMs, progressUserData);
+				}
 			}
 		}
 	};
