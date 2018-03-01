@@ -728,10 +728,6 @@ namespace Engine {
 				for(regionX=regionX0; regionX<regionX1; ++regionX) {
 					const unsigned regionXOffset=regionX*MapRegion::tilesWide;
 
-					// Set region dirty.
-					MapRegion *region=map->getRegionAtOffset(regionX, regionY, true);
-					region->setDirty();
-
 					// Loop over all rows in this region.
 					unsigned tileX, tileY;
 					for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY) {

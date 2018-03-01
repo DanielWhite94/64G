@@ -50,7 +50,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 	DemogenMapData *mapData=(DemogenMapData *)userData;
 
 	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::CreateDirty);
 	if (tile==NULL)
 		return;
 
