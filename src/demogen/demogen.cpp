@@ -13,6 +13,9 @@
 using namespace Engine;
 using namespace Engine::Map;
 
+const double demogenSeaLevel=0.05;
+const double demogenAlpineLevel=0.33;
+
 enum DemoGenTileLayer {
 	DemoGenTileLayerGround,
 	DemoGenTileLayerDecoration,
@@ -54,12 +57,38 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 	if (tile==NULL)
 		return;
 
-	// Calculate height.
-	double height=mapData->heightNoise->eval(x, y);
+	// Calculate height and temperature.
+	const double height=tile->getHeight();
+	const double normalisedHeight=(height>demogenSeaLevel ? (height-demogenSeaLevel)/(1.0-demogenSeaLevel) : 0.0);
+	assert(normalisedHeight>=0.0 && normalisedHeight<=1.0);
+
+	const double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
+
+	const double latitude=2.0*((double)y)/mapData->height-1.0;
+	assert(latitude>=-1.0 && latitude<=1.0);
+
+	const double poleDistance=1.0-fabs(latitude);
+	assert(poleDistance>=0.0 && poleDistance<=1.0);
+
+	double adjustedPoleDistance=2*poleDistance-1; // -1..1
+	assert(adjustedPoleDistance>=-1.0 && adjustedPoleDistance<=1.0);
+
+	double adjustedHeight=2*normalisedHeight-1;
+	assert(adjustedHeight>=-1.0 && adjustedHeight<=1.0);
+
+	double temperature=(4*adjustedPoleDistance+2*adjustedHeight+2*temperatureRandomOffset)/8;
+	assert(temperature>=-1.0 && temperature<=1.0);
+
+	temperature=2*temperature+2.0/3; // HACK to get reasonable range.
+	if (temperature<-1.0)
+		temperature=-1.0;
+	if (temperature>1.0)
+		temperature=1.0;
 
 	// Update tile.
 	tile->setHeight(height);
 	tile->setMoisture(0.0);
+	tile->setTemperature(temperature);
 }
 
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -73,45 +102,22 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	if (tile==NULL)
 		return;
 
-	// Choose parameters.
-	const double seaLevel=0.05;
-	const double alpineLevel=0.33;
-
 	// Calculate constants.
-	double height=tile->getHeight();
-	double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
-	double normalisedHeight=(height>seaLevel ? (height-seaLevel)/(1.0-seaLevel) : 0.0);
-	double latitude=2.0*((double)y)/mapData->height-1.0;
-	double poleDistance=1.0-fabs(latitude);
-
-	double adjustedPoleDistance=2*poleDistance-1; // -1..1
-	double adjustedHeight=2*normalisedHeight-1;
-	double temperature=(4*adjustedPoleDistance+2*adjustedHeight+2*temperatureRandomOffset)/8;
-	temperature=2*temperature+2.0/3; // HACK to get reasonable range.
-	if (temperature<-1.0)
-		temperature=-1.0;
-	if (temperature>1.0)
-		temperature=1.0;
-
-	assert(height>=-1.0 & height<=1.0);
-	assert(temperatureRandomOffset>=-1.0 & temperatureRandomOffset<=1.0);
-	assert(normalisedHeight>=0.0 && normalisedHeight<=1.0);
-	assert(latitude>=-1.0 && latitude<=1.0);
-	assert(poleDistance>=0.0 && poleDistance<=1.0);
-	assert(temperature>=-1.0 && temperature<=1.0);
+	const double height=tile->getHeight();
+	const double temperature=tile->getTemperature();
 
 	// Choose texture.
 	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
 	double factor;
-	if (height<=seaLevel) {
+	if (height<=demogenSeaLevel) {
 		// water
 		idA=MapGen::TextureIdDeepWater;
 		idB=MapGen::TextureIdWater;
-		factor=((height+1.0)/(seaLevel+1.0));
+		factor=((height+1.0)/(demogenSeaLevel+1.0));
 
 		double skewThreshold=0.7; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
-	} else if (height<=alpineLevel) {
+	} else if (height<=demogenAlpineLevel) {
 		// land
 		const double temperatureThreshold=0.5;
 		const double temperatureThreshold2=0.8;
@@ -138,7 +144,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		// alpine
 		idA=MapGen::TextureIdLowAlpine;
 		idB=MapGen::TextureIdHighAlpine;
-		factor=(height-alpineLevel)/(1.0-alpineLevel);
+		factor=(height-demogenAlpineLevel)/(1.0-demogenAlpineLevel);
 
 		double skewThreshold=0.2; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
@@ -168,19 +174,18 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 
 	// Choose parameters.
 	const double temperateThreshold=0.6;
-	const double hotThreshold=0.7;
+	const double rainforestThreshold=0.7;
 
 	assert(0.0<=temperateThreshold);
-	assert(temperateThreshold<=hotThreshold);
-	assert(hotThreshold<=1.0);
+	assert(temperateThreshold<=rainforestThreshold);
+	assert(rainforestThreshold<=1.0);
 
 	// Grab tile and moisture.
 	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
 	if (tile==NULL)
 		return;
 
-	double moisture=tile->getMoisture();
-	assert(moisture>=0.0 & moisture<=1.0);
+	const double moisture=tile->getMoisture();
 
 	// Not enough moisture to support anything?
 	if (moisture<temperateThreshold)
@@ -204,7 +209,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	// Choose new texture.
 	MapTexture::Id textureId=MapGen::TextureIdNone;
 
-	if (moisture<hotThreshold) {
+	if (moisture<rainforestThreshold) {
 		const double probabilities[]={0.3,0.2,0.2,0.2,0.1};
 		unsigned index=Util::chooseWithProb(probabilities, sizeof(probabilities)/sizeof(probabilities[0]));
 		textureId=MapGen::TextureIdGrass1+index;

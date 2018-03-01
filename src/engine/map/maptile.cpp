@@ -62,6 +62,10 @@ namespace Engine {
 			return fileData->moisture;
 		}
 
+		double MapTile::getTemperature(void) const {
+			return fileData->temperature;
+		}
+
 		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
 			HitMask hitMask;
 			unsigned i, max=getObjectCount();
@@ -83,6 +87,10 @@ namespace Engine {
 
 		void MapTile::setMoisture(double moisture) {
 			fileData->moisture=moisture;
+		}
+
+		void MapTile::setTemperature(double temperature) {
+			fileData->temperature=temperature;
 		}
 
 		bool MapTile::addObject(MapObject *object) {
