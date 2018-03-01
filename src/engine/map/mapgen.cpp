@@ -11,6 +11,28 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
+		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1) {
+			int x, y;
+			for(y=y0; y<y1; ++y)
+				for(x=x0; x<x1; ++x)
+					dropParticle(map, x, y, (evaporationNoise.eval(x,y)+1.0)/2.0);
+		}
+
+		void MapGen::RiverGen::dropParticle(class Map *map, unsigned x, unsigned y, double rainfall) {
+			assert(map!=NULL);
+			assert(rainfall>=0.0 && rainfall<=1.0);
+
+			// Grab tile.
+			MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::Dirty);
+			if (tile==NULL)
+				return;
+
+			// Update moisture.
+			tile->setMoisture(tile->getMoisture()+rainfall);
+
+			// TODO: Rest of this (spilling into neighbouring tiles, moving sediment, etc)
+		};
+
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);
