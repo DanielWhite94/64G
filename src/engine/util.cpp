@@ -1,4 +1,5 @@
 #include <cassert>
+#include <chrono>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -87,4 +88,8 @@ bool Util::isDir(const char *path) {
 	if (stat(path, &pathStat)!=0)
 		return false;
 	return S_ISDIR(pathStat.st_mode);
+}
+
+Util::TimeMs Util::getTimeMs(void) {
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
