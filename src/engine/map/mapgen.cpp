@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -22,60 +23,68 @@ namespace Engine {
 			// Record start time.
 			Util::TimeMs startTime=Util::getTimeMs();
 
-			// Calculate average number of trials we should do per region.
-			double trialsPerRegion=coverage*MapRegion::tilesWide*MapRegion::tilesHigh;
-
-			// Compute region loop bounds.
-			unsigned rX0=x0/MapRegion::tilesWide;
-			unsigned rY0=y0/MapRegion::tilesHigh;
-			unsigned rX1=x1/MapRegion::tilesWide;
-			unsigned rY1=y1/MapRegion::tilesHigh;
-			unsigned rIMax=(rX1-rX0)*(rY1-rY0);
-
 			// Run progress functor initially (if needed).
 			if (progressFunctor!=NULL) {
 				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
 				progressFunctor(map, 0.0, elapsedTimeMs, progressUserData);
 			}
 
+			// Compute region loop bounds.
+			unsigned rX0=x0/MapRegion::tilesWide;
+			unsigned rY0=y0/MapRegion::tilesHigh;
+			unsigned rX1=x1/MapRegion::tilesWide;
+			unsigned rY1=y1/MapRegion::tilesHigh;
+
+			// Generate list of regions.
+			struct RegionPos { unsigned x, y; } regionPos;
+			std::vector<RegionPos> regionList;
+			for(regionPos.y=rY0; regionPos.y<rY1; ++regionPos.y)
+				for(regionPos.x=rX0; regionPos.x<rX1; ++regionPos.x)
+					regionList.push_back(regionPos);
+
+			// Shuffle list.
+			auto rng=std::default_random_engine{};
+			std::shuffle(std::begin(regionList), std::end(regionList), rng);
+
+			// Calculate constants
+			double trialsPerRegion=coverage*MapRegion::tilesWide*MapRegion::tilesHigh;
+
 			// Loop over regions (this saves unnecessary loading and saving of regions compared to picking random locations across the whole area given).
-			unsigned rX, rY, rI=0;
-			for(rY=rY0; rY<rY1; ++rY) {
-				for(rX=rX0; rX<rX1; ++rX) {
-					// Compute number of trials to perform for this region (may be 0).
-					unsigned trials=floor(trialsPerRegion)+(trialsPerRegion>Util::randFloatInInterval(0.0, 1.0) ? 1 : 0);
+			unsigned rI=0;
+			for(auto const& regionPos: regionList) {
+				// Compute number of trials to perform for this region (may be 0).
+				unsigned trials=floor(trialsPerRegion)+(trialsPerRegion>Util::randFloatInInterval(0.0, 1.0) ? 1 : 0);
 
-					// Runs said number of trials.
-					unsigned tileOffsetBaseX=rX*MapRegion::tilesWide;
-					unsigned tileOffsetBaseY=rY*MapRegion::tilesHigh;
-					for(unsigned i=0; i<trials; ++i) {
-						// Compute random tile x and y.
-						unsigned x=tileOffsetBaseX+Util::randIntInInterval(0, MapRegion::tilesWide);
-						unsigned y=tileOffsetBaseY+Util::randIntInInterval(0, MapRegion::tilesHigh);
+				// Runs said number of trials.
+				unsigned tileOffsetBaseX=regionPos.x*MapRegion::tilesWide;
+				unsigned tileOffsetBaseY=regionPos.y*MapRegion::tilesHigh;
+				for(unsigned i=0; i<trials; ++i) {
+					// Compute random tile x and y.
+					unsigned x=tileOffsetBaseX+Util::randIntInInterval(0, MapRegion::tilesWide);
+					unsigned y=tileOffsetBaseY+Util::randIntInInterval(0, MapRegion::tilesHigh);
 
-						// Grab tile.
-						const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
-						if (tile==NULL)
-							continue;
+					// Grab tile.
+					const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
+					if (tile==NULL)
+						continue;
 
-						// Calculate moisture.
-						double precipitation=(precipitationNoise.eval(x,y)+1.0)/2.0;
-						double adjustedHeight=(tile->getHeight()<=seaLevel ? 0.0 : (tile->getHeight()-seaLevel)/(1.0-seaLevel));
-						double moisture=precipitation*adjustedHeight;
+					// Calculate moisture.
+					double precipitation=(precipitationNoise.eval(x,y)+1.0)/2.0;
+					double adjustedHeight=(tile->getHeight()<=seaLevel ? 0.0 : (tile->getHeight()-seaLevel)/(1.0-seaLevel));
+					double moisture=precipitation*adjustedHeight;
 
-						// Drop particle.
-						dropParticle(map, x, y, moisture);
-					}
-
-					// Call progress functor (if needed).
-					if (progressFunctor!=NULL) {
-						double progress=(rI+1)/((double)rIMax);
-						Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-						progressFunctor(map, progress, elapsedTimeMs, progressUserData);
-					}
-
-					++rI;
+					// Drop particle.
+					dropParticle(map, x, y, moisture);
 				}
+
+				// Call progress functor (if needed).
+				if (progressFunctor!=NULL) {
+					double progress=(rI+1.0)/regionList.size();
+					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+					progressFunctor(map, progress, elapsedTimeMs, progressUserData);
+				}
+
+				++rI;
 			}
 		}
 
