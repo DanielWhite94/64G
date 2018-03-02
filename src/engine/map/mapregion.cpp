@@ -9,7 +9,7 @@ using namespace Engine;
 using namespace Engine::Physics;
 
 namespace Engine {
-	MapRegion::MapRegion() {
+	MapRegion::MapRegion(unsigned regionX, unsigned regionY): regionX(regionX), regionY(regionY) {
 		isDirty=false;
 
 		// Set file data to all zeros.

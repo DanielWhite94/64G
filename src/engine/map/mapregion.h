@@ -13,7 +13,7 @@ namespace Engine {
 		public:
 			static const unsigned tilesWide=256, tilesHigh=256;
 
-			MapRegion();
+			MapRegion(unsigned regionX, unsigned regionY);
 			~MapRegion();
 
 			bool load(const char *regionsDirPath);
@@ -31,6 +31,7 @@ namespace Engine {
 
 			void setDirty(void);
 
+			const unsigned regionX, regionY;
 		private:
 			bool isDirty;
 

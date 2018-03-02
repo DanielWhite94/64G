@@ -528,7 +528,7 @@ namespace Engine {
 				return false;
 
 			// Create new blank region.
-			MapRegion *region=new MapRegion();
+			MapRegion *region=new MapRegion(regionX, regionY);
 			if (region==NULL)
 				return false;
 
