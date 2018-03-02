@@ -87,7 +87,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 
 	// Update tile.
 	tile->setHeight(height);
-	tile->setMoisture(0.0);
+	tile->setMoisture((height>demogenSeaLevel) ? 0.0 : demogenSeaLevel-height);
 	tile->setTemperature(temperature);
 }
 
@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
 	MapGen::RiverGen riverGen(*mapData.precipitationNoise, demogenSeaLevel);
-	riverGen.dropParticles(mapData.map, 0, 0, mapData.width, mapData.height, 1.0/256.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
+	riverGen.dropParticles(mapData.map, 0, 0, mapData.width, mapData.height, 1.0/4.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
 	// Run modify tiles for bimomes and forests.

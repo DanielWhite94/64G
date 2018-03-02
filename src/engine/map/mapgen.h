@@ -157,6 +157,8 @@ namespace Engine {
 			private:
 				const NoiseArray &precipitationNoise;
 				double seaLevel;
+
+				void dropParticleHelper(class Map *map, int x, int y, int dx, int dy, double moisture);
 			};
 
 			MapGen(unsigned width, unsigned height);

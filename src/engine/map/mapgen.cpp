@@ -49,9 +49,22 @@ namespace Engine {
 					unsigned tileOffsetBaseX=rX*MapRegion::tilesWide;
 					unsigned tileOffsetBaseY=rY*MapRegion::tilesHigh;
 					for(unsigned i=0; i<trials; ++i) {
+						// Compute random tile x and y.
 						unsigned x=tileOffsetBaseX+Util::randIntInInterval(0, MapRegion::tilesWide);
 						unsigned y=tileOffsetBaseY+Util::randIntInInterval(0, MapRegion::tilesHigh);
-						dropParticle(map, x, y, (precipitationNoise.eval(x,y)+1.0)/2.0);
+
+						// Grab tile.
+						const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
+						if (tile==NULL)
+							continue;
+
+						// Calculate moisture.
+						double precipitation=(precipitationNoise.eval(x,y)+1.0)/2.0;
+						double adjustedHeight=(tile->getHeight()<=seaLevel ? 0.0 : (tile->getHeight()-seaLevel)/(1.0-seaLevel));
+						double moisture=precipitation*adjustedHeight;
+
+						// Drop particle.
+						dropParticle(map, x, y, moisture);
 					}
 
 					// Call progress functor (if needed).
@@ -70,16 +83,76 @@ namespace Engine {
 			assert(map!=NULL);
 			assert(precipitation>=0.0 && precipitation<=1.0);
 
+			// Call helper function with random initial velocity.
+			int d=Util::randIntInInterval(0, 3);
+			dropParticleHelper(map, x, y, (d==0 ? 1 : (d==1 ? -1 : 0)), (d==2 ? 1 : (d==3 ? -1 : 0)), precipitation);
+		};
+
+		void MapGen::RiverGen::dropParticleHelper(class Map *map, int x, int y, int dx, int dy, double moisture) {
+			assert(map!=NULL);
+			assert(dx==0.0 || dy==0.0);
+			assert(fabs(dx)==1.0 || fabs(dy)==1.0);
+			assert(moisture>=0.0 && moisture<=1.0);
+
+			if (moisture<0.01)
+				return;
+
 			// Grab tile.
 			MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::Dirty);
 			if (tile==NULL)
 				return;
 
-			// Update moisture.
-			tile->setMoisture(std::min(1.0, tile->getMoisture()+precipitation));
+			// Hit an ocean tile?
+			if (tile->getHeight()<=seaLevel)
+				return;
 
-			// TODO: Rest of this (spilling into neighbouring tiles, moving sediment, etc)
-		};
+			// Loop over directions.
+			int stage;
+			for(stage=0; stage<3; ++stage) {
+				// Calculate and check next tile's coordinates.
+				int ndx, ndy;
+				switch(stage) {
+					case 0:
+						ndx=dx;
+						ndy=dy;
+					break;
+					case 1:
+						ndx=-dy;
+						ndy=dx;
+					break;
+					case 2:
+						ndx=dy;
+						ndy=-dx;
+					break;
+				}
+
+				int nx=x+ndx;
+				int ny=y+ndy;
+				if (nx<0 || nx>=Map::Map::regionsWide*MapRegion::tilesWide ||
+				    ny<0 || ny>=Map::Map::regionsHigh*MapRegion::tilesHigh)
+				    continue;
+
+				// Grab next tile for current direction.
+				MapTile *nextTile=map->getTileAtOffset(nx, ny, Map::Map::GetTileFlag::None);
+				if (nextTile==NULL)
+					continue; // No tile - try next direction.
+
+				// Hit an ocean tile?
+				if (nextTile->getHeight()<=seaLevel)
+					break;
+
+				// Can we continue to flow in this direction?
+				double tileTotalHeight=tile->getHeight()+tile->getMoisture();
+				double nextTileTotalHeight=nextTile->getHeight()+nextTile->getMoisture();
+				if (nextTileTotalHeight<tileTotalHeight) {
+					dropParticleHelper(map, nx, ny, ndx, ndy, moisture);
+					return;
+				}
+			}
+
+			// No where for moisture to go - add to this tile.
+			tile->setMoisture(tile->getMoisture()+moisture);
+		}
 
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
