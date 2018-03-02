@@ -15,7 +15,7 @@ namespace Engine {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
-			assert(coverage>=0.0 && coverage<=1.0);
+			assert(coverage>=0.0);
 
 			// TODO: Fix the distribution and calculations if the given area is not a multiple of the region size (in either direction).
 
