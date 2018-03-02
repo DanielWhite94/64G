@@ -144,7 +144,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		// alpine
 		idA=MapGen::TextureIdLowAlpine;
 		idB=MapGen::TextureIdHighAlpine;
-		factor=(height-demogenAlpineLevel)/(1.0-demogenAlpineLevel);
+		factor=(std::min(1.0,height)-demogenAlpineLevel)/(1.0-demogenAlpineLevel);
 
 		double skewThreshold=0.2; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
