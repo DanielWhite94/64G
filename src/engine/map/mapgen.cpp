@@ -70,7 +70,7 @@ namespace Engine {
 
 					// Calculate moisture.
 					double precipitation=(precipitationNoise.eval(x,y)+1.0)/2.0;
-					double adjustedHeight=(tile->getHeight()<=seaLevel ? 0.0 : (tile->getHeight()-seaLevel)/(1.0-seaLevel));
+					double adjustedHeight=std::min(1.0, (tile->getHeight()<=seaLevel ? 0.0 : (tile->getHeight()-seaLevel)/(1.0-seaLevel)));
 					double moisture=precipitation*adjustedHeight;
 
 					// Drop particle.
@@ -94,14 +94,15 @@ namespace Engine {
 
 			// Call helper function with random initial velocity.
 			int d=Util::randIntInInterval(0, 3);
-			dropParticleHelper(map, x, y, (d==0 ? 1 : (d==1 ? -1 : 0)), (d==2 ? 1 : (d==3 ? -1 : 0)), precipitation);
+			dropParticleHelper(map, x, y, (d==0 ? 1 : (d==1 ? -1 : 0)), (d==2 ? 1 : (d==3 ? -1 : 0)), precipitation, 0.0);
 		};
 
-		void MapGen::RiverGen::dropParticleHelper(class Map *map, int x, int y, int dx, int dy, double moisture) {
+		void MapGen::RiverGen::dropParticleHelper(class Map *map, int x, int y, int dx, int dy, double moisture, double sediment) {
 			assert(map!=NULL);
 			assert(dx==0.0 || dy==0.0);
 			assert(fabs(dx)==1.0 || fabs(dy)==1.0);
 			assert(moisture>=0.0 && moisture<=1.0);
+			assert(sediment>=0.0 && sediment<=moisture);
 
 			if (moisture<0.01)
 				return;
@@ -150,19 +151,32 @@ namespace Engine {
 				if (nextTile->getHeight()<=seaLevel)
 					break;
 
-				// Can we continue to flow in this direction?
+				// Calculate tile total heights.
 				double tileTotalHeight=tile->getHeight()+tile->getMoisture();
 				double nextTileTotalHeight=nextTile->getHeight()+nextTile->getMoisture();
+
+				// Can we erode some of this tile?
 				if (nextTileTotalHeight<tileTotalHeight) {
-					dropParticleHelper(map, nx, ny, ndx, ndy, moisture);
+					double sedimentDelta=std::max(0.0, std::min(moisture-2*sediment, tile->getHeight()));
+
+					sediment+=sedimentDelta;
+					tileTotalHeight-=sedimentDelta;
+					tile->setHeight(tile->getHeight()+sedimentDelta);
+				}
+
+				// Can we continue to flow in this direction?
+				if (nextTileTotalHeight<tileTotalHeight) {
+					dropParticleHelper(map, nx, ny, ndx, ndy, moisture, sediment);
 					return;
 				}
 			}
 
-			// No where for moisture to go - add to this tile.
+			// No where for moisture or sediment to go - add to this tile.
 			tile->setMoisture(tile->getMoisture()+moisture);
+			tile->setHeight(tile->getHeight()+sediment);
 		}
 
+		/*
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);
