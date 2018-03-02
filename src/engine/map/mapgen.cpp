@@ -215,9 +215,9 @@ namespace Engine {
 
 			// Attempt to compute estimated total time.
 			Util::TimeMs estimatedTimeS;
-			if (progress>=0.0001 && progress<=0.9999 && (estimatedTimeS=elapsedTimeMs/(1000.0*progress))<365llu*24llu*60llu*60llu && estimatedTimeS>0) {
-				printf(" (est. ");
-				Util::TimeMs remainder=estimatedTimeS;
+			if (progress>=0.0001 && progress<=0.9999 && (estimatedTimeS=elapsedTimeMs/(1000.0*progress))<365llu*24llu*60llu*60llu && estimatedTimeS>0 && estimatedTimeS>elapsedTimeMs/1000) {
+				printf(" (~");
+				Util::TimeMs remainder=estimatedTimeS-elapsedTimeMs/1000;
 				if (remainder>24*60*60) {
 					Util::TimeMs days=remainder/24*60*60;
 					remainder-=days*24*60*60;
@@ -234,7 +234,9 @@ namespace Engine {
 					printf("%llum", minutes);
 				}
 				Util::TimeMs seconds=remainder;
-				printf("%llus)", seconds);
+				printf("%llus", seconds);
+
+				printf(" remaining)");
 			}
 
 			// Flush output manually (as we are not printing a newline).
