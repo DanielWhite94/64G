@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cfloat>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -12,7 +13,7 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
-		void MapGen::RiverGen::dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void MapGen::RiverGen::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
@@ -59,22 +60,25 @@ namespace Engine {
 				unsigned tileOffsetBaseX=regionPos.x*MapRegion::tilesWide;
 				unsigned tileOffsetBaseY=regionPos.y*MapRegion::tilesHigh;
 				for(unsigned i=0; i<trials; ++i) {
-					// Compute random tile x and y.
-					unsigned x=tileOffsetBaseX+Util::randIntInInterval(0, MapRegion::tilesWide);
-					unsigned y=tileOffsetBaseY+Util::randIntInInterval(0, MapRegion::tilesHigh);
+					// Compute random tile position within this region.
+					double randX=Util::randFloatInInterval(0.0, MapRegion::tilesWide);
+					double randY=Util::randFloatInInterval(0.0, MapRegion::tilesHigh);
+
+					double tileX=tileOffsetBaseX+randX;
+					double tileY=tileOffsetBaseY+randY;
 
 					// Grab tile.
-					const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
+					const MapTile *tile=map->getTileAtOffset((int)floor(tileX), (int)floor(tileY), Map::Map::GetTileFlag::None);
 					if (tile==NULL)
 						continue;
 
 					// Calculate moisture.
-					double precipitation=(precipitationNoise.eval(x,y)+1.0)/2.0;
+					double precipitation=(precipitationNoise.eval(tileX, tileY)+1.0)/2.0;
 					double adjustedHeight=std::min(1.0, (tile->getHeight()<=seaLevel ? 0.0 : (tile->getHeight()-seaLevel)/(1.0-seaLevel)));
 					double moisture=precipitation*adjustedHeight;
 
 					// Drop particle.
-					dropParticle(map, x, y, moisture);
+					dropParticle(tileX, tileY, moisture);
 				}
 
 				// Call progress functor (if needed).
@@ -88,95 +92,193 @@ namespace Engine {
 			}
 		}
 
-		void MapGen::RiverGen::dropParticle(class Map *map, unsigned x, unsigned y, double precipitation) {
-			assert(map!=NULL);
-			assert(precipitation>=0.0 && precipitation<=1.0);
+		void MapGen::RiverGen::dropParticle(double xp, double yp, double precipitation) {
+			const double Kq=10, Kw=0.001, Kr=0.9, Kd=0.02, Ki=0.1, minSlope=0.05, Kg=20*2;
 
-			// Call helper function with random initial velocity.
-			int d=Util::randIntInInterval(0, 3);
-			dropParticleHelper(map, x, y, (d==0 ? 1 : (d==1 ? -1 : 0)), (d==2 ? 1 : (d==3 ? -1 : 0)), precipitation, 0.0);
-		};
+			#define DEPOSIT(H) \
+				depositAt(xi  , yi  , (1-xf)*(1-yf), ds); \
+				depositAt(xi+1, yi  ,    xf *(1-yf), ds); \
+				depositAt(xi  , yi+1, (1-xf)*   yf , ds); \
+				depositAt(xi+1, yi+1,    xf *   yf , ds); \
+				(H)+=ds;
 
-		void MapGen::RiverGen::dropParticleHelper(class Map *map, int x, int y, int dx, int dy, double moisture, double sediment) {
-			assert(map!=NULL);
-			assert(dx==0.0 || dy==0.0);
-			assert(fabs(dx)==1.0 || fabs(dy)==1.0);
-			assert(moisture>=0.0 && moisture<=1.0);
-			assert(sediment>=0.0 && sediment<=moisture);
+			int xi=floor(xp);
+			int yi=floor(yp);
+			double xf=xp-xi;
+			double yf=yp-yi;
 
-			if (moisture<0.01)
+			double dx=0.0, dy=0.0;
+			double s=0.0, v=0.0, w=1.0;
+
+			double h=hMap(xi, yi, DBL_MIN);
+
+			double h00=h;
+			double h01=hMap(xi, yi+1, DBL_MIN);
+			double h10=hMap(xi+1, yi, DBL_MIN);
+			double h11=hMap(xi+1, yi+1, DBL_MIN);
+
+			if (h<0.0)
+				return; // TODO: Use proper sea level?
+
+			if (h00==DBL_MIN || h01==DBL_MIN || h10==DBL_MIN || h11==DBL_MIN)
+				return; // TODO: think about this
+
+			int maxPathLen=MapRegion::tilesWide+MapRegion::tilesHigh;
+			for(int pathLen=0; pathLen<maxPathLen; ++pathLen) {
+				// Increment moisture counter for the current tile.
+				MapTile *tempTile=map->getTileAtOffset(xi, yi, Map::GetTileFlag::None);
+				if (tempTile!=NULL)
+					tempTile->setMoisture(tempTile->getMoisture()+1.0);
+
+				// calc gradient
+				double gx=h00+h01-h10-h11;
+				double gy=h00+h10-h01-h11;
+
+				// calc next pos
+				dx=(dx-gx)*Ki+gx;
+				dy=(dy-gy)*Ki+gy;
+
+				double dl=sqrt(dx*dx+dy*dy);
+				if (dl<=0.01) {
+					// pick random dir
+					double a=Util::randFloatInInterval(0.0, 2*M_PI);
+					dx=cos(a);
+					dy=sin(a);
+				} else {
+					dx/=dl;
+					dy/=dl;
+				}
+
+				double nxp=xp+dx;
+				double nyp=yp+dy;
+
+				// sample next height
+				int nxi=floor(nxp);
+				int nyi=floor(nyp);
+				double nxf=nxp-nxi;
+				double nyf=nyp-nyi;
+
+				double nh00=hMap(nxi  , nyi  , DBL_MIN);
+				double nh10=hMap(nxi+1, nyi  , DBL_MIN);
+				double nh01=hMap(nxi  , nyi+1, DBL_MIN);
+				double nh11=hMap(nxi+1, nyi+1, DBL_MIN);
+
+				if (nh00==DBL_MIN || nh01==DBL_MIN || nh10==DBL_MIN || nh11==DBL_MIN)
+					return; // TODO: think about this
+
+				double nh=(nh00*(1-nxf)+nh10*nxf)*(1-nyf)+(nh01*(1-nxf)+nh11*nxf)*nyf;
+
+				if (nh<0.0)
+					return; // TODO: Use proper sea level?
+
+				// if higher than current, try to deposit sediment up to neighbour height
+				if (nh>=h) {
+					double ds=(nh-h)+0.001f;
+
+					if (ds>=s) {
+						// deposit all sediment and stop
+						ds=s;
+						DEPOSIT(h)
+						s=0;
+						break;
+					}
+
+					DEPOSIT(h)
+					s-=ds;
+					v=0;
+				}
+
+				// compute transport capacity
+				double dh=h-nh;
+				double slope=dh;
+
+				double q=std::max(slope, minSlope)*v*w*Kq;
+
+				// deposit/erode (don't erode more than dh)
+				double ds=s-q;
+				if (ds>=0) {
+					// deposit
+					ds*=Kd;
+
+					DEPOSIT(dh)
+					s-=ds;
+				} else {
+					// erode
+					ds*=-Kr;
+					ds=std::min(ds, dh*0.99);
+
+					for (int y=yi-1; y<=yi+2; ++y) {
+						double yo=y-yp;
+						double yo2=yo*yo;
+
+						for (int x=xi-1; x<=xi+2; ++x) {
+							double xo=x-xp;
+
+							double w=1-(xo*xo+yo2)*0.25f;
+							if (w<=0)
+								continue;
+							w*=0.1591549430918953f;
+
+							depositAt(x, y, -w, ds);
+						}
+					}
+
+					dh-=ds;
+
+					s+=ds;
+				}
+
+				// move to the neighbour
+				v=sqrt(v*v+Kg*dh);
+				w*=1-Kw;
+
+				xp=nxp; yp=nyp;
+				xi=nxi; yi=nyi;
+				xf=nxf; yf=nyf;
+
+				h=nh;
+				h00=nh00;
+				h10=nh10;
+				h01=nh01;
+				h11=nh11;
+			}
+
+			#undef DEPOSIT
+		}
+
+		double MapGen::RiverGen::hMap(int x, int y, double unknownValue) {
+			// Check bounds.
+			if (x<0 || x>=Map::regionsWide*MapRegion::tilesWide)
+				return unknownValue;
+			if (y<0 || y>=Map::regionsHigh*MapRegion::tilesHigh)
+				return unknownValue;
+
+			// Grab tile.
+			const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
+			if (tile==NULL)
+				return unknownValue;
+
+			// Return height.
+			return tile->getHeight();
+		}
+
+		void MapGen::RiverGen::depositAt(int x, int y, double w, double ds) {
+			// Check bounds.
+			if (x<0 || x>=Map::regionsWide*MapRegion::tilesWide)
+				return;
+			if (y<0 || y>=Map::regionsHigh*MapRegion::tilesHigh)
 				return;
 
 			// Grab tile.
-			MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::Dirty);
+			MapTile *tile=map->getTileAtOffset(x, y, Map::GetTileFlag::Dirty);
 			if (tile==NULL)
 				return;
 
-			// Hit an ocean tile?
-			if (tile->getHeight()<=seaLevel)
-				return;
-
-			// Loop over directions.
-			int stage;
-			for(stage=0; stage<3; ++stage) {
-				// Calculate and check next tile's coordinates.
-				int ndx, ndy;
-				switch(stage) {
-					case 0:
-						ndx=dx;
-						ndy=dy;
-					break;
-					case 1:
-						ndx=-dy;
-						ndy=dx;
-					break;
-					case 2:
-						ndx=dy;
-						ndy=-dx;
-					break;
-				}
-
-				int nx=x+ndx;
-				int ny=y+ndy;
-				if (nx<0 || nx>=Map::Map::regionsWide*MapRegion::tilesWide ||
-				    ny<0 || ny>=Map::Map::regionsHigh*MapRegion::tilesHigh)
-				    continue;
-
-				// Grab next tile for current direction.
-				MapTile *nextTile=map->getTileAtOffset(nx, ny, Map::Map::GetTileFlag::None);
-				if (nextTile==NULL)
-					continue; // No tile - try next direction.
-
-				// Hit an ocean tile?
-				if (nextTile->getHeight()<=seaLevel)
-					break;
-
-				// Calculate tile total heights.
-				double tileTotalHeight=tile->getHeight()+tile->getMoisture();
-				double nextTileTotalHeight=nextTile->getHeight()+nextTile->getMoisture();
-
-				// Can we erode some of this tile?
-				if (nextTileTotalHeight<tileTotalHeight) {
-					double sedimentDelta=std::max(0.0, std::min(moisture-2*sediment, tile->getHeight()));
-
-					sediment+=sedimentDelta;
-					tileTotalHeight-=sedimentDelta;
-					tile->setHeight(tile->getHeight()+sedimentDelta);
-				}
-
-				// Can we continue to flow in this direction?
-				if (nextTileTotalHeight<tileTotalHeight) {
-					dropParticleHelper(map, nx, ny, ndx, ndy, moisture, sediment);
-					return;
-				}
-			}
-
-			// No where for moisture or sediment to go - add to this tile.
-			tile->setMoisture(tile->getMoisture()+moisture);
-			tile->setHeight(tile->getHeight()+sediment);
+			// Adjust height.
+			double delta=ds*w;
+			tile->setHeight(tile->getHeight()+delta);
 		}
 
-		/*
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);

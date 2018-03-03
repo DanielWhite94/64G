@@ -14,8 +14,8 @@
 using namespace Engine;
 using namespace Engine::Map;
 
-const double demogenSeaLevel=0.05;
-const double demogenAlpineLevel=0.33;
+const double demogenSeaLevel=0.05*6000.0;
+const double demogenAlpineLevel=0.33*6000.0;
 
 enum DemoGenTileLayer {
 	DemoGenTileLayerGround,
@@ -39,13 +39,15 @@ typedef struct {
 
 	double landSqKm, peoplePerSqKm, totalPopulation;
 
-	double minHeight, maxHeight;
+	double minHeight, maxHeight, maxMoisture;
 } DemogenMapData;
 
 void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+/*
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+*/
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
@@ -61,9 +63,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 		return;
 
 	// Calculate height and temperature.
-	const double height=mapData->heightNoise->eval(x,y);
-	const double normalisedHeight=(height>demogenSeaLevel ? (height-demogenSeaLevel)/(1.0-demogenSeaLevel) : 0.0);
-	assert(normalisedHeight>=0.0 && normalisedHeight<=1.0);
+	const double height=mapData->heightNoise->eval(x,y)*6000.0;
 
 	const double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
 
@@ -76,8 +76,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 	double adjustedPoleDistance=2*poleDistance-1; // -1..1
 	assert(adjustedPoleDistance>=-1.0 && adjustedPoleDistance<=1.0);
 
-	double adjustedHeight=2*normalisedHeight-1;
-	assert(adjustedHeight>=-1.0 && adjustedHeight<=1.0);
+	double adjustedHeight=0.0; // TODO: This
 
 	double temperature=(4*adjustedPoleDistance+2*adjustedHeight+2*temperatureRandomOffset)/8;
 	assert(temperature>=-1.0 && temperature<=1.0);
@@ -90,7 +89,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 
 	// Update tile.
 	tile->setHeight(height);
-	tile->setMoisture((height>demogenSeaLevel) ? 0.0 : demogenSeaLevel-height);
+	tile->setMoisture(0.0);
 	tile->setTemperature(temperature);
 }
 
@@ -107,11 +106,12 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 
 	// Calculate constants.
 	const double height=tile->getHeight();
-	const double temperature=tile->getTemperature();
+	//const double temperature=tile->getTemperature();
 
-	// Update min/max height.
+	// Update min/max values.
 	mapData->minHeight=std::min(height, mapData->minHeight);
 	mapData->maxHeight=std::max(height, mapData->maxHeight);
+	mapData->maxMoisture=std::max(tile->getMoisture(), mapData->maxMoisture);
 
 	// Choose texture.
 	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
@@ -124,6 +124,13 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 
 		double skewThreshold=0.7; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
+	} else {
+		idA=MapGen::TextureIdGrass0;
+		idB=MapGen::TextureIdGrass0;
+	}
+	factor=0.0;
+	/*
+	// TODO: Fix factors
 	} else if (height<=demogenAlpineLevel) {
 		// land
 		const double temperatureThreshold=0.5;
@@ -156,6 +163,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		double skewThreshold=0.2; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 	}
+	*/
 	assert(factor>=0.0 && factor<=1.0);
 
 	MapTexture::Id textureId=(factor<=0.5 ? idA : idB);
@@ -173,6 +181,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	++mapData->totalCount;
 }
 
+/*
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
@@ -273,6 +282,7 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	// We have made a change - mark region dirty.
 	map->markRegionDirtyAtTileOffset(x, y, false);
 }
+*/
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
 	assert(map!=NULL);
@@ -311,6 +321,7 @@ int main(int argc, char **argv) {
 	    .height=0,
 		.minHeight=DBL_MAX,
 		.maxHeight=DBL_MIN,
+		.maxMoisture=DBL_MIN,
 	    .landCount=0,
 	    .waterCount=0,
 	    .totalCount=0,
@@ -363,19 +374,21 @@ int main(int argc, char **argv) {
 
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
-	MapGen::RiverGen riverGen(*mapData.precipitationNoise, demogenSeaLevel);
-	riverGen.dropParticles(mapData.map, 0, 0, mapData.width, mapData.height, 1.0/4.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
+	MapGen::RiverGen riverGen(mapData.map, *mapData.precipitationNoise, demogenSeaLevel);
+	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/4.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
 	// Run modify tiles for bimomes and forests.
-	size_t modifyTilesArrayCount=3;
+	size_t modifyTilesArrayCount=1;
 	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
 	modifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
 	modifyTilesArray[0].userData=&mapData;
+	/*
 	modifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
 	modifyTilesArray[1].userData=&mapData;
 	modifyTilesArray[2].functor=&demogenSandForestModifyTilesFunctor;
 	modifyTilesArray[2].userData=&mapData;
+	*/
 
 	const char *progressStringBiomesForests="Assigning tile textures (biomes and forests) ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomesForests);
@@ -402,12 +415,15 @@ int main(int argc, char **argv) {
 	setlocale(LC_NUMERIC, "");
 	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
 	printf("Min height %f, max height %f, sea level %f\n", mapData.minHeight, mapData.maxHeight, demogenSeaLevel);
+	printf("(max moisture %f)\n", mapData.maxMoisture);
 	printf("People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add towns.
+	/*
 	printf("Adding towns...\n");
 	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerDecoration, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
 	printf("\n");
+	*/
 
 	// Save map.
 	if (!mapData.map->save()) {

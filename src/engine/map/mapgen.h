@@ -148,17 +148,19 @@ namespace Engine {
 
 			class RiverGen {
 			public:
-				RiverGen(const NoiseArray &precipitationNoise, double seaLevel): precipitationNoise(precipitationNoise), seaLevel(seaLevel) {};
+				RiverGen(Map *map, const NoiseArray &precipitationNoise, double seaLevel): map(map), precipitationNoise(precipitationNoise), seaLevel(seaLevel) {};
 				~RiverGen() {};
 
-				void dropParticles(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times.
-				void dropParticle(class Map *map, unsigned x, unsigned y, double precipitation);
+				void dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times.
+				void dropParticle(double x, double y, double precipitation);
 
 			private:
+				Map *map;
 				const NoiseArray &precipitationNoise;
 				double seaLevel;
 
-				void dropParticleHelper(class Map *map, int x, int y, int dx, int dy, double moisture, double sediment);
+				double hMap(int x, int y, double unknownValue); // Returns height of tile at (x,y), returning unknownValue if tile is out of bounds or could not be loaded.
+				void depositAt(int x, int y, double w, double ds); // Adjusts the height of a tile at the given (x,y). Does nothing if the tile is out of bounds or could not be loaded.
 			};
 
 			MapGen(unsigned width, unsigned height);
