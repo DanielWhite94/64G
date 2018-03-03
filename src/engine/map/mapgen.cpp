@@ -129,7 +129,7 @@ namespace Engine {
 				// Increment moisture counter for the current tile.
 				MapTile *tempTile=map->getTileAtOffset(xi, yi, Map::GetTileFlag::None);
 				if (tempTile!=NULL)
-					tempTile->setMoisture(tempTile->getMoisture()+1.0);
+					tempTile->setMoisture(tempTile->getMoisture()+w);
 
 				// calc gradient
 				double gx=h00+h01-h10-h11;
