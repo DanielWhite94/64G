@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cfloat>
 #include <cmath>
 #include <cstdbool>
 #include <cstdio>
@@ -37,6 +38,8 @@ typedef struct {
 	double landFraction;
 
 	double landSqKm, peoplePerSqKm, totalPopulation;
+
+	double minHeight, maxHeight;
 } DemogenMapData;
 
 void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
@@ -105,6 +108,10 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	// Calculate constants.
 	const double height=tile->getHeight();
 	const double temperature=tile->getTemperature();
+
+	// Update min/max height.
+	mapData->minHeight=std::min(height, mapData->minHeight);
+	mapData->maxHeight=std::max(height, mapData->maxHeight);
 
 	// Choose texture.
 	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
@@ -302,6 +309,8 @@ int main(int argc, char **argv) {
 	    .map=NULL,
 	    .width=0,
 	    .height=0,
+		.minHeight=DBL_MAX,
+		.maxHeight=DBL_MIN,
 	    .landCount=0,
 	    .waterCount=0,
 	    .totalCount=0,
@@ -392,6 +401,7 @@ int main(int argc, char **argv) {
 
 	setlocale(LC_NUMERIC, "");
 	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
+	printf("Min height %f, max height %f, sea level %f\n", mapData.minHeight, mapData.maxHeight, demogenSeaLevel);
 	printf("People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add towns.
