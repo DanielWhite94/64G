@@ -56,6 +56,19 @@ namespace Engine {
 			regionsDir=(char *)malloc(regionsDirPathLen+1); // TODO: check return
 			sprintf(regionsDir, "%s/%s", mapBaseDirPath, regionsDirName);
 
+			// Load metadata file if exists.
+			char metadataFilePath[1024]; // TODO: Prevent overflows.
+			sprintf(metadataFilePath, "%s/metadata", baseDir);
+			FILE *metadataFile=fopen(metadataFilePath, "r");
+			if (metadataFile!=NULL) {
+				fread(&minHeight, sizeof(double), 1, metadataFile);
+				fread(&maxHeight, sizeof(double), 1, metadataFile);
+				fread(&minMoisture, sizeof(double), 1, metadataFile);
+				fread(&maxMoisture, sizeof(double), 1, metadataFile);
+
+				fclose(metadataFile);
+			}
+
 			// Ensure directories etc exist.
 			saveMetadata();
 
@@ -174,7 +187,22 @@ namespace Engine {
 				}
 			}
 
-			return true;
+			// Write metadata file.
+			char metadataFilePath[1024]; // TODO: Prevent overflows.
+			sprintf(metadataFilePath, "%s/metadata", baseDir);
+			FILE *metadataFile=fopen(metadataFilePath, "w");
+			if (metadataFile==NULL)
+				return false;
+
+			bool result=true;
+			result&=(fwrite(&minHeight, sizeof(double), 1, metadataFile)==1);
+			result&=(fwrite(&maxHeight, sizeof(double), 1, metadataFile)==1);
+			result&=(fwrite(&minMoisture, sizeof(double), 1, metadataFile)==1);
+			result&=(fwrite(&maxMoisture, sizeof(double), 1, metadataFile)==1);
+
+			fclose(metadataFile);
+
+			return result;
 		}
 
 		bool Map::saveTextures(void) const {

@@ -38,8 +38,6 @@ typedef struct {
 	double landFraction;
 
 	double landSqKm, peoplePerSqKm, totalPopulation;
-
-	double minHeight, maxHeight, maxMoisture;
 } DemogenMapData;
 
 void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
@@ -108,11 +106,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	const double height=tile->getHeight();
 	//const double temperature=tile->getTemperature();
 
-	// Update min/max values.
-	mapData->minHeight=std::min(height, mapData->minHeight);
-	mapData->maxHeight=std::max(height, mapData->maxHeight);
-	mapData->maxMoisture=std::max(tile->getMoisture(), mapData->maxMoisture);
-
 	// Choose texture.
 	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
 	double factor;
@@ -120,7 +113,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		// water
 		idA=MapGen::TextureIdDeepWater;
 		idB=MapGen::TextureIdWater;
-		factor=((height+1.0)/(demogenSeaLevel+1.0));
+		factor=((height-map->minHeight)/(demogenSeaLevel-map->minHeight));
 
 		double skewThreshold=0.7; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
@@ -319,16 +312,13 @@ int main(int argc, char **argv) {
 	    .map=NULL,
 	    .width=0,
 	    .height=0,
-		.minHeight=DBL_MAX,
-		.maxHeight=DBL_MIN,
-		.maxMoisture=DBL_MIN,
 	    .landCount=0,
 	    .waterCount=0,
 	    .totalCount=0,
 	    .landFraction=0.0,
-		.landSqKm=0.0,
-		.peoplePerSqKm=0.0,
-		.totalPopulation=0.0,
+	    .landSqKm=0.0,
+	    .peoplePerSqKm=0.0,
+	    .totalPopulation=0.0,
 	};
 
 	// Grab arguments.
@@ -378,6 +368,14 @@ int main(int argc, char **argv) {
 	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/4.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
+	// Recalculate stats such as min/max height required for next modify tiles calls.
+	const char *progressStringRecalculate="Collecting global statistics ";
+	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringRecalculate);
+	printf("\n");
+
+	printf("Min height %f, max height %f, sea level %f\n", mapData.map->minHeight, mapData.map->maxHeight, demogenSeaLevel);
+	printf("Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
+
 	// Run modify tiles for bimomes and forests.
 	size_t modifyTilesArrayCount=1;
 	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
@@ -414,8 +412,6 @@ int main(int argc, char **argv) {
 
 	setlocale(LC_NUMERIC, "");
 	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
-	printf("Min height %f, max height %f, sea level %f\n", mapData.minHeight, mapData.maxHeight, demogenSeaLevel);
-	printf("(max moisture %f)\n", mapData.maxMoisture);
 	printf("People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add towns.

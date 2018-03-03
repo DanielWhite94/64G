@@ -1053,5 +1053,34 @@ namespace Engine {
 				}
 			}
 		}
+
+		void mapGenRecalculateStatsModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+			assert(userData==NULL);
+
+			// Grab tile.
+			const MapTile *tile=map->getTileAtOffset(x, y, Map::GetTileFlag::None);
+			if (tile==NULL)
+				return;
+
+			// Update statistics.
+			map->minHeight=std::min(map->minHeight, tile->getHeight());
+			map->maxHeight=std::max(map->maxHeight, tile->getHeight());
+			map->minMoisture=std::min(map->minMoisture, tile->getMoisture());
+			map->maxMoisture=std::max(map->maxMoisture, tile->getMoisture());
+		}
+
+		void MapGen::recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+			assert(map!=NULL);
+
+			// Initialize stats.
+			map->minHeight=DBL_MAX;
+			map->maxHeight=DBL_MIN;
+			map->minMoisture=DBL_MAX;
+			map->maxMoisture=DBL_MIN;
+
+			// Use modifyTiles with a read-only functor.
+			modifyTiles(map, x, y, width, height, &mapGenRecalculateStatsModifyTilesFunctor, NULL, progressFunctor, progressUserData);
+		}
 	};
 };

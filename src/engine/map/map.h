@@ -8,6 +8,7 @@
 #include "maptexture.h"
 #include "maptile.h"
 #include "../physics/coord.h"
+#include "../util.h"
 
 using namespace std;
 
@@ -56,6 +57,10 @@ namespace Engine {
 			const MapTexture *getTexture(unsigned id) const;
 
 			const char *getBaseDir(void) const;
+
+			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
+			double minHeight, maxHeight;
+			double minMoisture, maxMoisture;
 		private:
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 
