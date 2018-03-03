@@ -104,7 +104,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 
 	// Calculate constants.
 	const double height=tile->getHeight();
-	//const double temperature=tile->getTemperature();
+	const double temperature=tile->getTemperature();
 
 	// Choose texture.
 	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
@@ -117,13 +117,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 
 		double skewThreshold=0.7; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
-	} else {
-		idA=MapGen::TextureIdGrass0;
-		idB=MapGen::TextureIdGrass0;
-	}
-	factor=0.0;
-	/*
-	// TODO: Fix factors
 	} else if (height<=demogenAlpineLevel) {
 		// land
 		const double temperatureThreshold=0.5;
@@ -151,12 +144,11 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		// alpine
 		idA=MapGen::TextureIdLowAlpine;
 		idB=MapGen::TextureIdHighAlpine;
-		factor=(std::min(1.0,height)-demogenAlpineLevel)/(1.0-demogenAlpineLevel);
+		factor=(height-demogenAlpineLevel)/(map->maxHeight-demogenAlpineLevel);
 
 		double skewThreshold=0.2; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 	}
-	*/
 	assert(factor>=0.0 && factor<=1.0);
 
 	MapTexture::Id textureId=(factor<=0.5 ? idA : idB);
