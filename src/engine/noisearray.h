@@ -16,7 +16,7 @@ namespace Engine {
 		double eval(double x, double y) const;
 	private:
 		double *array;
-		unsigned noiseWidth;
+		unsigned noiseWidth, noiseHeight;
 		double xFactor, yFactor;
 	};
 };
