@@ -130,107 +130,122 @@ int main(int argc, char **argv) {
 					// Choose colour (based on topmost layer with a texture set).
 					uint8_t r=0, g=0, b=0;
 
-					for(int z=MapTile::layersMax-1; z>=0; --z) {
-						const MapTile::Layer *layer=tile->getLayer(z);
+					// Special case for high moisture as rivers.
+					const double moistureThreshold=300.0;
+					if (tile->getLayer(0)->textureId!=MapGen::TextureIdWater && tile->getLayer(0)->textureId!=MapGen::TextureIdDeepWater &&
+					    tile->getMoisture()>moistureThreshold) {
+						// Grab and adjust moisture.
+						double moisture=tile->getMoisture();
+						moisture=(moisture-map->minMoisture)/(map->maxMoisture-map->minMoisture);
 
-						// Special case for heatmap textures.
-						if (layer->textureId>=MapGen::TextureIdHeatMapMin && layer->textureId<MapGen::TextureIdHeatMapMax) {
-							unsigned index=layer->textureId-MapGen::TextureIdHeatMapMin;
-							r=g=b=(index*255)/(MapGen::TextureIdHeatMapRange-1);
+						// Calculate colour.
+						double min=64, max=255;
+						r=g=0;
+						b=min+moisture*(max-min);
+					} else {
+						// Standard case.
+						for(int z=MapTile::layersMax-1; z>=0; --z) {
+							const MapTile::Layer *layer=tile->getLayer(z);
+
+							// Special case for heatmap textures.
+							if (layer->textureId>=MapGen::TextureIdHeatMapMin && layer->textureId<MapGen::TextureIdHeatMapMax) {
+								unsigned index=layer->textureId-MapGen::TextureIdHeatMapMin;
+								r=g=b=(index*255)/(MapGen::TextureIdHeatMapRange-1);
+								break; // We have found something to draw
+							}
+
+							switch(layer->textureId) {
+								case MapGen::TextureIdNone:
+									continue; // Try next layer instead
+								break;
+								case MapGen::TextureIdGrass0:
+								case MapGen::TextureIdGrass1:
+								case MapGen::TextureIdGrass2:
+								case MapGen::TextureIdGrass3:
+								case MapGen::TextureIdGrass4:
+								case MapGen::TextureIdGrass5: {
+									double height=tile->getHeight();
+
+									height=std::min(height, map->maxHeight);
+									height=std::max(height, 0.05);
+
+									height=(height-0.05)/(map->maxHeight-0.05);
+
+									double min=64, max=255;
+
+									r=b=0;
+									g=min+height*(max-min);
+								} break;
+								case MapGen::TextureIdBrickPath:
+								case MapGen::TextureIdDock:
+									r=102,g=51,b=0;
+								break;
+								case MapGen::TextureIdDirt:
+									r=0xCC,g=0x66,b=0x00;
+								break;
+								case MapGen::TextureIdWater:
+								case MapGen::TextureIdDeepWater: {
+									double height=tile->getHeight();
+
+									height=std::min(height, 0.05);
+									height=std::max(height, map->minHeight);
+
+									height=(height-map->minHeight)/(0.05-map->minHeight);
+
+									double min=64, max=255;
+
+									r=g=0;
+									b=min+height*(max-min);
+								} break;
+								case MapGen::TextureIdTree1:
+								case MapGen::TextureIdTree2:
+								case MapGen::TextureIdTree3:
+									r=0,g=100,b=0;
+								break;
+								case MapGen::TextureIdMan1:
+								case MapGen::TextureIdOldManN:
+								case MapGen::TextureIdOldManE:
+								case MapGen::TextureIdOldManS:
+								case MapGen::TextureIdOldManW:
+									r=255,g=0,b=0;
+								break;
+								case MapGen::TextureIdHouseDoorBL:
+								case MapGen::TextureIdHouseDoorBR:
+								case MapGen::TextureIdHouseDoorTL:
+								case MapGen::TextureIdHouseDoorTR:
+								case MapGen::TextureIdHouseRoof:
+								case MapGen::TextureIdHouseRoofTop:
+								case MapGen::TextureIdHouseWall2:
+								case MapGen::TextureIdHouseWall3:
+								case MapGen::TextureIdHouseWall4:
+								case MapGen::TextureIdHouseChimney:
+								case MapGen::TextureIdHouseChimneyTop:
+								case MapGen::TextureIdShopCobbler:
+									r=255,g=128,b=0;
+								break;
+								case MapGen::TextureIdSand:
+									r=255,g=255,b=0;
+								break;
+								case MapGen::TextureIdHotSand:
+									r=232,g=197,b=136;
+								break;
+								case MapGen::TextureIdSnow:
+									r=g=b=255;
+								break;
+								case MapGen::TextureIdHighAlpine:
+									r=g=b=25;
+								break;
+								case MapGen::TextureIdLowAlpine:
+									r=g=b=80;
+								break;
+								case MapGen::TextureIdNB:
+									assert(false);
+									continue; // Try next layer instead
+								break;
+							}
+
 							break; // We have found something to draw
 						}
-
-						switch(layer->textureId) {
-							case MapGen::TextureIdNone:
-								continue; // Try next layer instead
-							break;
-							case MapGen::TextureIdGrass0:
-							case MapGen::TextureIdGrass1:
-							case MapGen::TextureIdGrass2:
-							case MapGen::TextureIdGrass3:
-							case MapGen::TextureIdGrass4:
-							case MapGen::TextureIdGrass5: {
-								double height=tile->getHeight();
-
-								height=std::min(height, map->maxHeight);
-								height=std::max(height, 0.05);
-
-								height=(height-0.05)/(map->maxHeight-0.05);
-
-								double min=64, max=255;
-
-								r=b=0;
-								g=min+height*(max-min);
-							} break;
-							case MapGen::TextureIdBrickPath:
-							case MapGen::TextureIdDock:
-								r=102,g=51,b=0;
-							break;
-							case MapGen::TextureIdDirt:
-								r=0xCC,g=0x66,b=0x00;
-							break;
-							case MapGen::TextureIdWater:
-							case MapGen::TextureIdDeepWater: {
-								double height=tile->getHeight();
-
-								height=std::min(height, 0.05);
-								height=std::max(height, map->minHeight);
-
-								height=(height-map->minHeight)/(0.05-map->minHeight);
-
-								double min=64, max=255;
-
-								r=g=0;
-								b=min+height*(max-min);
-							} break;
-							case MapGen::TextureIdTree1:
-							case MapGen::TextureIdTree2:
-							case MapGen::TextureIdTree3:
-								r=0,g=100,b=0;
-							break;
-							case MapGen::TextureIdMan1:
-							case MapGen::TextureIdOldManN:
-							case MapGen::TextureIdOldManE:
-							case MapGen::TextureIdOldManS:
-							case MapGen::TextureIdOldManW:
-								r=255,g=0,b=0;
-							break;
-							case MapGen::TextureIdHouseDoorBL:
-							case MapGen::TextureIdHouseDoorBR:
-							case MapGen::TextureIdHouseDoorTL:
-							case MapGen::TextureIdHouseDoorTR:
-							case MapGen::TextureIdHouseRoof:
-							case MapGen::TextureIdHouseRoofTop:
-							case MapGen::TextureIdHouseWall2:
-							case MapGen::TextureIdHouseWall3:
-							case MapGen::TextureIdHouseWall4:
-							case MapGen::TextureIdHouseChimney:
-							case MapGen::TextureIdHouseChimneyTop:
-							case MapGen::TextureIdShopCobbler:
-								r=255,g=128,b=0;
-							break;
-							case MapGen::TextureIdSand:
-								r=255,g=255,b=0;
-							break;
-							case MapGen::TextureIdHotSand:
-								r=232,g=197,b=136;
-							break;
-							case MapGen::TextureIdSnow:
-								r=g=b=255;
-							break;
-							case MapGen::TextureIdHighAlpine:
-								r=g=b=25;
-							break;
-							case MapGen::TextureIdLowAlpine:
-								r=g=b=80;
-							break;
-							case MapGen::TextureIdNB:
-								assert(false);
-								continue; // Try next layer instead
-							break;
-						}
-
-						break; // We have found something to draw
 					}
 
 					// Write pixel.
