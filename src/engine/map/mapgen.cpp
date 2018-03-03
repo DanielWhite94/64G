@@ -72,13 +72,14 @@ namespace Engine {
 					if (tile==NULL)
 						continue;
 
-					// Calculate moisture.
-					double precipitation=(precipitationNoise.eval(tileX, tileY)+1.0)/2.0;
-					double adjustedHeight=std::min(1.0, (tile->getHeight()<=seaLevel ? 0.0 : (tile->getHeight()-seaLevel)/(1.0-seaLevel)));
-					double moisture=precipitation*adjustedHeight;
+					// Ocean tile?
+					if (tile->getHeight()<seaLevel)
+						continue;
 
-					// Drop particle.
-					dropParticle(tileX, tileY, moisture);
+					// Drop particle or not randomly based on precipitation.
+					double precipitation=(precipitationNoise.eval(tileX, tileY)+1.0)/2.0;
+					if (precipitation>Util::randFloatInInterval(0.0, 1.0))
+						dropParticle(tileX, tileY);
 				}
 
 				// Call progress functor (if needed).
@@ -92,7 +93,7 @@ namespace Engine {
 			}
 		}
 
-		void MapGen::RiverGen::dropParticle(double xp, double yp, double precipitation) {
+		void MapGen::RiverGen::dropParticle(double xp, double yp) {
 			const double Kq=10, Kw=0.001, Kr=0.9, Kd=0.02, Ki=0.1, minSlope=0.05, Kg=20*2;
 
 			#define DEPOSIT(H) \
