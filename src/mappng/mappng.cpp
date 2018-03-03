@@ -145,17 +145,23 @@ int main(int argc, char **argv) {
 								continue; // Try next layer instead
 							break;
 							case MapGen::TextureIdGrass0:
-								r=0,g=255,b=0;
-							break;
 							case MapGen::TextureIdGrass1:
 							case MapGen::TextureIdGrass2:
 							case MapGen::TextureIdGrass3:
 							case MapGen::TextureIdGrass4:
-								r=0,g=240,b=0;
-							break;
-							case MapGen::TextureIdGrass5:
-								r=0,g=200,b=0;
-							break;
+							case MapGen::TextureIdGrass5: {
+								double height=tile->getHeight();
+
+								height=std::min(height, map->maxHeight);
+								height=std::max(height, 0.05);
+
+								height=(height-0.05)/(map->maxHeight-0.05);
+
+								double min=64, max=255;
+
+								r=b=0;
+								g=min+height*(max-min);
+							} break;
 							case MapGen::TextureIdBrickPath:
 							case MapGen::TextureIdDock:
 								r=102,g=51,b=0;
@@ -164,11 +170,19 @@ int main(int argc, char **argv) {
 								r=0xCC,g=0x66,b=0x00;
 							break;
 							case MapGen::TextureIdWater:
-								r=0,g=0,b=255;
-							break;
-							case MapGen::TextureIdDeepWater:
-								r=0,g=0,b=140;
-							break;
+							case MapGen::TextureIdDeepWater: {
+								double height=tile->getHeight();
+
+								height=std::min(height, 0.05);
+								height=std::max(height, map->minHeight);
+
+								height=(height-map->minHeight)/(0.05-map->minHeight);
+
+								double min=64, max=255;
+
+								r=g=0;
+								b=min+height*(max-min);
+							} break;
 							case MapGen::TextureIdTree1:
 							case MapGen::TextureIdTree2:
 							case MapGen::TextureIdTree3:
