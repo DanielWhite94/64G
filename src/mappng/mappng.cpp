@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 					uint8_t r=0, g=0, b=0;
 
 					// Special case for high moisture as rivers.
-					const double moistureThreshold=300.0;
+					const double moistureThreshold=sqrt(map->maxMoisture);
 					if (tile->getLayer(0)->textureId!=MapGen::TextureIdWater && tile->getLayer(0)->textureId!=MapGen::TextureIdDeepWater &&
 					    tile->getMoisture()>moistureThreshold) {
 						// Grab and adjust moisture.
