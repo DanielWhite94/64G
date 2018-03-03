@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 						moisture=(moisture-map->minMoisture)/(map->maxMoisture-map->minMoisture);
 
 						// Calculate colour.
-						double min=64, max=255;
+						double min=196, max=255;
 						r=g=0;
 						b=min+moisture*(max-min);
 					} else {
@@ -167,9 +167,9 @@ int main(int argc, char **argv) {
 									double height=tile->getHeight();
 
 									height=std::min(height, map->maxHeight);
-									height=std::max(height, 0.05);
+									height=std::max(height, 300.0);
 
-									height=(height-0.05)/(map->maxHeight-0.05);
+									height=(height-300.0)/(map->maxHeight-300.0);
 
 									double min=64, max=255;
 
@@ -187,12 +187,12 @@ int main(int argc, char **argv) {
 								case MapGen::TextureIdDeepWater: {
 									double height=tile->getHeight();
 
-									height=std::min(height, 0.05);
+									height=std::min(height, 300.0);
 									height=std::max(height, map->minHeight);
 
-									height=(height-map->minHeight)/(0.05-map->minHeight);
+									height=(height-map->minHeight)/(300.0-map->minHeight);
 
-									double min=64, max=255;
+									double min=64, max=196;
 
 									r=g=0;
 									b=min+height*(max-min);
@@ -224,20 +224,44 @@ int main(int argc, char **argv) {
 									r=255,g=128,b=0;
 								break;
 								case MapGen::TextureIdSand:
-									r=255,g=255,b=0;
-								break;
-								case MapGen::TextureIdHotSand:
-									r=232,g=197,b=136;
-								break;
-								case MapGen::TextureIdSnow:
-									r=g=b=255;
-								break;
+								case MapGen::TextureIdHotSand: {
+									double height=tile->getHeight();
+
+									height=std::min(height, map->maxHeight);
+									height=std::max(height, 300.0);
+
+									height=(height-300.0)/(map->maxHeight-300.0);
+
+									double min=0, max=100;
+
+									r=g=255;
+									b=min+height*(max-min);
+								} break;
+								case MapGen::TextureIdSnow: {
+									double height=tile->getHeight();
+
+									height=std::min(height, map->maxHeight);
+									height=std::max(height, 300.0);
+
+									height=(height-300.0)/(map->maxHeight-300.0);
+
+									double min=128, max=255;
+
+									r=g=b=min+height*(max-min);
+								} break;
 								case MapGen::TextureIdHighAlpine:
-									r=g=b=25;
-								break;
-								case MapGen::TextureIdLowAlpine:
-									r=g=b=80;
-								break;
+								case MapGen::TextureIdLowAlpine: {
+									double height=tile->getHeight();
+
+									height=std::min(height, map->maxHeight);
+									height=std::max(height, 0.33*6000.0);
+
+									height=(height-0.33*6000.0)/(map->maxHeight-0.33*6000.0);
+
+									double min=128, max=0;
+
+									r=g=b=min+height*(max-min);
+								} break;
 								case MapGen::TextureIdNB:
 									assert(false);
 									continue; // Try next layer instead
