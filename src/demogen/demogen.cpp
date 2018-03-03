@@ -365,8 +365,8 @@ int main(int argc, char **argv) {
 	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringRecalculate);
 	printf("\n");
 
-	printf("Min height %f, max height %f, sea level %f\n", mapData.map->minHeight, mapData.map->maxHeight, demogenSeaLevel);
-	printf("Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
+	printf("	Min height %f, max height %f, sea level %f\n", mapData.map->minHeight, mapData.map->maxHeight, demogenSeaLevel);
+	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
 	// Run modify tiles for bimomes and forests.
 	size_t modifyTilesArrayCount=1;
@@ -403,8 +403,8 @@ int main(int argc, char **argv) {
 	mapData.totalPopulation=mapData.landSqKm*mapData.peoplePerSqKm;
 
 	setlocale(LC_NUMERIC, "");
-	printf("Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
-	printf("People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
+	printf("	Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
+	printf("	People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add towns.
 	/*
