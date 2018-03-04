@@ -14,8 +14,8 @@
 using namespace Engine;
 using namespace Engine::Map;
 
-const double demogenSeaLevel=0.05*6000.0;
-const double demogenAlpineLevel=0.33*6000.0;
+const double demogenSeaLevelFactor=0.05;
+const double demogenAlpineLevelFactor=0.33;
 
 enum DemoGenTileLayer {
 	DemoGenTileLayerGround,
@@ -109,15 +109,15 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	// Choose texture.
 	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
 	double factor;
-	if (height<=demogenSeaLevel) {
+	if (height<=demogenSeaLevelFactor*map->maxHeight) {
 		// water
 		idA=MapGen::TextureIdDeepWater;
 		idB=MapGen::TextureIdWater;
-		factor=((height-map->minHeight)/(demogenSeaLevel-map->minHeight));
+		factor=((height-map->minHeight)/(demogenSeaLevelFactor*map->maxHeight-map->minHeight));
 
 		double skewThreshold=0.7; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
-	} else if (height<=demogenAlpineLevel) {
+	} else if (height<=demogenAlpineLevelFactor*map->maxHeight) {
 		// land
 		const double temperatureThreshold=0.5;
 		const double temperatureThreshold2=0.8;
@@ -144,7 +144,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		// alpine
 		idA=MapGen::TextureIdLowAlpine;
 		idB=MapGen::TextureIdHighAlpine;
-		factor=(height-demogenAlpineLevel)/(map->maxHeight-demogenAlpineLevel);
+		factor=(height-demogenAlpineLevelFactor*map->maxHeight)/(map->maxHeight-demogenAlpineLevelFactor*map->maxHeight);
 
 		double skewThreshold=0.2; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
@@ -356,7 +356,7 @@ int main(int argc, char **argv) {
 
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
-	MapGen::RiverGen riverGen(mapData.map, *mapData.precipitationNoise, demogenSeaLevel);
+	MapGen::RiverGen riverGen(mapData.map, *mapData.precipitationNoise, demogenSeaLevelFactor*6000.0);
 	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/4.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
@@ -365,7 +365,7 @@ int main(int argc, char **argv) {
 	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringRecalculate);
 	printf("\n");
 
-	printf("	Min height %f, max height %f, sea level %f\n", mapData.map->minHeight, mapData.map->maxHeight, demogenSeaLevel);
+	printf("	Min height %f, max height %f, sea level %f\n", mapData.map->minHeight, mapData.map->maxHeight, demogenSeaLevelFactor*mapData.map->maxHeight);
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
 	// Run modify tiles for bimomes and forests.
