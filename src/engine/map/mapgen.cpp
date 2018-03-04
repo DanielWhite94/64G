@@ -403,6 +403,7 @@ namespace Engine {
 				[TextureIdSnow]="../images/tiles/snow.png",
 				[TextureIdShopCobbler]="../images/tiles/shops/cobbler.png",
 				[TextureIdDeepWater]="../images/tiles/deepwater.png",
+				[TextureIdRiver]="../images/tiles/water.png",
 				[TextureIdHighAlpine]="../images/tiles/highalpine.png",
 				[TextureIdLowAlpine]="../images/tiles/lowalpine.png",
 			};
@@ -441,6 +442,7 @@ namespace Engine {
 				[TextureIdHotSand]=4,
 				[TextureIdShopCobbler]=4,
 				[TextureIdDeepWater]=4,
+				[TextureIdRiver]=4,
 				[TextureIdSnow]=4,
 				[TextureIdHighAlpine]=4,
 				[TextureIdLowAlpine]=4,

@@ -109,7 +109,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
 	double factor;
 	if (height<=demogenSeaLevelFactor*map->maxHeight) {
-		// water
+		// ocean
 		idA=MapGen::TextureIdDeepWater;
 		idB=MapGen::TextureIdWater;
 		factor=((height-map->minHeight)/(demogenSeaLevelFactor*map->maxHeight-map->minHeight));
@@ -117,6 +117,14 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		double skewThreshold=0.7; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 	} else if (height<=demogenAlpineLevelFactor*map->maxHeight) {
+		// River?
+		const double riverThreshold=sqrt(map->maxMoisture);
+		if (tile->getMoisture()>riverThreshold) {
+			idA=MapGen::TextureIdRiver;
+			idB=MapGen::TextureIdRiver;
+			factor=0.0;
+		}
+
 		// land
 		const double temperatureThreshold=0.5;
 		const double temperatureThreshold2=0.8;
@@ -158,7 +166,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	tile->setLayer(DemoGenTileLayerGround, layer);
 
 	// Update map data.
-	if (textureId==MapGen::TextureIdWater || textureId==MapGen::TextureIdDeepWater)
+	if (textureId==MapGen::TextureIdWater || textureId==MapGen::TextureIdDeepWater || textureId==MapGen::TextureIdRiver)
 		++mapData->waterCount;
 	else
 		++mapData->landCount;
