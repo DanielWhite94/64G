@@ -8,27 +8,18 @@
 
 namespace Engine {
 	namespace Map {
-		MapObjectTile::MapObjectTile() {
-		}
-
-		MapObjectTile::~MapObjectTile() {
-		}
-
-		MapObject::MapObject(CoordAngle gAngle, const CoordVec &pos, unsigned gTilesWide, unsigned gTilesHigh): pos(pos) {
-			angle=gAngle;
-			tilesWide=gTilesWide;
-			tilesHigh=gTilesHigh;
-
-			tileData=(MapObjectTile **)malloc(sizeof(MapObjectTile)*getTilesWide()*getTilesHigh());
-			assert(tileData!=NULL); // TODO: do better
-
-			unsigned i, max=getTilesWide()*getTilesHigh();
-			for(i=0; i<max; ++i)
-				tileData[i]=new MapObjectTile(); // TODO: do better
+		MapObject::MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh): angle(angle), pos(pos), tilesWide(tilesWide), tilesHigh(tilesHigh) {
+			HitMask emptyMask;
+			for(unsigned x=0; x<tilesWide; ++x)
+				for(unsigned y=0; y<tilesHigh; ++y) {
+					MapObjectTile *tile=getTileData(x, y);
+					assert(tile!=NULL);
+					tile->hitmask=emptyMask;
+				}
 
 			movementMode=MapObjectMovementMode::Static;
 
-			for(i=0; i<CoordAngleNB; ++i)
+			for(unsigned i=0; i<CoordAngleNB; ++i)
 				textureIds[i]=0;
 		}
 
@@ -86,11 +77,13 @@ namespace Engine {
 		}
 
 		HitMask MapObject::getHitMaskByTileOffset(int xOffset, int yOffset) const {
-			if (xOffset<0 || xOffset>=getTilesWide() || yOffset<0 || yOffset>=getTilesHigh()) {
+			const MapObjectTile *tile=getTileData(xOffset, yOffset);
+			if (tile==NULL) {
 				HitMask emptyMask;
 				return emptyMask;
-			} else
-				return tileData[xOffset+yOffset*getTilesWide()]->hitmask;
+			}
+
+			return tile->hitmask;
 		}
 
 		HitMask MapObject::getHitMaskByCoord(const CoordVec &vec) const {
@@ -134,11 +127,15 @@ namespace Engine {
 			pos=gPos;
 		}
 
-		void MapObject::setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask gHitmask) {
+		void MapObject::setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask hitmask) {
 			assert(xOffset<getTilesWide());
 			assert(yOffset<getTilesHigh());
 
-			tileData[xOffset+yOffset*getTilesWide()]->hitmask=gHitmask;
+			MapObjectTile *tile=getTileData(xOffset, yOffset);
+			if (tile==NULL)
+				return;
+
+			tile->hitmask=hitmask;
 		}
 
 		void MapObject::setMovementModeStatic(void) {
@@ -154,6 +151,20 @@ namespace Engine {
 			assert(angle<CoordAngleNB);
 
 			textureIds[angle]=textureId;
+		}
+
+		MapObjectTile * MapObject::getTileData(int x, int y) {
+			if (x<0 || x>=getTilesWide() || y<0 || y>=getTilesHigh())
+				return NULL;
+
+			return &tileData[x][y];
+		}
+
+		const MapObjectTile *MapObject::getTileData(int x, int y) const {
+			if (x<0 || x>=getTilesWide() || y<0 || y>=getTilesHigh())
+				return NULL;
+
+			return &tileData[x][y];
 		}
 	};
 };

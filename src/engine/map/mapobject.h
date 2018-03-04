@@ -19,16 +19,14 @@ namespace Engine {
 			CoordVec delta;
 		};
 
-		class MapObjectTile {
-		public:
-			MapObjectTile();
-			~MapObjectTile();
-
+		struct MapObjectTile {
 			HitMask hitmask;
 		};
 
 		class MapObject {
 		public:
+			static const unsigned maxTileWidth=8, maxTileHeight=8;
+
 			MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh); // pos is top left corner
 			~MapObject();
 
@@ -58,8 +56,10 @@ namespace Engine {
 			CoordAngle angle;
 			CoordVec pos;
 			unsigned tilesWide, tilesHigh;
-			MapObjectTile **tileData;
+			MapObjectTile tileData[maxTileWidth][maxTileHeight];
 			MapObjectMovementMode movementMode;
+			MapTexture::Id textureIds[CoordAngleNB];
+
 			union MovementData {
 				MapObjectMovementModeConstantVelocity constantVelocity;
 
@@ -67,7 +67,8 @@ namespace Engine {
 				~MovementData() {};
 			} movementData;
 
-			MapTexture::Id textureIds[CoordAngleNB];
+			MapObjectTile *getTileData(int x, int y);
+			const MapObjectTile *getTileData(int x, int y) const;
 		};
 	};
 };
