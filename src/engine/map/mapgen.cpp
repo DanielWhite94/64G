@@ -76,10 +76,8 @@ namespace Engine {
 					if (tile->getHeight()<seaLevel)
 						continue;
 
-					// Drop particle or not randomly based on precipitation.
-					double precipitation=(precipitationNoise.eval(tileX, tileY)+1.0)/2.0;
-					if (precipitation>Util::randFloatInInterval(0.0, 1.0))
-						dropParticle(tileX, tileY);
+					// Drop particle.
+					dropParticle(tileX, tileY);
 				}
 
 				// Call progress functor (if needed).

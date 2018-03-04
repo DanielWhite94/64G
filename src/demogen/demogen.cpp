@@ -31,7 +31,6 @@ typedef struct {
 
 	FbnNoise *heightNoise;
 	FbnNoise *temperatureNoise;
-	NoiseArray *precipitationNoise;
 
 	// These are computed after ground water/land modify tiles stage.
 	unsigned long long landCount, waterCount, totalCount;
@@ -346,8 +345,6 @@ int main(int argc, char **argv) {
 	// Create noise.
 	mapData.heightNoise=new FbnNoise(17, 8, 1.0/(8.0*1024.0));
 	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0);
-	mapData.precipitationNoise=new NoiseArray(23, mapData.width, mapData.height, 1024, 1024, 1024.0, 16, 8, &noiseArrayProgressFunctorString, (void *)"Generating precipiation noise ");
-	printf("\n");
 
 	// Run init modify tiles function.
 	const char *progressStringInit="Initializing tiles ";
@@ -356,7 +353,7 @@ int main(int argc, char **argv) {
 
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
-	MapGen::RiverGen riverGen(mapData.map, *mapData.precipitationNoise, demogenSeaLevelFactor*6000.0);
+	MapGen::RiverGen riverGen(mapData.map, demogenSeaLevelFactor*6000.0);
 	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
@@ -389,8 +386,6 @@ int main(int argc, char **argv) {
 	mapData.heightNoise=NULL;
 	delete mapData.temperatureNoise;
 	mapData.temperatureNoise=NULL;
-	delete mapData.precipitationNoise;
-	mapData.precipitationNoise=NULL;
 
 	// Compute more map data.
 	if (mapData.totalCount>0)
