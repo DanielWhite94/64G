@@ -396,6 +396,10 @@ namespace Engine {
 				for(vec.x=oldVec1.x; vec.x<=oldVec2.x; vec.x+=Physics::CoordsPerTile)
 					getTileAtCoordVec(vec, GetTileFlag::Dirty)->removeObject(object);
 
+			// Remove from old region.
+			MapRegion *oldRegion=getRegionAtCoordVec(oldVec1, false);
+			oldRegion->disownObject(object);
+
 			// Move object.
 			double angle=(180.0/M_PI)*Util::angleFromXYToXY(object->getCoordTopLeft().x, object->getCoordTopLeft().y, newPos.x, newPos.y);
 
@@ -455,6 +459,9 @@ namespace Engine {
 					for(vec.x=oldVec1.x; vec.x<=oldVec2.x; vec.x+=Physics::CoordsPerTile)
 						getTileAtCoordVec(vec, GetTileFlag::Dirty)->addObject(object);
 
+				// Add to old region.
+				oldRegion->ownObject(object);
+
 				return false;
 			}
 
@@ -462,6 +469,10 @@ namespace Engine {
 			for(vec.y=newVec1.y; vec.y<=newVec2.y; vec.y+=Physics::CoordsPerTile)
 				for(vec.x=newVec1.x; vec.x<=newVec2.x; vec.x+=Physics::CoordsPerTile)
 					getTileAtCoordVec(vec, GetTileFlag::Dirty)->addObject(object);
+
+			// Add to new region.
+			MapRegion *newRegion=getRegionAtCoordVec(newVec1, false);
+			newRegion->ownObject(object);
 
 			return result;
 		}
