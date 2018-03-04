@@ -42,8 +42,10 @@ namespace Engine {
 		MapObject mapObject;
 		while(mapObject.load(regionFile)) {
 			MapObject *newObject=new MapObject(mapObject);
-			result&=addObject(newObject);
-			// TODO: Fix memory leak here.
+			if (!addObject(newObject)) {
+				delete newObject;
+				result=false;
+			}
 		}
 
 		// Close region file.
