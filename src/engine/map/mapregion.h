@@ -45,6 +45,8 @@ namespace Engine {
 			MapTile::FileData tileFileData[tilesHigh][tilesWide];
 
 			std::vector<MapObject *> objects;
+
+			bool saveObjects(FILE *regionFile);
 		};
 	};
 };

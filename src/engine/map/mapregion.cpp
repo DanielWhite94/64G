@@ -49,11 +49,17 @@ namespace Engine {
 		char regionFilePath[1024]; // TODO: Prevent overflows.
 		sprintf(regionFilePath, "%s/%u,%u", regionsDirPath, regionX, regionY);
 		FILE *regionFile=fopen(regionFilePath, "w");
+		if (regionFile==NULL)
+			return false;
 
-		// Save all tiles.
+		bool result=true;
+
+		// Save tiles.
 		size_t tileCount=tilesWide*tilesHigh;
+		result&=(fwrite(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
 
-		bool result=(fwrite(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
+		// Save objects.
+		result&=saveObjects(regionFile);
 
 		// Close file.
 		fclose(regionFile);
@@ -63,6 +69,16 @@ namespace Engine {
 			isDirty=false;
 
 		return result;
+	}
+
+	bool MapRegion::saveObjects(FILE *regionFile) {
+		assert(regionFile!=NULL);
+
+		for(auto const *object: objects)
+			if (!object->save(regionFile))
+				return false;
+
+		return true;
 	}
 
 	MapTile *MapRegion::getTileAtCoordVec(const CoordVec &vec) {

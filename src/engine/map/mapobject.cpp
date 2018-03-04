@@ -35,6 +35,14 @@ namespace Engine {
 		MapObject::~MapObject() {
 		}
 
+		bool MapObject::save(FILE *file) const {
+			assert(file!=NULL);
+
+			// TODO: this
+
+			return true;
+		}
+
 		CoordVec MapObject::tick(void) {
 			switch(movementMode) {
 				case MapObjectMovementMode::Static:

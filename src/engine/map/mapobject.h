@@ -1,6 +1,7 @@
 #ifndef ENGINE_MAP_MAPOBJECT_H
 #define ENGINE_MAP_MAPOBJECT_H
 
+#include <cstdio>
 #include "./maptexture.h"
 #include "../physics/coord.h"
 #include "../physics/hitmask.h"
@@ -30,6 +31,8 @@ namespace Engine {
 		public:
 			MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh); // pos is top left corner
 			~MapObject();
+
+			bool save(FILE *file) const;
 
 			CoordVec tick(void); // Returns movement delta for this tick.
 
