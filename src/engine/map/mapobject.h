@@ -27,6 +27,7 @@ namespace Engine {
 		public:
 			static const unsigned maxTileWidth=8, maxTileHeight=8;
 
+			MapObject();
 			MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh); // pos is top left corner
 			~MapObject();
 
