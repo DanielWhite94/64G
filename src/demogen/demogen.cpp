@@ -182,21 +182,21 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 
 	// Choose parameters.
 	const double temperateThreshold=0.6;
-	const double rainforestThreshold=0.7;
+	const double hotThreshold=0.7;
 
 	assert(0.0<=temperateThreshold);
-	assert(temperateThreshold<=rainforestThreshold);
-	assert(rainforestThreshold<=1.0);
+	assert(temperateThreshold<=hotThreshold);
+	assert(hotThreshold<=1.0);
 
-	// Grab tile and moisture.
+	// Grab tile and temperature.
 	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
 	if (tile==NULL)
 		return;
 
-	const double moisture=tile->getMoisture();
+	const double temperature=tile->getTemperature();
 
-	// Not enough moisture to support anything?
-	if (moisture<temperateThreshold)
+	// Not enough temperature to support anything?
+	if (temperature<temperateThreshold)
 		return;
 
 	// Random chance of a 'tree'.
@@ -217,7 +217,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	// Choose new texture.
 	MapTexture::Id textureId=MapGen::TextureIdNone;
 
-	if (moisture<rainforestThreshold) {
+	if (temperature<hotThreshold) {
 		const double probabilities[]={0.3,0.2,0.2,0.2,0.1};
 		unsigned index=Util::chooseWithProb(probabilities, sizeof(probabilities)/sizeof(probabilities[0]));
 		textureId=MapGen::TextureIdGrass1+index;
@@ -240,16 +240,15 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 
 	const DemogenMapData *mapData=(const DemogenMapData *)userData;
 
-	// Grab tile and moisture.
+	// Grab tile and temperature.
 	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
 	if (tile==NULL)
 		return;
 
-	double moisture=tile->getMoisture();
-	assert(moisture>=0.0 & moisture<=1.0);
+	double temperature=tile->getTemperature();
 
-	// Not enough moisture to support a forest?
-	if (moisture<0.7)
+	// Not enough temperature to support a forest?
+	if (temperature<0.7)
 		return;
 
 	// Random chance of a tree.
