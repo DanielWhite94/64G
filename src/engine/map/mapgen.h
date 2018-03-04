@@ -90,6 +90,7 @@ namespace Engine {
 				Tree1,
 				Tree2,
 				Bush,
+				Sheep,
 			};
 
 			struct GenerateBinaryNoiseModifyTilesData {

@@ -612,6 +612,35 @@ namespace Engine {
 
 					return object;
 				} break;
+				case BuiltinObject::Sheep: {
+					// Create hitmask.
+					const char hitmaskStr[64+1]=
+						"________"
+						"________"
+						"_######_";
+						"_######_";
+						"_######_";
+						"_######_";
+						"_######_";
+						"_######_";
+					HitMask hitmask(hitmaskStr);
+
+					// Create object.
+					MapObject *object=new MapObject(rotation, pos, 1, 1);
+					object->setHitMaskByTileOffset(0, 0, hitmask);
+					object->setTextureIdForAngle(CoordAngle0, TextureIdSheep);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdSheep);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdSheep);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdSheep);
+
+					// Add object to map.
+					if (!map->addObject(object)) {
+						delete object;
+						return NULL;
+					}
+
+					return object;
+				} break;
 			}
 
 			assert(false);
