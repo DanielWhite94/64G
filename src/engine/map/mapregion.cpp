@@ -42,6 +42,7 @@ namespace Engine {
 		MapObject mapObject;
 		while(mapObject.load(regionFile)) {
 			MapObject *newObject=new MapObject(mapObject);
+
 			if (!addObject(newObject)) {
 				delete newObject;
 				result=false;
@@ -174,7 +175,7 @@ namespace Engine {
 			}
 
 		// Add to object list.
-		objects.push_back(object);
+		ownObject(object);
 
 		// Add to tiles.
 		for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
@@ -185,5 +186,33 @@ namespace Engine {
 		isDirty=true;
 
 		return true;
+	}
+
+	void MapRegion::ownObject(MapObject *object) {
+		assert(object!=NULL);
+
+		// TODO: Check if we already own the object.
+
+		// Add object to list.
+		objects.push_back(object);
+
+		// Mark region dirty.
+		isDirty=true;
+	}
+
+	void MapRegion::disownObject(MapObject *object) {
+		assert(object!=NULL);
+
+		// TODO: Check we already own the object before marking dirty.
+
+		for(std::vector<MapObject *>::iterator iter=objects.begin(); iter!=objects.end(); ++iter) {
+			if (*iter==object) {
+				objects.erase(iter);
+				break;
+			}
+		}
+
+		// Mark region dirty.
+		isDirty=true;
 	}
 };

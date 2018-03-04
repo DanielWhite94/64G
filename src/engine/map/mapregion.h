@@ -36,6 +36,8 @@ namespace Engine {
 			void tick(void);
 
 			bool addObject(MapObject *object);
+			void ownObject(MapObject *object);
+			void disownObject(MapObject *object);
 
 			const unsigned regionX, regionY;
 		private:
