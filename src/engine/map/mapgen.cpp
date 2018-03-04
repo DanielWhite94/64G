@@ -295,6 +295,42 @@ namespace Engine {
 			}
 		}
 
+		void mapGenPrintTime(Util::TimeMs timeMs) {
+			const Util::TimeMs minuteFactor=60;
+			const Util::TimeMs hourFactor=minuteFactor*60;
+			const Util::TimeMs dayFactor=hourFactor*24;
+
+			// Convert to seconds.
+			timeMs/=1000;
+
+			// Print time.
+			bool output=false;
+
+			if (timeMs>=dayFactor) {
+				Util::TimeMs days=timeMs/dayFactor;
+				timeMs-=days*dayFactor;
+				printf("%llud", days);
+				output=true;
+			}
+
+			if (timeMs>=hourFactor) {
+				Util::TimeMs hours=timeMs/hourFactor;
+				timeMs-=hours*hourFactor;
+				printf("%llih", hours);
+				output=true;
+			}
+
+			if (timeMs>=minuteFactor) {
+				Util::TimeMs minutes=timeMs/minuteFactor;
+				timeMs-=minutes*minuteFactor;
+				printf("%llim", minutes);
+				output=true;
+			}
+
+			if (timeMs>0 || !output)
+				printf("%llis", timeMs);
+		}
+
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(map!=NULL);
 			assert(progress>=0.0 && progress<=1.0);
@@ -306,52 +342,19 @@ namespace Engine {
 			Util::clearConsoleLine();
 
 			// Print start of new line, including users message and the percentage complete.
-			printf("%s%.1f%% ", string, progress*100.0);
+			printf("%s%.3f%% ", string, progress*100.0);
 
 			// Append time elapsed so far.
-			Util::TimeMs remainder=elapsedTimeMs/1000;
-			if (remainder>24*60*60) {
-				Util::TimeMs days=remainder/24*60*60;
-				remainder-=days*24*60*60;
-				printf("%llud", days);
-			}
-			if (remainder>60*60) {
-				Util::TimeMs hours=remainder/60*60;
-				remainder-=hours*60*60;
-				printf("%lluh", hours);
-			}
-			if (remainder>60) {
-				Util::TimeMs minutes=remainder/60;
-				remainder-=minutes*60;
-				printf("%llum", minutes);
-			}
-			Util::TimeMs seconds=remainder;
-			printf("%llus", seconds);
+			mapGenPrintTime(elapsedTimeMs);
 
 			// Attempt to compute estimated total time.
-			Util::TimeMs estimatedTimeS;
-			if (progress>=0.0001 && progress<=0.9999 && (estimatedTimeS=elapsedTimeMs/(1000.0*progress))<365llu*24llu*60llu*60llu && estimatedTimeS>0 && estimatedTimeS>elapsedTimeMs/1000) {
-				printf(" (~");
-				Util::TimeMs remainder=estimatedTimeS-elapsedTimeMs/1000;
-				if (remainder>24*60*60) {
-					Util::TimeMs days=remainder/24*60*60;
-					remainder-=days*24*60*60;
-					printf("%llud", days);
+			if (progress>=0.0001 && progress<=0.9999) {
+				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
+				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
+					printf(" (~");
+					mapGenPrintTime(estRemainingTimeMs);
+					printf(" remaining)");
 				}
-				if (remainder>60*60) {
-					Util::TimeMs hours=remainder/60*60;
-					remainder-=hours*60*60;
-					printf("%lluh", hours);
-				}
-				if (remainder>60) {
-					Util::TimeMs minutes=remainder/60;
-					remainder-=minutes*60;
-					printf("%llum", minutes);
-				}
-				Util::TimeMs seconds=remainder;
-				printf("%llus", seconds);
-
-				printf(" remaining)");
 			}
 
 			// Flush output manually (as we are not printing a newline).

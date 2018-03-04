@@ -10,6 +10,7 @@
 
 namespace Engine {
 	namespace Map {
+		void mapGenPrintTime(Util::TimeMs timeMs);
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
