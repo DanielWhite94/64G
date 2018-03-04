@@ -32,9 +32,19 @@ namespace Engine {
 		if (regionFile==NULL)
 			return false;
 
+		bool result=true;
+
 		// Read tile data.
 		size_t tileCount=tilesWide*tilesHigh;
-		bool result=(fread(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
+		result&=(fread(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
+
+		// Read object data.
+		MapObject mapObject;
+		while(mapObject.load(regionFile)) {
+			MapObject *newObject=new MapObject(mapObject);
+			result&=addObject(newObject);
+			// TODO: Fix memory leak here.
+		}
 
 		// Close region file.
 		fclose(regionFile);
