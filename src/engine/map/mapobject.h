@@ -13,10 +13,16 @@ namespace Engine {
 		enum class MapObjectMovementMode {
 			Static,
 			ConstantVelocity,
+			RandomRadius,
 		};
 
 		struct MapObjectMovementModeConstantVelocity {
 			CoordVec delta;
+		};
+
+		struct MapObjectMovementModeRandomRadius {
+			CoordVec centre;
+			CoordComponent radius;
 		};
 
 		struct MapObjectTile {
@@ -54,6 +60,7 @@ namespace Engine {
 			void setHitMaskByTileOffset(unsigned xOffset, unsigned yOffset, HitMask hitmask);
 			void setMovementModeStatic(void);
 			void setMovementModeConstantVelocity(const CoordVec &delta);
+			void setMovementModeRandomRadius(const CoordVec &centre, CoordComponent radius);
 			void setTextureIdForAngle(CoordAngle angle, MapTexture::Id textureId);
 		private:
 			CoordAngle angle;
@@ -65,6 +72,7 @@ namespace Engine {
 
 			union MovementData {
 				MapObjectMovementModeConstantVelocity constantVelocity;
+				MapObjectMovementModeRandomRadius randomRadius;
 
 				MovementData() {};
 				~MovementData() {};

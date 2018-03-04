@@ -85,6 +85,35 @@ namespace Engine {
 				case MapObjectMovementMode::ConstantVelocity:
 					return movementData.constantVelocity.delta;
 				break;
+				case MapObjectMovementMode::RandomRadius: {
+					// Random delay before moving.
+					if (rand()%32!=0)
+						return CoordVec(0,0);
+
+					// Find current position
+					CoordVec currPos=getCoordTopLeft();
+
+					// Randomly move up/down/left/right.
+					for(unsigned trial=0; trial<4; ++trial) {
+						unsigned r=rand()%4;
+
+						CoordVec delta;
+						delta.x=(r==0 ? 1 : 0)+(r==1 ? -1 : 0);
+						delta.y=(r==2 ? 1 : 0)+(r==3 ? -1 : 0);
+
+						CoordComponent speed=CoordsPerTile/3;
+						delta.x*=speed;
+						delta.y*=speed;
+
+						CoordVec newPos=currPos+delta;
+
+						if (abs(newPos.x-currPos.x)<=movementData.randomRadius.radius &&
+						    abs(newPos.y-currPos.y)<=movementData.randomRadius.radius)
+						    return delta;
+					}
+
+					return CoordVec(0,0);
+				} break;
 			}
 
 			assert(false);
@@ -188,6 +217,12 @@ namespace Engine {
 		void MapObject::setMovementModeConstantVelocity(const CoordVec &delta) {
 			movementMode=MapObjectMovementMode::ConstantVelocity;
 			movementData.constantVelocity.delta=delta;
+		}
+
+		void MapObject::setMovementModeRandomRadius(const CoordVec &centre, CoordComponent radius) {
+			movementMode=MapObjectMovementMode::RandomRadius;
+			movementData.randomRadius.centre=centre;
+			movementData.randomRadius.radius=radius;
 		}
 
 		void MapObject::setTextureIdForAngle(CoordAngle angle, MapTexture::Id textureId) {
