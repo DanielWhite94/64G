@@ -29,7 +29,16 @@ namespace Engine {
 		bool MapObject::save(FILE *file) const {
 			assert(file!=NULL);
 
-			// TODO: this
+			bool result=true;
+
+			result&=(fwrite(&angle, sizeof(angle), 1, file)==1);
+			result&=(fwrite(&pos, sizeof(pos), 1, file)==1);
+			result&=(fwrite(&tilesWide, sizeof(tilesWide), 1, file)==1);
+			result&=(fwrite(&tilesHigh, sizeof(tilesHigh), 1, file)==1);
+			result&=(fwrite(&tileData, sizeof(tileData), 1, file)==1);
+			result&=(fwrite(&movementMode, sizeof(movementMode), 1, file)==1);
+			result&=(fwrite(&textureIds, sizeof(textureIds), 1, file)==1);
+			result&=(fwrite(&movementData, sizeof(movementData), 1, file)==1);
 
 			return true;
 		}
