@@ -57,7 +57,7 @@ namespace Engine {
 			result&=(fread(&textureIds, sizeof(textureIds), 1, file)==1);
 			result&=(fread(&movementData, sizeof(movementData), 1, file)==1);
 
-			return true;
+			return result;
 		}
 
 		bool MapObject::save(FILE *file) const {
