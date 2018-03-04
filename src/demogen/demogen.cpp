@@ -403,11 +403,9 @@ int main(int argc, char **argv) {
 	printf("	People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add towns.
-	/*
 	printf("Adding towns...\n");
 	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerDecoration, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
 	printf("\n");
-	*/
 
 	// Save map.
 	if (!mapData.map->save()) {
