@@ -303,7 +303,13 @@ void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 
 	// Add object.
 	CoordVec pos(x*CoordsPerTile, y*CoordsPerTile);
-	MapGen::addBuiltinObject(map, MapGen::BuiltinObject::Sheep, CoordAngle0, pos);
+	MapObject *sheep=MapGen::addBuiltinObject(map, MapGen::BuiltinObject::Sheep, CoordAngle0, pos);
+	sheep->setMovementModeRandomRadius(pos, 5*CoordsPerTile);
+
+	// Mark region dirty.
+	MapRegion *region=map->getRegionAtCoordVec(pos, false);
+	if (region!=NULL)
+		region->setDirty();
 }
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
@@ -418,7 +424,7 @@ int main(int argc, char **argv) {
 	modifyTilesArray[2].userData=&mapData;
 	*/
 
-	const char *progressStringBiomesForests="Assigning tile textures (biomes and forests) ";
+	const char *progressStringBiomesForests="Assigning tile textures (biomes and forests), and adding animals ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomesForests);
 	printf("\n");
 
