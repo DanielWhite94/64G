@@ -45,6 +45,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 */
+void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
@@ -275,6 +276,36 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 }
 */
 
+void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData!=NULL);
+
+	const DemogenMapData *mapData=(const DemogenMapData *)userData;
+
+	// Grab tile.
+	const MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
+	if (tile==NULL)
+		return;
+
+	// Check layers.
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId<MapGen::TextureIdGrass0 && tile->getLayer(DemoGenTileLayerGround)->textureId>MapGen::TextureIdGrass5)
+		return;
+	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
+		return;
+	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapGen::TextureIdNone)
+		return;
+	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
+		return;
+
+	// Decide whether to place a sheep here.
+	if (rand()%(32*32)!=0)
+		return;
+
+	// Add object.
+	CoordVec pos(x*CoordsPerTile, y*CoordsPerTile);
+	MapGen::addBuiltinObject(map, MapGen::BuiltinObject::Sheep, CoordAngle0, pos);
+}
+
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
 	assert(map!=NULL);
 
@@ -374,10 +405,12 @@ int main(int argc, char **argv) {
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
 	// Run modify tiles for bimomes and forests.
-	size_t modifyTilesArrayCount=1;
+	size_t modifyTilesArrayCount=2;
 	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
 	modifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
 	modifyTilesArray[0].userData=&mapData;
+	modifyTilesArray[1].functor=&demogenGrassSheepModifyTilesFunctor;
+	modifyTilesArray[1].userData=&mapData;
 	/*
 	modifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
 	modifyTilesArray[1].userData=&mapData;
