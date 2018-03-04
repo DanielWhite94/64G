@@ -961,7 +961,9 @@ namespace Engine {
 
 				const int townSize=1000.0*sqrt(townSizeSqKm);
 				const unsigned desiredCount=ceil(initialTownPop/townPop);
-				printf("	attempting to add %u towns, each with pop %.0f, size %.3fkm^2 (%'im per side)\n", desiredCount, townPop, townSizeSqKm, townSize);
+
+				printf("	attempting to add %u towns, each with pop %.0f, size %.3fkm^2 (%'im per side)...", desiredCount, townPop, townSizeSqKm, townSize);
+				fflush(stdout);
 
 				const unsigned attemptMax=desiredCount*64;
 				unsigned addedCount=0;
@@ -985,7 +987,7 @@ namespace Engine {
 					}
 				}
 
-				printf("		added %u\n", addedCount);
+				printf(" managed %u\n", addedCount);
 			}
 
 			return true;
