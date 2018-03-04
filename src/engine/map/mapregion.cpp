@@ -138,10 +138,6 @@ namespace Engine {
 		isDirty=true;
 	}
 
-	void MapRegion::tick(void) {
-		// TODO: this
-	}
-
 	bool MapRegion::addObject(MapObject *object) {
 		assert(object!=NULL);
 

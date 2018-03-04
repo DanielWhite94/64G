@@ -33,20 +33,19 @@ namespace Engine {
 
 			void setDirty(void);
 
-			void tick(void);
-
 			bool addObject(MapObject *object);
 			void ownObject(MapObject *object);
 			void disownObject(MapObject *object);
 
 			const unsigned regionX, regionY;
+
+			std::vector<MapObject *> objects;
 		private:
 			bool isDirty;
 
 			MapTile tileInstances[tilesHigh][tilesWide];
 			MapTile::FileData tileFileData[tilesHigh][tilesWide];
 
-			std::vector<MapObject *> objects;
 
 			bool saveObjects(FILE *regionFile);
 		};

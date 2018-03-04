@@ -280,7 +280,17 @@ namespace Engine {
 		}
 
 		void Map::tick(void) {
-			// TODO: call region tick on each loaded region?
+			// Call region tick on each loaded region.
+			for(unsigned i=0; i<regionsByIndexNext; ++i) {
+				MapRegion *region=regionsByIndex[i]->ptr;
+
+				// TODO: Move this logic into MapRegion itself so that objects list can be made private.
+				// TODO: be careful as objects could be removed from our object list if we move them into a different region
+				for(unsigned i=0; i<region->objects.size(); i++) {
+					CoordVec delta=region->objects[i]->tick();
+					moveObject(region->objects[i], region->objects[i]->getCoordTopLeft()+delta);
+				}
+			}
 		}
 
 		MapTile *Map::getTileAtCoordVec(const CoordVec &vec, GetTileFlag flags) {
