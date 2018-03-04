@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include "mapregion.h"
+#include "../util.h"
 
 using namespace Engine;
 using namespace Engine::Physics;
@@ -106,5 +107,52 @@ namespace Engine {
 
 	void MapRegion::setDirty(void) {
 		isDirty=true;
+	}
+
+	void MapRegion::tick(void) {
+		// TODO: this
+	}
+
+	bool MapRegion::addObject(MapObject *object) {
+		assert(object!=NULL);
+
+		// Compute dimensions.
+		CoordVec vec;
+		CoordVec vec1=object->getCoordTopLeft();
+		CoordVec vec2=object->getCoordBottomRight();
+		vec1.x=Util::floordiv(vec1.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+		vec1.y=Util::floordiv(vec1.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+		vec2.x=Util::floordiv(vec2.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+		vec2.y=Util::floordiv(vec2.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+
+		// Check this object is destined for this region.
+		// TODO: this
+
+		// Test new object is not out-of-bounds nor intersects any existing objects.
+		for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
+			for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile) {
+				// Is there even a tile here?
+				const MapTile *tile=getTileAtCoordVec(vec);
+				if (tile==NULL)
+					return false;
+
+				// Tile too full?
+				if (tile->isObjectsFull())
+					return false;
+
+				// Check for intersections.
+				if (tile->getHitMask(vec) & object->getHitMaskByCoord(vec))
+					return false;
+			}
+
+		// Add to object list.
+		objects.push_back(object);
+
+		// Add to tiles.
+		for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
+			for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
+				getTileAtCoordVec(vec)->addObject(object);
+
+		return true;
 	}
 };

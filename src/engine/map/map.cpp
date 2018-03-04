@@ -280,10 +280,7 @@ namespace Engine {
 		}
 
 		void Map::tick(void) {
-			for(unsigned i=0; i<objects.size(); i++) {
-				CoordVec delta=objects[i]->tick();
-				moveObject(objects[i], objects[i]->getCoordTopLeft()+delta);
-			}
+			// TODO: call region tick on each loaded region?
 		}
 
 		MapTile *Map::getTileAtCoordVec(const CoordVec &vec, GetTileFlag flags) {
@@ -365,41 +362,12 @@ namespace Engine {
 		bool Map::addObject(MapObject *object) {
 			assert(object!=NULL);
 
-			// Compute dimensions.
-			CoordVec vec;
-			CoordVec vec1=object->getCoordTopLeft();
-			CoordVec vec2=object->getCoordBottomRight();
-			vec1.x=Util::floordiv(vec1.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec1.y=Util::floordiv(vec1.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.x=Util::floordiv(vec2.x, Physics::CoordsPerTile)*Physics::CoordsPerTile;
-			vec2.y=Util::floordiv(vec2.y, Physics::CoordsPerTile)*Physics::CoordsPerTile;
+			CoordVec vec=object->getCoordTopLeft();
+			MapRegion *region=getRegionAtCoordVec(vec, false);
+			if (region==NULL)
+				return false;
 
-			// Test new object is not out-of-bounds nor intersects any existing objects.
-			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
-				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile) {
-					// Is there even a tile here?
-					MapTile *tile=getTileAtCoordVec(vec, GetTileFlag::None);
-					if (tile==NULL)
-						return false;
-
-					// Tile too full?
-					if (tile->isObjectsFull())
-						return false;
-
-					// Check for intersections.
-					if (tile->getHitMask(vec) & object->getHitMaskByCoord(vec))
-						return false;
-				}
-
-			// Add to object list.
-			objects.push_back(object);
-
-			// Add to tiles.
-			for(vec.y=vec1.y; vec.y<=vec2.y; vec.y+=Physics::CoordsPerTile)
-				for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
-					getTileAtCoordVec(vec, GetTileFlag::Dirty)->addObject(object);
-
-			return true;
+			return region->addObject(object);
 		}
 
 		bool Map::moveObject(MapObject *object, const CoordVec &newPos) {

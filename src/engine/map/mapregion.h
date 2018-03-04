@@ -1,6 +1,8 @@
 #ifndef ENGINE_GRAPHICS_MAPREGION_H
 #define ENGINE_GRAPHICS_MAPREGION_H
 
+#include <vector>
+
 #include "maptile.h"
 #include "../physics/coord.h"
 
@@ -31,12 +33,18 @@ namespace Engine {
 
 			void setDirty(void);
 
+			void tick(void);
+
+			bool addObject(MapObject *object);
+
 			const unsigned regionX, regionY;
 		private:
 			bool isDirty;
 
 			MapTile tileInstances[tilesHigh][tilesWide];
 			MapTile::FileData tileFileData[tilesHigh][tilesWide];
+
+			std::vector<MapObject *> objects;
 		};
 	};
 };

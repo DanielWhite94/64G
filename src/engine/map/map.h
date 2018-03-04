@@ -80,8 +80,6 @@ namespace Engine {
 			RegionData *regionsByAge[regionsLoadedMax]; // These are pointers into regionsByOffset array.
 			RegionData regionsByOffset[regionsHigh][regionsWide];
 
-			vector<MapObject *> objects;
-
 			MapTexture *textures[MapTexture::IdMax];
 
 			void initclean(void);
