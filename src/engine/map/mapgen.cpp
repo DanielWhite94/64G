@@ -78,6 +78,13 @@ namespace Engine {
 
 					// Drop particle.
 					dropParticle(tileX, tileY);
+
+					// Call progress functor (if needed).
+					if (progressFunctor!=NULL && i%256==0) {
+						double progress=(rI+((double)i)/trials)/regionList.size();
+						Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+						progressFunctor(map, progress, elapsedTimeMs, progressUserData);
+					}
 				}
 
 				// Call progress functor (if needed).
