@@ -14,9 +14,8 @@ namespace Engine {
 		MapObjectTile::~MapObjectTile() {
 		}
 
-		MapObject::MapObject(CoordAngle gAngle, const CoordVec &gPos, unsigned gTilesWide, unsigned gTilesHigh) {
+		MapObject::MapObject(CoordAngle gAngle, const CoordVec &pos, unsigned gTilesWide, unsigned gTilesHigh): pos(pos) {
 			angle=gAngle;
-			pos=gPos;
 			tilesWide=gTilesWide;
 			tilesHigh=gTilesHigh;
 

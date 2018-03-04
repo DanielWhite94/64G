@@ -2,19 +2,6 @@
 
 namespace Engine {
 	namespace Physics {
-		CoordVec::CoordVec() {
-			setX(0);
-			setY(0);
-		}
-
-		CoordVec::CoordVec(CoordComponent gX, CoordComponent gY) {
-			setX(gX);
-			setY(gY);
-		}
-
-		CoordVec::~CoordVec() {
-		}
-
 		CoordComponent CoordVec::getX(void) const {
 			return x;
 		}

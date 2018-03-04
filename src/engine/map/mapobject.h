@@ -57,8 +57,11 @@ namespace Engine {
 			unsigned tilesWide, tilesHigh;
 			MapObjectTile **tileData;
 			MapObjectMovementMode movementMode;
-			struct/*union*/ { // TODO: Fix this (constructor issue).
+			union MovementData {
 				MapObjectMovementModeConstantVelocity constantVelocity;
+
+				MovementData() {};
+				~MovementData() {};
 			} movementData;
 
 			MapTexture::Id textureIds[CoordAngleNB];

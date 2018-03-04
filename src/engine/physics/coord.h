@@ -19,9 +19,9 @@ namespace Engine {
 		public:
 			CoordComponent x, y;
 
-			CoordVec();
-			CoordVec(CoordComponent x, CoordComponent y);
-			~CoordVec();
+			CoordVec(): x(0), y(0) {};
+			CoordVec(CoordComponent x, CoordComponent y): x(x), y(y) {};
+			~CoordVec() {};
 
 			CoordComponent getX(void) const;
 			CoordComponent getY(void) const;
