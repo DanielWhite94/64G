@@ -63,6 +63,8 @@ namespace Engine {
 			if (metadataFile!=NULL) {
 				fread(&minHeight, sizeof(double), 1, metadataFile);
 				fread(&maxHeight, sizeof(double), 1, metadataFile);
+				fread(&minTemperature, sizeof(double), 1, metadataFile);
+				fread(&maxTemperature, sizeof(double), 1, metadataFile);
 				fread(&minMoisture, sizeof(double), 1, metadataFile);
 				fread(&maxMoisture, sizeof(double), 1, metadataFile);
 
@@ -197,6 +199,8 @@ namespace Engine {
 			bool result=true;
 			result&=(fwrite(&minHeight, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&maxHeight, sizeof(double), 1, metadataFile)==1);
+			result&=(fwrite(&minTemperature, sizeof(double), 1, metadataFile)==1);
+			result&=(fwrite(&maxTemperature, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&minMoisture, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&maxMoisture, sizeof(double), 1, metadataFile)==1);
 

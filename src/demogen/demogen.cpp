@@ -363,6 +363,7 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	printf("	Min height %f, max height %f, sea level %f\n", mapData.map->minHeight, mapData.map->maxHeight, demogenSeaLevelFactor*mapData.map->maxHeight);
+	printf("	Min temperature %f, max temperature %f\n", mapData.map->minTemperature, mapData.map->maxTemperature);
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
 	// Run modify tiles for bimomes and forests.

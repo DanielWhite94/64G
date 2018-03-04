@@ -1065,6 +1065,8 @@ namespace Engine {
 			// Update statistics.
 			map->minHeight=std::min(map->minHeight, tile->getHeight());
 			map->maxHeight=std::max(map->maxHeight, tile->getHeight());
+			map->minTemperature=std::min(map->minTemperature, tile->getTemperature());
+			map->maxTemperature=std::max(map->maxTemperature, tile->getTemperature());
 			map->minMoisture=std::min(map->minMoisture, tile->getMoisture());
 			map->maxMoisture=std::max(map->maxMoisture, tile->getMoisture());
 		}
@@ -1075,6 +1077,8 @@ namespace Engine {
 			// Initialize stats.
 			map->minHeight=DBL_MAX;
 			map->maxHeight=DBL_MIN;
+			map->minTemperature=DBL_MAX;
+			map->maxTemperature=DBL_MIN;
 			map->minMoisture=DBL_MAX;
 			map->maxMoisture=DBL_MIN;
 

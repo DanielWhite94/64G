@@ -60,6 +60,7 @@ namespace Engine {
 
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
+			double minTemperature, maxTemperature;
 			double minMoisture, maxMoisture;
 		private:
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
