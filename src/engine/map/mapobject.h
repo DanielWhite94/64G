@@ -31,6 +31,7 @@ namespace Engine {
 			MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh); // pos is top left corner
 			~MapObject();
 
+			bool load(FILE *file);
 			bool save(FILE *file) const;
 
 			CoordVec tick(void); // Returns movement delta for this tick.

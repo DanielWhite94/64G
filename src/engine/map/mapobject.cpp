@@ -41,6 +41,23 @@ namespace Engine {
 		MapObject::~MapObject() {
 		}
 
+		bool MapObject::load(FILE *file) {
+			assert(file!=NULL);
+
+			bool result=true;
+
+			result&=(fread(&angle, sizeof(angle), 1, file)==1);
+			result&=(fread(&pos, sizeof(pos), 1, file)==1);
+			result&=(fread(&tilesWide, sizeof(tilesWide), 1, file)==1);
+			result&=(fread(&tilesHigh, sizeof(tilesHigh), 1, file)==1);
+			result&=(fread(&tileData, sizeof(tileData), 1, file)==1);
+			result&=(fread(&movementMode, sizeof(movementMode), 1, file)==1);
+			result&=(fread(&textureIds, sizeof(textureIds), 1, file)==1);
+			result&=(fread(&movementData, sizeof(movementData), 1, file)==1);
+
+			return true;
+		}
+
 		bool MapObject::save(FILE *file) const {
 			assert(file!=NULL);
 
