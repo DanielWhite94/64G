@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
 	MapGen::RiverGen riverGen(mapData.map, *mapData.precipitationNoise, demogenSeaLevelFactor*6000.0);
-	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/4.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
+	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for next modify tiles calls.

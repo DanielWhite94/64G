@@ -94,7 +94,7 @@ namespace Engine {
 		}
 
 		void MapGen::RiverGen::dropParticle(double xp, double yp) {
-			const double Kq=10, Kw=0.001, Kr=0.9, Kd=0.02, Ki=0.1, minSlope=0.05, Kg=20*2;
+			const double Kq=20, Kw=0.0005, Kr=0.95, Kd=0.02, Ki=0.1/4.0, minSlope=0.03, Kg=20*2;
 
 			#define DEPOSIT(H) \
 				depositAt(xi  , yi  , (1-xf)*(1-yf), ds); \
@@ -124,7 +124,7 @@ namespace Engine {
 			if (h00==DBL_MIN || h01==DBL_MIN || h10==DBL_MIN || h11==DBL_MIN)
 				return; // TODO: think about this
 
-			int maxPathLen=MapRegion::tilesWide+MapRegion::tilesHigh;
+			int maxPathLen=4.0*(MapRegion::tilesWide+MapRegion::tilesHigh);
 			for(int pathLen=0; pathLen<maxPathLen; ++pathLen) {
 				// Increment moisture counter for the current tile.
 				MapTile *tempTile=map->getTileAtOffset(xi, yi, Map::GetTileFlag::None);
