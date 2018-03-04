@@ -18,7 +18,7 @@ namespace Engine {
 
 		static bool isDir(const char *path);
 
-		typedef unsigned long long int TimeMs;
+		typedef long long int TimeMs;
 		static TimeMs getTimeMs(void);
 	};
 };
