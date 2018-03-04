@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
 
 #include "../util.h"
 
@@ -21,6 +22,15 @@ namespace Engine {
 
 			for(unsigned i=0; i<CoordAngleNB; ++i)
 				textureIds[i]=0;
+		}
+
+		MapObject::MapObject(const MapObject &src): angle(src.angle), pos(src.pos), tilesWide(src.tilesWide), tilesHigh(src.tilesHigh) {
+			memcpy(tileData, src.tileData, sizeof(tileData));
+
+			movementMode=src.movementMode;
+			movementData=src.movementData;
+
+			memcpy(textureIds, src.textureIds, sizeof(textureIds));
 		}
 
 		MapObject::MapObject(CoordAngle angle, const CoordVec &pos, unsigned tilesWide, unsigned tilesHigh): angle(angle), pos(pos), tilesWide(tilesWide), tilesHigh(tilesHigh) {
