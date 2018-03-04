@@ -406,6 +406,7 @@ namespace Engine {
 				[TextureIdRiver]="../images/tiles/water.png",
 				[TextureIdHighAlpine]="../images/tiles/highalpine.png",
 				[TextureIdLowAlpine]="../images/tiles/lowalpine.png",
+				[TextureIdSheep]="../images/npcs/sheep/north.png",
 			};
 			int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -446,6 +447,7 @@ namespace Engine {
 				[TextureIdSnow]=4,
 				[TextureIdHighAlpine]=4,
 				[TextureIdLowAlpine]=4,
+				[TextureIdSheep]=8,
 			};
 
 			unsigned textureId;
