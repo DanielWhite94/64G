@@ -10,14 +10,6 @@
 namespace Engine {
 	namespace Map {
 		MapObject::MapObject(): angle(CoordAngle0), tilesWide(0), tilesHigh(0) {
-			HitMask emptyMask;
-			for(unsigned x=0; x<maxTileWidth; ++x)
-				for(unsigned y=0; y<maxTileHeight; ++y) {
-					MapObjectTile *tile=getTileData(x, y);
-					assert(tile!=NULL);
-					tile->hitmask=emptyMask;
-				}
-
 			movementMode=MapObjectMovementMode::Static;
 
 			for(unsigned i=0; i<CoordAngleNB; ++i)
