@@ -181,6 +181,9 @@ namespace Engine {
 			for(vec.x=vec1.x; vec.x<=vec2.x; vec.x+=Physics::CoordsPerTile)
 				getTileAtCoordVec(vec)->addObject(object);
 
+		// Mark region dirty.
+		isDirty=true;
+
 		return true;
 	}
 };
