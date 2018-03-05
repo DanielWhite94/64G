@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 					uint8_t r=0, g=0, b=0;
 
 					const double seaLevelFactor=0.05;
-					const double alpineLevelFactor=0.33;
+					const double alpineLevelFactor=0.7;
 
 					// Standard case.
 					for(int z=MapTile::layersMax-1; z>=0; --z) {
@@ -228,13 +228,13 @@ int main(int argc, char **argv) {
 								double height=tile->getHeight();
 
 								height=std::min(height, map->maxHeight*alpineLevelFactor);
-								height=std::max(height, seaLevelFactor*map->maxHeight*alpineLevelFactor);
+								height=std::max(height, seaLevelFactor*map->maxHeight);
 
 								height=(height-seaLevelFactor*map->maxHeight)/(map->maxHeight*alpineLevelFactor-seaLevelFactor*map->maxHeight);
 
 								double min=0, max=100;
-
-								r=g=220;
+								r=255;
+								g=(layer->textureId==MapGen::TextureIdHotSand ? 102 : 204);
 								b=min+height*(max-min);
 							} break;
 							case MapGen::TextureIdSnow: {
@@ -258,7 +258,11 @@ int main(int argc, char **argv) {
 
 								height=(height-alpineLevelFactor*map->maxHeight)/(map->maxHeight-alpineLevelFactor*map->maxHeight);
 
-								double min=128, max=255;
+								double min=127, max=255;
+								if (layer->textureId==MapGen::TextureIdHighAlpine) {
+									min/=2;
+									max/=2;
+								}
 
 								r=g=b=min+height*(max-min);
 							} break;

@@ -15,7 +15,7 @@ using namespace Engine;
 using namespace Engine::Map;
 
 const double demogenSeaLevelFactor=0.05;
-const double demogenAlpineLevelFactor=0.33;
+const double demogenAlpineLevelFactor=0.7;
 
 enum DemoGenTileLayer {
 	DemoGenTileLayerGround,
@@ -77,13 +77,6 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 	double adjustedHeight=0.0; // TODO: This
 
 	double temperature=(4*adjustedPoleDistance+2*adjustedHeight+2*temperatureRandomOffset)/8;
-	assert(temperature>=-1.0 && temperature<=1.0);
-
-	temperature=2*temperature+2.0/3; // HACK to get reasonable range.
-	if (temperature<-1.0)
-		temperature=-1.0;
-	if (temperature>1.0)
-		temperature=1.0;
 
 	// Update tile.
 	tile->setHeight(height);
@@ -127,34 +120,36 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		}
 
 		// land
-		const double temperatureThreshold=0.5;
-		const double temperatureThreshold2=0.8;
-		if (temperature<=temperatureThreshold) {
+		const double coldThresholdFactor=0.5;
+		const double hotThresholdFactor=0.7;
+		const double coldThreshold=map->minTemperature+coldThresholdFactor*(map->maxTemperature-map->minTemperature);
+		const double hotThreshold=map->minTemperature+hotThresholdFactor*(map->maxTemperature-map->minTemperature);
+		if (temperature<=coldThreshold) {
 			// between snow and grass
 			idA=MapGen::TextureIdSnow;
 			idB=MapGen::TextureIdGrass0;
-			factor=(temperature+1)/(temperatureThreshold+1);
-		} else if (temperature<=temperatureThreshold2) {
-			// between grass and sand
+			factor=(temperature-map->minTemperature)/(coldThreshold-map->minTemperature);
+		} else if (temperature<=hotThreshold) {
+			// grass
 			idA=MapGen::TextureIdGrass0;
-			idB=MapGen::TextureIdSand;
-			factor=(temperature-temperatureThreshold)/(temperatureThreshold2-temperatureThreshold);
+			idB=MapGen::TextureIdGrass0;
+			factor=(temperature-coldThreshold)/(hotThreshold-coldThreshold);
 		} else {
 			// between sand and hot sand
 			idA=MapGen::TextureIdSand;
 			idB=MapGen::TextureIdHotSand;
-			factor=(temperature-temperatureThreshold2)/(1.0-temperatureThreshold2);
-
-			double skewThreshold=0.7; // >0.5 shifts towards idA
+			factor=(temperature-hotThreshold)/(map->maxTemperature-hotThreshold);
+			double skewThreshold=0.5; // >0.5 shifts towards idA
 			factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 		}
+
 	} else {
 		// alpine
 		idA=MapGen::TextureIdLowAlpine;
 		idB=MapGen::TextureIdHighAlpine;
 		factor=(height-demogenAlpineLevelFactor*map->maxHeight)/(map->maxHeight-demogenAlpineLevelFactor*map->maxHeight);
 
-		double skewThreshold=0.2; // >0.5 shifts towards idA
+		double skewThreshold=0.75; // >0.5 shifts towards idA
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 	}
 	assert(factor>=0.0 && factor<=1.0);
