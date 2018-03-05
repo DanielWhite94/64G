@@ -14,6 +14,8 @@ namespace Engine {
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
+		void mapGenNArySearchHeightModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+
 		struct MapGenRoad {
 			int x0, y0, x1, y1;
 			int trueX1, trueY1;
@@ -150,6 +152,14 @@ namespace Engine {
 				unsigned chimneyOffset;
 			};
 
+			struct NArySearchHeightData {
+				class Map *map;
+
+				double sampleMin, sampleMax, sampleRange;
+				int sampleCount;
+				long long int *sampleTally, sampleTotal;
+			};
+
 			class RiverGen {
 			public:
 				RiverGen(Map *map, double seaLevel): map(map), seaLevel(seaLevel) {};
@@ -183,6 +193,11 @@ namespace Engine {
 
 			static void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData);
 			static void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, MapGen::ModifyTilesManyEntry functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData);
+
+			static double narySearchHeight(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, int iterMax, double epsilon); // Returns (approximate) height value for which threshold fraction of the tiles in the given region are lower than.
+			// TODO: Make map const. Currently restricted by dependency on modifyTiles
+			static int narySearchHeightHeightToSample(const NArySearchHeightData *data, double height);
+			static double narySearchHeightSampleToHeight(const NArySearchHeightData *data, int sample);
 
 			static void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesProgress *progressFunctor, void *progressUserData); // Updates map's min/maxHeight and other such fields.
 		private:

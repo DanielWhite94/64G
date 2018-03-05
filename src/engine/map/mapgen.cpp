@@ -1130,5 +1130,108 @@ namespace Engine {
 			// Use modifyTiles with a read-only functor.
 			modifyTiles(map, x, y, width, height, &mapGenRecalculateStatsModifyTilesFunctor, NULL, progressFunctor, progressUserData);
 		}
+
+		double MapGen::narySearchHeight(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, int iterMax, double epsilon) {
+			assert(map!=NULL);
+			assert(n>0);
+			assert(0.0<=threshold<=1.0);
+
+			// Initialize data struct.
+			NArySearchHeightData data;
+			data.map=map;
+			data.sampleCount=n;
+			data.sampleTally=(long long int *)malloc(sizeof(long long int)*data.sampleCount); // TODO: Check return.
+			data.sampleMin=map->minHeight;
+			data.sampleMax=map->maxHeight;
+
+			// Loop, running iterations up to the maximum.
+			for(int iter=0; iter<iterMax; ++iter) {
+				assert(data.sampleMax>=data.sampleMin);
+
+				// Update data struct for this iteration.
+				data.sampleRange=data.sampleMax-data.sampleMin;
+				for(int i=0; i<data.sampleCount; ++i)
+					data.sampleTally[i]=0;
+				data.sampleTotal=0;
+
+				// Have we hit desired accuracy?
+				if (data.sampleRange/2.0<=epsilon)
+					break;
+
+				// Run data collection functor.
+				char progressString[1024];
+				sprintf(progressString, "	height search %i/%i - interval [%f, %f] (range %f): ", iter, iterMax, data.sampleMin, data.sampleMax, data.sampleRange);
+				modifyTiles(data.map, x, y, width, height, &mapGenNArySearchHeightModifyTilesFunctor, &data, &mapGenModifyTilesProgressString, (void *)progressString);
+				printf("\n");
+
+				// Update min/max based on collected data.
+				// TODO: this can be improved by looping to find window which contains the fraction we want, then updating min/max together and breaking
+				double newSampleMin=data.sampleMin;
+				double newSampleMax=data.sampleMax;
+				int sampleIndex;
+				for(sampleIndex=0; sampleIndex<data.sampleCount; ++sampleIndex) {
+					double fraction=data.sampleTally[sampleIndex]/((double)data.sampleTotal);
+					double sampleHeight=narySearchHeightSampleToHeight(&data, sampleIndex);
+					if (fraction>threshold)
+						newSampleMin=std::max(newSampleMin, sampleHeight);
+					if (fraction<threshold)
+						newSampleMax=std::min(newSampleMax, sampleHeight);
+				}
+				data.sampleMin=newSampleMin;
+				data.sampleMax=newSampleMax;
+			}
+
+			// Tidy up.
+			free(data.sampleTally);
+
+			// Return midpoint of interval.
+			return (data.sampleMin+data.sampleMax)/2.0;
+		}
+
+		int MapGen::narySearchHeightHeightToSample(const NArySearchHeightData *data, double height) {
+			assert(data!=NULL);
+
+			// TODO: We can presumably optimise this to avoid calling narySearchHeightSampleToHeight twice.
+
+			// Check height is in range.
+			if (height<narySearchHeightSampleToHeight(data, 0))
+				return -1;
+
+			if (height>=narySearchHeightSampleToHeight(data, data->sampleCount-1))
+				return data->sampleCount-1;
+
+			// Determine which sample bucket this height falls into.
+			int result=floor(((height-data->sampleMin)/data->sampleRange)*(data->sampleCount+1.0)-1.0);
+			assert(result>=0 && result<data->sampleCount);
+			return result;
+		}
+
+		double MapGen::narySearchHeightSampleToHeight(const NArySearchHeightData *data, int sample) {
+			assert(data!=NULL);
+			assert(sample>=0 && sample<data->sampleCount);
+
+			return data->sampleMin+data->sampleRange*((sample+1.0)/(data->sampleCount+1.0));
+		}
+
+		void mapGenNArySearchHeightModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			MapGen::NArySearchHeightData *data=(MapGen::NArySearchHeightData *)userData;
+
+			// Grab tile.
+			const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
+			if (tile==NULL)
+				return;
+
+			// Compute sample index.
+			double height=tile->getHeight();
+			int sample=MapGen::narySearchHeightHeightToSample(data, height);
+
+			// Update tally array.
+			for(int i=0; i<=sample; ++i)
+				++data->sampleTally[i];
+			++data->sampleTotal;
+		}
 	};
 };
