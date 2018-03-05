@@ -33,10 +33,10 @@ typedef struct {
 	FbnNoise *temperatureNoise;
 
 	// These are computed after ground water/land modify tiles stage.
-	unsigned long long landCount, waterCount, totalCount;
+	unsigned long long landCount, waterCount, arableCount, totalCount; // with arableCount<=landCount
 	double landFraction;
 
-	double landSqKm, peoplePerSqKm, totalPopulation;
+	double landSqKm, arableSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
 void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
@@ -171,6 +171,8 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		++mapData->waterCount;
 	else
 		++mapData->landCount;
+	if (textureId>=MapGen::TextureIdGrass0 && textureId<=MapGen::TextureIdGrass5)
+		++mapData->arableCount;
 	++mapData->totalCount;
 }
 
@@ -349,6 +351,7 @@ int main(int argc, char **argv) {
 	    .height=0,
 	    .landCount=0,
 	    .waterCount=0,
+	    .arableCount=0,
 	    .totalCount=0,
 	    .landFraction=0.0,
 	    .landSqKm=0.0,
@@ -441,11 +444,12 @@ int main(int argc, char **argv) {
 		mapData.landFraction=0.0;
 
 	mapData.landSqKm=mapData.landCount/(1000.0*1000.0);
+	mapData.arableSqKm=mapData.arableCount/(1000.0*1000.0);
 	mapData.peoplePerSqKm=150.0;
-	mapData.totalPopulation=mapData.landSqKm*mapData.peoplePerSqKm;
+	mapData.totalPopulation=mapData.arableSqKm*mapData.peoplePerSqKm;
 
 	setlocale(LC_NUMERIC, "");
-	printf("	Land %'.1fkm^2, water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
+	printf("	Land %'.1fkm^2 (of which %'.1fkm^2 is arable), water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.arableSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
 	printf("	People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
 	// Add towns.
