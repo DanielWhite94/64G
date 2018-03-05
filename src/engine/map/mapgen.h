@@ -162,7 +162,7 @@ namespace Engine {
 
 			class RiverGen {
 			public:
-				RiverGen(Map *map, double seaLevel): map(map), seaLevel(seaLevel) {};
+				RiverGen(Map *map): map(map) {}; // Requires the map have seaLevel set.
 				~RiverGen() {};
 
 				void dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times.
@@ -170,7 +170,6 @@ namespace Engine {
 
 			private:
 				Map *map;
-				double seaLevel;
 
 				double hMap(int x, int y, double unknownValue); // Returns height of tile at (x,y), returning unknownValue if tile is out of bounds or could not be loaded.
 				void depositAt(int x, int y, double w, double ds); // Adjusts the height of a tile at the given (x,y). Does nothing if the tile is out of bounds or could not be loaded.

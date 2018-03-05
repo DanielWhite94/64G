@@ -73,7 +73,7 @@ namespace Engine {
 						continue;
 
 					// Ocean tile?
-					if (tile->getHeight()<seaLevel)
+					if (tile->getHeight()<=map->seaLevel)
 						continue;
 
 					// Drop particle.
@@ -123,8 +123,8 @@ namespace Engine {
 			double h10=hMap(xi+1, yi, DBL_MIN);
 			double h11=hMap(xi+1, yi+1, DBL_MIN);
 
-			if (h<0.0)
-				return; // TODO: Use proper sea level?
+			if (h<=map->seaLevel)
+				return;
 
 			if (h00==DBL_MIN || h01==DBL_MIN || h10==DBL_MIN || h11==DBL_MIN)
 				return; // TODO: think about this
@@ -174,8 +174,8 @@ namespace Engine {
 
 				double nh=(nh00*(1-nxf)+nh10*nxf)*(1-nyf)+(nh01*(1-nxf)+nh11*nxf)*nyf;
 
-				if (nh<0.0)
-					return; // TODO: Use proper sea level?
+				if (nh<=map->seaLevel)
+					return;
 
 				// if higher than current, try to deposit sediment up to neighbour height
 				if (nh>=h) {

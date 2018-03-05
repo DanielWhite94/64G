@@ -62,6 +62,9 @@ namespace Engine {
 			double minHeight, maxHeight;
 			double minTemperature, maxTemperature;
 			double minMoisture, maxMoisture;
+
+			// These are similar but are not covered by the above function.
+			double seaLevel, alpineLevel;
 		private:
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 

@@ -130,9 +130,6 @@ int main(int argc, char **argv) {
 					// Choose colour (based on topmost layer with a texture set).
 					uint8_t r=0, g=0, b=0;
 
-					const double seaLevelFactor=0.05;
-					const double alpineLevelFactor=0.7;
-
 					// Standard case.
 					for(int z=MapTile::layersMax-1; z>=0; --z) {
 						const MapTile::Layer *layer=tile->getLayer(z);
@@ -156,10 +153,10 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdGrass5: {
 								double height=tile->getHeight();
 
-								height=std::min(height, map->maxHeight*alpineLevelFactor);
-								height=std::max(height, seaLevelFactor*map->maxHeight*alpineLevelFactor);
+								height=std::min(height, map->alpineLevel);
+								height=std::max(height, map->seaLevel);
 
-								height=(height-seaLevelFactor*map->maxHeight)/(map->maxHeight*alpineLevelFactor-seaLevelFactor*map->maxHeight);
+								height=(height-map->seaLevel)/(map->alpineLevel-map->seaLevel);
 
 								double min=64, max=255;
 
@@ -185,10 +182,10 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdDeepWater: {
 								double height=tile->getHeight();
 
-								height=std::min(height, seaLevelFactor*map->maxHeight);
+								height=std::min(height, map->seaLevel);
 								height=std::max(height, map->minHeight);
 
-								height=(height-map->minHeight)/(seaLevelFactor*map->maxHeight-map->minHeight);
+								height=(height-map->minHeight)/(map->seaLevel-map->minHeight);
 
 								double min=64, max=196;
 
@@ -227,10 +224,10 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdHotSand: {
 								double height=tile->getHeight();
 
-								height=std::min(height, map->maxHeight*alpineLevelFactor);
-								height=std::max(height, seaLevelFactor*map->maxHeight);
+								height=std::min(height, map->alpineLevel);
+								height=std::max(height, map->seaLevel);
 
-								height=(height-seaLevelFactor*map->maxHeight)/(map->maxHeight*alpineLevelFactor-seaLevelFactor*map->maxHeight);
+								height=(height-map->seaLevel)/(map->alpineLevel-map->seaLevel);
 
 								double min=0, max=100;
 								r=255;
@@ -241,9 +238,9 @@ int main(int argc, char **argv) {
 								double height=tile->getHeight();
 
 								height=std::min(height, map->maxHeight);
-								height=std::max(height, seaLevelFactor*map->maxHeight);
+								height=std::max(height, map->seaLevel);
 
-								height=(height-seaLevelFactor*map->maxHeight)/(map->maxHeight-seaLevelFactor*map->maxHeight);
+								height=(height-map->seaLevel)/(map->maxHeight-map->seaLevel);
 
 								double min=196, max=255;
 
@@ -254,9 +251,9 @@ int main(int argc, char **argv) {
 								double height=tile->getHeight();
 
 								height=std::min(height, map->maxHeight);
-								height=std::max(height, alpineLevelFactor*map->maxHeight);
+								height=std::max(height, map->alpineLevel);
 
-								height=(height-alpineLevelFactor*map->maxHeight)/(map->maxHeight-alpineLevelFactor*map->maxHeight);
+								height=(height-map->alpineLevel)/(map->maxHeight-map->alpineLevel);
 
 								double min=127, max=255;
 								if (layer->textureId==MapGen::TextureIdHighAlpine) {
