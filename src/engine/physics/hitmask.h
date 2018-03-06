@@ -7,6 +7,9 @@ namespace Engine {
 	namespace Physics {
 		class HitMask {
 		public:
+			static const uint64_t emptyMask=0;
+			static const uint64_t fullMask=UINT64_MAX;
+
 			HitMask();
 			HitMask(uint64_t mask);
 			HitMask(const char *str);
