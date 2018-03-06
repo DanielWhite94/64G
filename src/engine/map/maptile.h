@@ -14,6 +14,7 @@ namespace Engine {
 
 			struct Layer {
 				MapTexture::Id textureId;
+				Physics::HitMask hitmask;
 			};
 
 			struct FileData {

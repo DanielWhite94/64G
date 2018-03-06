@@ -155,7 +155,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	assert(textureId!=MapGen::TextureIdNone);
 
 	// Update tile layer.
-	MapTile::Layer layer={.textureId=textureId};
+	MapTile::Layer layer={.textureId=textureId, .hitmask=HitMask()};
 	tile->setLayer(DemoGenTileLayerGround, layer);
 
 	// Update map data.

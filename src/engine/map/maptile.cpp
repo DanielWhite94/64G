@@ -68,9 +68,16 @@ namespace Engine {
 
 		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
 			HitMask hitMask;
-			unsigned i, max=getObjectCount();
-			for(i=0; i<max; ++i)
+
+			// Add tile layer hitmasks.
+			for(unsigned i=0; i<MapTile::layersMax; ++i)
+				hitMask|=getLayer(i)->hitmask;
+
+			// Add object hitmasks.
+			unsigned objectCount=getObjectCount();
+			for(unsigned i=0; i<objectCount; ++i)
 				hitMask|=getObject(i)->getHitMaskByCoord(tilePos);
+
 			return hitMask;
 		}
 
