@@ -29,6 +29,10 @@ typedef struct {
 	FbnNoise *heightNoise;
 	FbnNoise *temperatureNoise;
 
+	// These are not computed immediately, see main.
+	double coldThreshold;
+	double hotThreshold;
+
 	// These are computed after ground water/land modify tiles stage.
 	unsigned long long landCount, waterCount, arableCount, totalCount; // with arableCount<=landCount
 	double landFraction;
@@ -117,25 +121,21 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		}
 
 		// land
-		const double coldThresholdFactor=0.5;
-		const double hotThresholdFactor=0.7;
-		const double coldThreshold=map->minTemperature+coldThresholdFactor*(map->maxTemperature-map->minTemperature);
-		const double hotThreshold=map->minTemperature+hotThresholdFactor*(map->maxTemperature-map->minTemperature);
-		if (temperature<=coldThreshold) {
+		if (temperature<=mapData->coldThreshold) {
 			// between snow and grass
 			idA=MapGen::TextureIdSnow;
 			idB=MapGen::TextureIdGrass0;
-			factor=(temperature-map->minTemperature)/(coldThreshold-map->minTemperature);
-		} else if (temperature<=hotThreshold) {
+			factor=(temperature-map->minTemperature)/(mapData->coldThreshold-map->minTemperature);
+		} else if (temperature<=mapData->hotThreshold) {
 			// grass
 			idA=MapGen::TextureIdGrass0;
 			idB=MapGen::TextureIdGrass0;
-			factor=(temperature-coldThreshold)/(hotThreshold-coldThreshold);
+			factor=(temperature-mapData->coldThreshold)/(mapData->hotThreshold-mapData->coldThreshold);
 		} else {
 			// between sand and hot sand
 			idA=MapGen::TextureIdSand;
 			idB=MapGen::TextureIdHotSand;
-			factor=(temperature-hotThreshold)/(map->maxTemperature-hotThreshold);
+			factor=(temperature-mapData->hotThreshold)/(map->maxTemperature-mapData->hotThreshold);
 			double skewThreshold=0.5; // >0.5 shifts towards idA
 			factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 		}
@@ -338,7 +338,7 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 
 int main(int argc, char **argv) {
 	const double desiredLandFraction=0.4;
-	const double desiredAlpineFraction=0.05;
+	const double desiredAlpineFraction=0.01;
 
 	DemogenMapData mapData={
 	    .map=NULL,
@@ -404,7 +404,7 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (1/2)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run moisture/river calculation.
@@ -424,13 +424,25 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (2/2)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Calculate alpine level.
 	printf("Searching for alpine level (with desired coverage %.2f%%)...\n", desiredAlpineFraction*100.0);
-	mapData.map->alpineLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredAlpineFraction, 4, 0.45, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->alpineLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredAlpineFraction, 4, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Alpine level %f\n", mapData.map->alpineLevel);
+
+	// Calculate cold threshold.
+	double desiredColdCoverage=0.4;
+	printf("Searching for cold threshold (with desired coverage %.2f%%)...\n", desiredColdCoverage*100.0);
+	mapData.coldThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredColdCoverage, 4, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
+	printf("	Cold temperature %f\n", mapData.coldThreshold);
+
+	// Calculate hot threshold level.
+	double desiredHotCoverage=0.2;
+	printf("Searching for hot threshold level (with desired coverage %.2f%%)...\n", desiredHotCoverage*100.0);
+	mapData.hotThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredHotCoverage, 4, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
+	printf("	Hot temperature %f\n", mapData.hotThreshold);
 
 	// Run modify tiles for bimomes and forests.
 	size_t modifyTilesArrayCount=2;

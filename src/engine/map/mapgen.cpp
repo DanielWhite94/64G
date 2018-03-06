@@ -1137,7 +1137,7 @@ namespace Engine {
 			modifyTiles(map, x, y, width, height, &mapGenRecalculateStatsModifyTilesFunctor, NULL, progressFunctor, progressUserData);
 		}
 
-		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, int iterMax, double epsilon, NArySearchGetFunctor *getFunctor, void *getUserData) {
+		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, int iterMax, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData) {
 			assert(map!=NULL);
 			assert(n>0);
 			assert(0.0<=threshold<=1.0);
@@ -1150,8 +1150,8 @@ namespace Engine {
 			data.getUserData=getUserData;
 			data.sampleCount=n;
 			data.sampleTally=(long long int *)malloc(sizeof(long long int)*data.sampleCount); // TODO: Check return.
-			data.sampleMin=map->minHeight;
-			data.sampleMax=map->maxHeight;
+			data.sampleMin=sampleMin;
+			data.sampleMax=sampleMax;
 
 			// Loop, running iterations up to the maximum.
 			for(int iter=0; iter<iterMax; ++iter) {
@@ -1250,6 +1250,30 @@ namespace Engine {
 
 			// Return height.
 			return tile->getHeight();
+		}
+
+		double mapGenNarySearchGetFunctorTemperature(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+			assert(userData==NULL);
+
+			// Grab tile.
+			const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
+			assert(tile!=NULL);
+
+			// Return height.
+			return tile->getTemperature();
+		}
+
+		double mapGenNarySearchGetFunctorMoisture(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+			assert(userData==NULL);
+
+			// Grab tile.
+			const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
+			assert(tile!=NULL);
+
+			// Return height.
+			return tile->getMoisture();
 		}
 
 	};
