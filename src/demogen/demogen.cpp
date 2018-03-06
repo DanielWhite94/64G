@@ -444,22 +444,9 @@ int main(int argc, char **argv) {
 	mapData.hotThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredHotCoverage, 4, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
 	printf("	Hot temperature %f\n", mapData.hotThreshold);
 
-	// Run modify tiles for bimomes and forests.
-	size_t modifyTilesArrayCount=2;
-	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
-	modifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
-	modifyTilesArray[0].userData=&mapData;
-	modifyTilesArray[1].functor=&demogenGrassSheepModifyTilesFunctor;
-	modifyTilesArray[1].userData=&mapData;
-	/*
-	modifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
-	modifyTilesArray[1].userData=&mapData;
-	modifyTilesArray[2].functor=&demogenSandForestModifyTilesFunctor;
-	modifyTilesArray[2].userData=&mapData;
-	*/
-
-	const char *progressStringBiomesForests="Assigning tile textures (biomes and forests), and adding animals ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomesForests);
+	// Run modify tiles for bimomes.
+	const char *progressStringBiomes="Assigning tile textures for biomes ";
+	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenGroundModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
 	printf("\n");
 
 	// Tidy up noise.
@@ -486,6 +473,16 @@ int main(int argc, char **argv) {
 	// Add towns.
 	printf("Adding towns...\n");
 	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerDecoration, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
+	printf("\n");
+
+	// Run modify tiles npcs/animals.
+	size_t modifyTilesArrayCount=1;
+	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
+	modifyTilesArray[0].functor=&demogenGrassSheepModifyTilesFunctor;
+	modifyTilesArray[0].userData=&mapData;
+
+	const char *progressStringNpcsAnimals="Adding npcs and animals ";
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
 	// Save map.
