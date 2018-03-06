@@ -2,6 +2,7 @@
 * Clone the directory
 * run `mkdir build && cd build && cmake .. && make` from the project directory
 * executables will be in the build directory
+
 (note: this is potentially wrong depending on the branch...)
 
 # Sub-projects
@@ -19,5 +20,5 @@
 # Examples #
 * Create a demo map 'mymap': ``` demogen 4096 4096 mymap ```
 * Create a PNG image of the entire map:  ```mappng mymap 0 0 4096 4096 4096 4096 mymap.png```
-* Create a set of tiles for an interactive map: ```./slippymapgen mymap 4096``` (viewing by opening slippymap.html)
+* Create a set of tiles for an interactive map: ```./slippymapgen mymap 4096``` (viewed by opening slippymap.html)
 * Run the engine: ```engine mymap 3900 2048```
