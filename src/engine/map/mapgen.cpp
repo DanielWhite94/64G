@@ -416,7 +416,10 @@ namespace Engine {
 				[TextureIdRiver]="../images/tiles/water.png",
 				[TextureIdHighAlpine]="../images/tiles/highalpine.png",
 				[TextureIdLowAlpine]="../images/tiles/lowalpine.png",
-				[TextureIdSheep]="../images/npcs/sheep/north.png",
+				[TextureIdSheepN]="../images/npcs/sheep/north.png",
+				[TextureIdSheepE]="../images/npcs/sheep/east.png",
+				[TextureIdSheepS]="../images/npcs/sheep/south.png",
+				[TextureIdSheepW]="../images/npcs/sheep/west.png",
 			};
 			int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -457,7 +460,10 @@ namespace Engine {
 				[TextureIdSnow]=4,
 				[TextureIdHighAlpine]=4,
 				[TextureIdLowAlpine]=4,
-				[TextureIdSheep]=8,
+				[TextureIdSheepN]=8,
+				[TextureIdSheepE]=8,
+				[TextureIdSheepS]=8,
+				[TextureIdSheepW]=8,
 			};
 
 			unsigned textureId;
@@ -638,10 +644,10 @@ namespace Engine {
 					// Create object.
 					MapObject *object=new MapObject(rotation, pos, 1, 1);
 					object->setHitMaskByTileOffset(0, 0, hitmask);
-					object->setTextureIdForAngle(CoordAngle0, TextureIdSheep);
-					object->setTextureIdForAngle(CoordAngle90, TextureIdSheep);
-					object->setTextureIdForAngle(CoordAngle180, TextureIdSheep);
-					object->setTextureIdForAngle(CoordAngle270, TextureIdSheep);
+					object->setTextureIdForAngle(CoordAngle0, TextureIdSheepS);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdSheepW);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdSheepN);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdSheepE);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
