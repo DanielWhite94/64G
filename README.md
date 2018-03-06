@@ -17,13 +17,7 @@
 * slippymap.html - an interactive map implementation which uses the files generated from a call to slippymapgen. 
 
 # Examples #
-Create a demo map 'mymap' ``` demogen 4096 4096 mymap ```
-
-```
-./mappng map 0 0 4096 4096 4096 4096 map.png
-eog map.png
-
-./slippymapgen map 4096
-
-./engine map 7000 4096
-```
+* Create a demo map 'mymap': ``` demogen 4096 4096 mymap ```
+* Create a PNG image of the entire map:  ```mappng mymap 0 0 4096 4096 4096 4096 mymap.png```
+* Create a set of tiles for an interactive map: ```./slippymapgen mymap 4096``` (viewing by opening slippymap.html)
+* Run the engine: ```engine mymap 3900 2048```
