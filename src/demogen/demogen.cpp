@@ -393,6 +393,12 @@ int main(int argc, char **argv) {
 	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
 	printf("\n");
 
+	// Tidy up noise.
+	delete mapData.heightNoise;
+	mapData.heightNoise=NULL;
+	delete mapData.temperatureNoise;
+	mapData.temperatureNoise=NULL;
+
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats1="Collecting global statistics (1/2) ";
 	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats1);
@@ -448,12 +454,6 @@ int main(int argc, char **argv) {
 	const char *progressStringBiomes="Assigning tile textures for biomes ";
 	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenGroundModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
 	printf("\n");
-
-	// Tidy up noise.
-	delete mapData.heightNoise;
-	mapData.heightNoise=NULL;
-	delete mapData.temperatureNoise;
-	mapData.temperatureNoise=NULL;
 
 	// Compute more map data.
 	if (mapData.totalCount>0)
