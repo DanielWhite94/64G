@@ -106,7 +106,7 @@ namespace Engine {
 				const NoiseArray *noiseArray;
 
 				double threshold;
-				MapTexture::Id lowTextureId, highTextureId;
+				MapTile::Layer lowLayer, highLayer;
 
 				unsigned tileLayer;
 			};

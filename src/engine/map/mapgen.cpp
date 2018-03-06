@@ -296,10 +296,8 @@ namespace Engine {
 
 			// Update tile layer.
 			MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::CreateDirty);
-			if (tile!=NULL) {
-				MapTile::Layer layer={.textureId=(height>=data->threshold ? data->highTextureId : data->lowTextureId)};
-				tile->setLayer(data->tileLayer, layer);
-			}
+			if (tile!=NULL)
+				tile->setLayer(data->tileLayer, height>=data->threshold ? data->highLayer : data->lowLayer);
 		}
 
 		void mapGenPrintTime(Util::TimeMs timeMs) {
