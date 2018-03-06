@@ -14,7 +14,8 @@ namespace Engine {
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
-		void mapGenNArySearchHeightModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+		void mapGenNArySearchModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+		double mapGenNarySearchGetFunctorHeight(class Map *map, unsigned x, unsigned y, void *userData);
 
 		struct MapGenRoad {
 			int x0, y0, x1, y1;
@@ -112,6 +113,8 @@ namespace Engine {
 			typedef void (ModifyTilesFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 			typedef void (ModifyTilesProgress)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
+			typedef double (NArySearchGetFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
+
 			struct ModifyTilesManyEntry {
 				ModifyTilesFunctor *functor;
 				void *userData;
@@ -152,8 +155,11 @@ namespace Engine {
 				unsigned chimneyOffset;
 			};
 
-			struct NArySearchHeightData {
+			struct NArySearchData {
 				class Map *map;
+
+				NArySearchGetFunctor *getFunctor;
+				void *getUserData;
 
 				double sampleMin, sampleMax, sampleRange;
 				int sampleCount;
@@ -193,12 +199,13 @@ namespace Engine {
 			static void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData);
 			static void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, MapGen::ModifyTilesManyEntry functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData);
 
-			static double narySearchHeight(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, int iterMax, double epsilon); // Returns (approximate) height value for which threshold fraction of the tiles in the given region are lower than.
-			// TODO: Make map const. Currently restricted by dependency on modifyTiles
-			static int narySearchHeightHeightToSample(const NArySearchHeightData *data, double height);
-			static double narySearchHeightSampleToHeight(const NArySearchHeightData *data, int sample);
+			static double narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, int iterMax, double epsilon, NArySearchGetFunctor *getFunctor, void *getUserData); // Returns (approximate) height/moisture etc value for which threshold fraction of the tiles in the given region are lower than said value.
+			// TODO: Make narySearch map argument const. Currently restricted by dependency on modifyTiles
+			static int narySearchValueToSample(const NArySearchData *data, double value);
+			static double narySearchSampleToValue(const NArySearchData *data, int sample);
 
 			static void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesProgress *progressFunctor, void *progressUserData); // Updates map's min/maxHeight and other such fields.
+
 		private:
 			unsigned width, height;
 		};

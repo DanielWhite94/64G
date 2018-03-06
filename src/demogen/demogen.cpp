@@ -404,7 +404,7 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (1/2)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearchHeight(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45);
+	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run moisture/river calculation.
@@ -424,12 +424,12 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (2/2)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearchHeight(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45);
+	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Calculate alpine level.
 	printf("Searching for alpine level (with desired coverage %.2f%%)...\n", desiredAlpineFraction*100.0);
-	mapData.map->alpineLevel=MapGen::narySearchHeight(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredAlpineFraction, 4, 0.45);
+	mapData.map->alpineLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredAlpineFraction, 4, 0.45, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Alpine level %f\n", mapData.map->alpineLevel);
 
 	// Run modify tiles for bimomes and forests.
