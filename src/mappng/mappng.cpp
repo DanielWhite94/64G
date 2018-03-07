@@ -195,6 +195,7 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdTree1:
 							case MapGen::TextureIdTree2:
 							case MapGen::TextureIdTree3:
+							case MapGen::TextureIdRoseBush:
 								r=0,g=100,b=0;
 							break;
 							case MapGen::TextureIdMan1:
@@ -206,6 +207,7 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdSheepE:
 							case MapGen::TextureIdSheepS:
 							case MapGen::TextureIdSheepW:
+							case MapGen::TextureIdDog:
 								// NPCs etc
 								r=255,g=0,b=0;
 							break;

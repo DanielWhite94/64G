@@ -89,7 +89,9 @@ namespace Engine {
 			static const MapTexture::Id TextureIdSheepE=39;
 			static const MapTexture::Id TextureIdSheepS=40;
 			static const MapTexture::Id TextureIdSheepW=41;
-			static const MapTexture::Id TextureIdHeatMapMin=42;
+			static const MapTexture::Id TextureIdDog=42;
+			static const MapTexture::Id TextureIdRoseBush=43;
+			static const MapTexture::Id TextureIdHeatMapMin=44;
 			static const MapTexture::Id TextureIdHeatMapRange=256;
 			static const MapTexture::Id TextureIdHeatMapMax=TextureIdHeatMapMin+TextureIdHeatMapRange;
 			static const MapTexture::Id TextureIdNB=TextureIdHeatMapMax;
@@ -100,6 +102,7 @@ namespace Engine {
 				Tree2,
 				Bush,
 				Sheep,
+				Dog,
 			};
 
 			struct GenerateBinaryNoiseModifyTilesData {

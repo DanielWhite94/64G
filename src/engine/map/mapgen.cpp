@@ -418,6 +418,8 @@ namespace Engine {
 				[TextureIdSheepE]="../images/npcs/sheep/east.png",
 				[TextureIdSheepS]="../images/npcs/sheep/south.png",
 				[TextureIdSheepW]="../images/npcs/sheep/west.png",
+				[TextureIdRoseBush]="../images/objects/rosebush.png",
+				[TextureIdDog]="../images/npcs/dog/east.png",
 			};
 			int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -462,6 +464,8 @@ namespace Engine {
 				[TextureIdSheepE]=8,
 				[TextureIdSheepS]=8,
 				[TextureIdSheepW]=8,
+				[TextureIdRoseBush]=8,
+				[TextureIdDog]=8,
 			};
 
 			unsigned textureId;
@@ -646,6 +650,35 @@ namespace Engine {
 					object->setTextureIdForAngle(CoordAngle90, TextureIdSheepW);
 					object->setTextureIdForAngle(CoordAngle180, TextureIdSheepN);
 					object->setTextureIdForAngle(CoordAngle270, TextureIdSheepE);
+
+					// Add object to map.
+					if (!map->addObject(object)) {
+						delete object;
+						return NULL;
+					}
+
+					return object;
+				} break;
+				case BuiltinObject::Dog: {
+					// Create hitmask.
+					const char hitmaskStr[64+1]=
+						"________"
+						"________"
+						"________"
+						"_#####__"
+						"_#####__"
+						"_#####__"
+						"___###__"
+						"________";
+					HitMask hitmask(hitmaskStr);
+
+					// Create object.
+					MapObject *object=new MapObject(rotation, pos, 1, 1);
+					object->setHitMaskByTileOffset(0, 0, hitmask);
+					object->setTextureIdForAngle(CoordAngle0, TextureIdDog);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdDog);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdDog);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdDog);
 
 					// Add object to map.
 					if (!map->addObject(object)) {
