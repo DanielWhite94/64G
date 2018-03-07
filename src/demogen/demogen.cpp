@@ -422,7 +422,7 @@ int main(int argc, char **argv) {
 	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0);
 
 	// Run init modify tiles function.
-	const char *progressStringInit="Initializing tiles ";
+	const char *progressStringInit="Initializing tile parameters ";
 	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
 	printf("\n");
 
