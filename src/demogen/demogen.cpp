@@ -169,8 +169,8 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	++mapData->totalCount;
 }
 
-/*
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	/*
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -228,9 +228,11 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 
 	// We have made a change - mark region dirty.
 	map->markRegionDirtyAtTileOffset(x, y, false);
+	*/
 }
 
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	/*
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -268,8 +270,8 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 
 	// We have made a change - mark region dirty.
 	map->markRegionDirtyAtTileOffset(x, y, false);
+	*/
 }
-*/
 
 void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
@@ -484,8 +486,17 @@ int main(int argc, char **argv) {
 	printf("	Hot temperature %f\n", mapData.hotThreshold);
 
 	// Run modify tiles for bimomes.
+	size_t biomesModifyTilesArrayCount=2;
+	MapGen::ModifyTilesManyEntry biomesModifyTilesArray[biomesModifyTilesArrayCount];
+	biomesModifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
+	biomesModifyTilesArray[0].userData=&mapData;
+	biomesModifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
+	biomesModifyTilesArray[1].userData=&mapData;
+	biomesModifyTilesArray[2].functor=&demogenSandForestModifyTilesFunctor;
+	biomesModifyTilesArray[2].userData=&mapData;
+
 	const char *progressStringBiomes="Assigning tile textures for biomes ";
-	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenGroundModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, biomesModifyTilesArrayCount, biomesModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
 	printf("\n");
 
 	// Compute more map data.
