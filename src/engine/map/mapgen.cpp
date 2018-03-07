@@ -1217,7 +1217,7 @@ namespace Engine {
 
 				// Run data collection functor.
 				char progressString[1024];
-				sprintf(progressString, "	height search %i/%i - interval [%f, %f] (range %f): ", iter, iterMax, data.sampleMin, data.sampleMax, data.sampleRange);
+				sprintf(progressString, "	%i/%i - interval [%f, %f] (range %f): ", iter+1, iterMax, data.sampleMin, data.sampleMax, data.sampleRange);
 				modifyTiles(data.map, x, y, width, height, &mapGenNArySearchModifyTilesFunctor, &data, &mapGenModifyTilesProgressString, (void *)progressString);
 				printf("\n");
 
