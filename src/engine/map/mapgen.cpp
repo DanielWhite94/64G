@@ -72,10 +72,6 @@ namespace Engine {
 					if (tile==NULL)
 						continue;
 
-					// Ocean tile?
-					if (tile->getHeight()<=map->seaLevel)
-						continue;
-
 					// Drop particle.
 					dropParticle(tileX, tileY);
 
@@ -123,7 +119,7 @@ namespace Engine {
 			double h10=hMap(xi+1, yi, DBL_MIN);
 			double h11=hMap(xi+1, yi+1, DBL_MIN);
 
-			if (h<=map->seaLevel)
+			if (h<seaLevelExcess)
 				return;
 
 			if (h00==DBL_MIN || h01==DBL_MIN || h10==DBL_MIN || h11==DBL_MIN)
@@ -132,9 +128,11 @@ namespace Engine {
 			int maxPathLen=4.0*(MapRegion::tilesWide+MapRegion::tilesHigh);
 			for(int pathLen=0; pathLen<maxPathLen; ++pathLen) {
 				// Increment moisture counter for the current tile.
-				MapTile *tempTile=map->getTileAtOffset(xi, yi, Map::GetTileFlag::None);
-				if (tempTile!=NULL)
-					tempTile->setMoisture(tempTile->getMoisture()+w);
+				if (incMoisture) {
+					MapTile *tempTile=map->getTileAtOffset(xi, yi, Map::GetTileFlag::None);
+					if (tempTile!=NULL)
+						tempTile->setMoisture(tempTile->getMoisture()+w);
+				}
 
 				// calc gradient
 				double gx=h00+h01-h10-h11;
@@ -174,7 +172,7 @@ namespace Engine {
 
 				double nh=(nh00*(1-nxf)+nh10*nxf)*(1-nyf)+(nh01*(1-nxf)+nh11*nxf)*nyf;
 
-				if (nh<=map->seaLevel)
+				if (nh<seaLevelExcess)
 					return;
 
 				// if higher than current, try to deposit sediment up to neighbour height
@@ -213,24 +211,41 @@ namespace Engine {
 					ds*=-Kr;
 					ds=std::min(ds, dh*0.99);
 
-					for (int y=yi-1; y<=yi+2; ++y) {
+					double distfactor=1.0/(erodeRadius*erodeRadius);
+					double wTotal=0.0;
+					for (int y=yi-erodeRadius+1; y<=yi+erodeRadius; ++y) {
 						double yo=y-yp;
 						double yo2=yo*yo;
-
-						for (int x=xi-1; x<=xi+2; ++x) {
+						for (int x=xi-erodeRadius+1; x<=xi+erodeRadius; ++x) {
 							double xo=x-xp;
+							double xo2=xo*xo;
 
-							double w=1-(xo*xo+yo2)*0.25f;
+							double w=1-(xo2+yo2)*distfactor;
 							if (w<=0)
 								continue;
-							w*=0.1591549430918953f;
+
+							wTotal+=w;
+						}
+					}
+
+					for (int y=yi-erodeRadius+1; y<=yi+erodeRadius; ++y) {
+						double yo=y-yp;
+						double yo2=yo*yo;
+						for (int x=xi-erodeRadius+1; x<=xi+erodeRadius; ++x) {
+							double xo=x-xp;
+							double xo2=xo*xo;
+
+							double w=1-(xo2+yo2)*distfactor;
+							if (w<=0)
+								continue;
+
+							w/=wTotal;
 
 							depositAt(x, y, -w, ds);
 						}
 					}
 
 					dh-=ds;
-
 					s+=ds;
 				}
 
