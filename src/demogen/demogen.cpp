@@ -434,7 +434,7 @@ int main(int argc, char **argv) {
 	mapData.temperatureNoise=NULL;
 
 	// Recalculate stats such as min/max height required for future calls.
-	const char *progressStringGlobalStats1="Collecting global statistics (1/2) ";
+	const char *progressStringGlobalStats1="Collecting global statistics (1/3) ";
 	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats1);
 	printf("\n");
 
@@ -443,7 +443,27 @@ int main(int argc, char **argv) {
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
 	// Calculate sea level.
-	printf("Searching for sea level (with desired land coverage %.2f%%) (1/2)...\n", desiredLandFraction*100.0);
+	printf("Searching for sea level (with desired land coverage %.2f%%) (1/3)...\n", desiredLandFraction*100.0);
+	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	printf("	Sea level %f\n", mapData.map->seaLevel);
+
+	// Run glacier calculation.
+	const char *progressStringGlaciers="Applying glacial effects ";
+	MapGen::RiverGen glacierGen(mapData.map, 7, false);
+	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, &mapGenModifyTilesProgressString, (void *)progressStringGlaciers);
+	printf("\n");
+
+	// Recalculate stats such as min/max height required for future calls.
+	const char *progressStringGlobalStats2="Collecting global statistics (2/3) ";
+	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats2);
+	printf("\n");
+
+	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
+	printf("	Min temperature %f, max temperature %f\n", mapData.map->minTemperature, mapData.map->maxTemperature);
+	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
+
+	// Calculate sea level.
+	printf("Searching for sea level (with desired land coverage %.2f%%) (2/3)...\n", desiredLandFraction*100.0);
 	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
@@ -454,8 +474,8 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for future calls.
-	const char *progressStringGlobalStats2="Collecting global statistics (2/2) ";
-	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats2);
+	const char *progressStringGlobalStats3="Collecting global statistics (3/3) ";
+	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats3);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -463,7 +483,7 @@ int main(int argc, char **argv) {
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
 	// Calculate sea level.
-	printf("Searching for sea level (with desired land coverage %.2f%%) (2/2)...\n", desiredLandFraction*100.0);
+	printf("Searching for sea level (with desired land coverage %.2f%%) (3/3)...\n", desiredLandFraction*100.0);
 	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
