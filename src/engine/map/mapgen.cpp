@@ -1211,13 +1211,13 @@ namespace Engine {
 			data.sampleTally=(long long int *)malloc(sizeof(long long int)*data.sampleCount); // TODO: Check return.
 			data.sampleMin=sampleMin;
 			data.sampleMax=sampleMax;
+			data.sampleRange=data.sampleMax-data.sampleMin;
 
 			// Loop, running iterations up to the maximum.
 			for(int iter=0; iter<iterMax; ++iter) {
 				assert(data.sampleMax>=data.sampleMin);
 
 				// Update data struct for this iteration.
-				data.sampleRange=data.sampleMax-data.sampleMin;
 				for(int i=0; i<data.sampleCount; ++i)
 					data.sampleTally[i]=0;
 				data.sampleTotal=0;
@@ -1247,10 +1247,14 @@ namespace Engine {
 				}
 				data.sampleMin=newSampleMin;
 				data.sampleMax=newSampleMax;
+				data.sampleRange=data.sampleMax-data.sampleMin;
 			}
 
 			// Tidy up.
 			free(data.sampleTally);
+
+			// Write out final range.
+			printf("	final interval [%f, %f] (range %f, 2*epsilon %f)\n", data.sampleMin, data.sampleMax, data.sampleRange, 2*epsilon);
 
 			// Return midpoint of interval.
 			return (data.sampleMin+data.sampleMax)/2.0;
