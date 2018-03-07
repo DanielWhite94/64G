@@ -47,6 +47,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 */
 void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
@@ -282,13 +283,7 @@ void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 		return;
 
 	// Check layers.
-	if (tile->getLayer(DemoGenTileLayerGround)->textureId<MapGen::TextureIdGrass0 && tile->getLayer(DemoGenTileLayerGround)->textureId>MapGen::TextureIdGrass5)
-		return;
-	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
-		return;
-	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapGen::TextureIdNone)
-		return;
-	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId<MapGen::TextureIdGrass0 || tile->getLayer(DemoGenTileLayerGround)->textureId>MapGen::TextureIdGrass5)
 		return;
 
 	// Decide whether to place a sheep here.
@@ -298,7 +293,45 @@ void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	// Add object.
 	CoordVec pos(x*CoordsPerTile, y*CoordsPerTile);
 	MapObject *sheep=MapGen::addBuiltinObject(map, MapGen::BuiltinObject::Sheep, CoordAngle0, pos);
-	sheep->setMovementModeRandomRadius(pos, 5*CoordsPerTile);
+	if (sheep==NULL)
+		return;
+	sheep->setMovementModeRandomRadius(pos, 10*CoordsPerTile);
+
+
+	// Mark region dirty.
+	MapRegion *region=map->getRegionAtCoordVec(pos, false);
+	if (region!=NULL)
+		region->setDirty();
+}
+
+void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData!=NULL);
+
+	const DemogenMapData *mapData=(const DemogenMapData *)userData;
+
+	// Grab tile.
+	const MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
+	if (tile==NULL)
+		return;
+
+	// Check layers.
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdBrickPath && tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdDirt)
+		return;
+
+	// Decide whether to place someone here.
+	if (rand()%64!=0)
+		return;
+
+	// Choose object.
+	MapGen::BuiltinObject builtinObject=(rand()%3==0 ? MapGen::BuiltinObject::Dog : MapGen::BuiltinObject::OldBeardMan);
+
+	// Add object.
+	CoordVec pos(x*CoordsPerTile, y*CoordsPerTile);
+	MapObject *object=MapGen::addBuiltinObject(map, builtinObject, CoordAngle0, pos);
+	if (object==NULL)
+		return;
+	object->setMovementModeRandomRadius(pos, 10*CoordsPerTile);
 
 	// Mark region dirty.
 	MapRegion *region=map->getRegionAtCoordVec(pos, false);
@@ -322,9 +355,9 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 			if (layerGround<MapGen::TextureIdGrass0 || layerGround>MapGen::TextureIdGrass5)
 				return false;
 
-			// Look for road decoration.
-			MapTexture::Id layerDecoration=tile->getLayer(DemoGenTileLayerDecoration)->textureId;
-			if (layerDecoration==MapGen::TextureIdBrickPath || layerDecoration==MapGen::TextureIdDirt)
+			// Look for half obstacles.
+			MapTexture::Id layerHalf=tile->getLayer(DemoGenTileLayerHalf)->textureId;
+			if (layerHalf!=MapGen::TextureIdNone)
 				return false;
 
 			// Look for full obstacles.
@@ -472,14 +505,16 @@ int main(int argc, char **argv) {
 
 	// Add towns.
 	printf("Adding towns...\n");
-	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerDecoration, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
+	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerGround, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
 	printf("\n");
 
 	// Run modify tiles npcs/animals.
-	size_t modifyTilesArrayCount=1;
+	size_t modifyTilesArrayCount=2;
 	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
 	modifyTilesArray[0].functor=&demogenGrassSheepModifyTilesFunctor;
 	modifyTilesArray[0].userData=&mapData;
+	modifyTilesArray[1].functor=&demogenTownFolkModifyTilesFunctor;
+	modifyTilesArray[1].userData=&mapData;
 
 	const char *progressStringNpcsAnimals="Adding npcs and animals ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
