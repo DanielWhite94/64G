@@ -1021,6 +1021,20 @@ namespace Engine {
 					// Add sign.
 					map->getTileAtCoordVec(CoordVec(signX*Physics::CoordsPerTile, (houseData.y+houseData.mapH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(houseTileLayer, {.textureId=signTextureId, .hitmask=HitMask(HitMask::fullMask)});
 				}
+
+				// Add some decoration.
+				if ((houseData.flags & AddHouseFullFlags::AddDecoration) && Util::randIntInInterval(0, 4)==0) {
+					// Choose position (avoiding the door).
+					int offset=Util::randIntInInterval(0, houseData.mapW-1);
+					if (offset>=houseData.doorOffset)
+						++offset;
+					assert(offset>=0 && offset<houseData.mapW);
+
+					int posX=offset+houseData.x;
+
+					// Add rosebush.
+					map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (houseData.y+houseData.mapH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(2/*.....houseTileLayer*/, {.textureId=MapGen::TextureIdRoseBush/*.....*/, .hitmask=HitMask()});
+				}
 			}
 
 			return true;

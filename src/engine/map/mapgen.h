@@ -144,7 +144,8 @@ namespace Engine {
 				None=0x0,
 				ShowDoor=0x1,
 				ShowChimney=0x2,
-				All=(ShowDoor|ShowChimney),
+				AddDecoration=0x4,
+				All=(ShowDoor|ShowChimney|AddDecoration),
 			};
 
 			struct AddTownHouseData {
