@@ -509,15 +509,15 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Run modify tiles npcs/animals.
-	size_t modifyTilesArrayCount=2;
-	MapGen::ModifyTilesManyEntry modifyTilesArray[modifyTilesArrayCount];
-	modifyTilesArray[0].functor=&demogenGrassSheepModifyTilesFunctor;
-	modifyTilesArray[0].userData=&mapData;
-	modifyTilesArray[1].functor=&demogenTownFolkModifyTilesFunctor;
-	modifyTilesArray[1].userData=&mapData;
+	size_t npcModifyTilesArrayCount=2;
+	MapGen::ModifyTilesManyEntry npcModifyTilesArray[npcModifyTilesArrayCount];
+	npcModifyTilesArray[0].functor=&demogenGrassSheepModifyTilesFunctor;
+	npcModifyTilesArray[0].userData=&mapData;
+	npcModifyTilesArray[1].functor=&demogenTownFolkModifyTilesFunctor;
+	npcModifyTilesArray[1].userData=&mapData;
 
 	const char *progressStringNpcsAnimals="Adding npcs and animals ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, modifyTilesArrayCount, modifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, npcModifyTilesArrayCount, npcModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
 	// Save map.
