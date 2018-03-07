@@ -730,7 +730,7 @@ namespace Engine {
 				}
 		}
 
-		bool MapGen::addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned tileLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned tileLayer, unsigned decorationLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 
 			// Check arguments are reasonable.
@@ -745,10 +745,10 @@ namespace Engine {
 			unsigned chimneyOffset=Util::randIntInInterval(0, totalW);
 
 			// Call addHouseFull to do most of the work.
-			return addHouseFull(map, AddHouseFullFlags::All, baseX, baseY, totalW, totalH, roofHeight, tileLayer, doorOffset, chimneyOffset, testFunctor, testFunctorUserData);
+			return addHouseFull(map, AddHouseFullFlags::All, baseX, baseY, totalW, totalH, roofHeight, tileLayer, decorationLayer, doorOffset, chimneyOffset, testFunctor, testFunctorUserData);
 		}
 
-		bool MapGen::addHouseFull(class Map *map, AddHouseFullFlags flags, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned roofHeight, unsigned tileLayer, unsigned doorXOffset, unsigned chimneyXOffset, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addHouseFull(class Map *map, AddHouseFullFlags flags, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned roofHeight, unsigned tileLayer, unsigned decorationLayer, unsigned doorXOffset, unsigned chimneyXOffset, TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 
 			unsigned tx, ty;
@@ -819,12 +819,23 @@ namespace Engine {
 						map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=MapGen::TextureIdBrickPath, .hitmask=HitMask()});
 					}
 				}
+
+				// Random chance of adding a rose bush at random position (avoiding the door, if any).
+				if (Util::randIntInInterval(0, 4)==0) {
+					int offset=Util::randIntInInterval(0, totalW-doorW);
+					if ((flags & AddHouseFullFlags::ShowDoor) && offset>=doorXOffset)
+						offset+=doorW;
+					assert(offset>=0 && offset<totalW);
+
+					int posX=offset+baseX;
+					map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(decorationLayer, {.textureId=MapGen::TextureIdRoseBush, .hitmask=HitMask()});
+				}
 			}
 
 			return true;
 		}
 
-		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, int townPop, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, unsigned houseDecorationLayer, int townPop, TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
@@ -964,7 +975,7 @@ namespace Engine {
 						houseData.chimneyOffset=Util::randIntInInterval(0, houseData.mapW);
 
 						// Attempt to add the house.
-						if (!addHouseFull(map, houseData.flags, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseData.roofHeight, houseTileLayer, houseData.doorOffset, houseData.chimneyOffset, NULL, NULL))
+						if (!addHouseFull(map, houseData.flags, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseData.roofHeight, houseTileLayer, houseDecorationLayer, houseData.doorOffset, houseData.chimneyOffset, NULL, NULL))
 							continue;
 
 						// Add to array of houses.
@@ -1039,7 +1050,7 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, double totalPopulation, MapGen::TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, unsigned houseDecorationLayer, double totalPopulation, MapGen::TileTestFunctor *testFunctor, void *testFunctorUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
@@ -1070,13 +1081,13 @@ namespace Engine {
 						int townX1=townX+townSize/2;
 						if (townX0<0)
 							continue;
-						addedCount+=MapGen::addTown(map, townX0, townY, townX1, townY, roadTileLayer, houseTileLayer, townPop, testFunctor, testFunctorUserData);
+						addedCount+=MapGen::addTown(map, townX0, townY, townX1, townY, roadTileLayer, houseTileLayer, houseDecorationLayer, townPop, testFunctor, testFunctorUserData);
 					} else {
 						int townY0=townY-townSize/2;
 						int townY1=townY+townSize/2;
 						if (townY0<0)
 							continue;
-						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, roadTileLayer, houseTileLayer, townPop, testFunctor, testFunctorUserData);
+						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, roadTileLayer, houseTileLayer, houseDecorationLayer, townPop, testFunctor, testFunctorUserData);
 					}
 				}
 

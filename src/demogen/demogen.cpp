@@ -505,7 +505,7 @@ int main(int argc, char **argv) {
 
 	// Add towns.
 	printf("Adding towns...\n");
-	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerGround, DemoGenTileLayerFull, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
+	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerGround, DemoGenTileLayerFull, DemoGenTileLayerDecoration, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
 	printf("\n");
 
 	// Run modify tiles npcs/animals.
