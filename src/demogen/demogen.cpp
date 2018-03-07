@@ -119,28 +119,27 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 			idA=MapGen::TextureIdRiver;
 			idB=MapGen::TextureIdRiver;
 			factor=0.0;
-		}
-
-		// land
-		if (temperature<=mapData->coldThreshold) {
-			// between snow and grass
-			idA=MapGen::TextureIdSnow;
-			idB=MapGen::TextureIdGrass0;
-			factor=(temperature-map->minTemperature)/(mapData->coldThreshold-map->minTemperature);
-		} else if (temperature<=mapData->hotThreshold) {
-			// grass
-			idA=MapGen::TextureIdGrass0;
-			idB=MapGen::TextureIdGrass0;
-			factor=(temperature-mapData->coldThreshold)/(mapData->hotThreshold-mapData->coldThreshold);
 		} else {
-			// between sand and hot sand
-			idA=MapGen::TextureIdSand;
-			idB=MapGen::TextureIdHotSand;
-			factor=(temperature-mapData->hotThreshold)/(map->maxTemperature-mapData->hotThreshold);
-			double skewThreshold=0.5; // >0.5 shifts towards idA
-			factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
+			// land
+			if (temperature<=mapData->coldThreshold) {
+				// between snow and grass
+				idA=MapGen::TextureIdSnow;
+				idB=MapGen::TextureIdGrass0;
+				factor=(temperature-map->minTemperature)/(mapData->coldThreshold-map->minTemperature);
+			} else if (temperature<=mapData->hotThreshold) {
+				// grass
+				idA=MapGen::TextureIdGrass0;
+				idB=MapGen::TextureIdGrass0;
+				factor=(temperature-mapData->coldThreshold)/(mapData->hotThreshold-mapData->coldThreshold);
+			} else {
+				// between sand and hot sand
+				idA=MapGen::TextureIdSand;
+				idB=MapGen::TextureIdHotSand;
+				factor=(temperature-mapData->hotThreshold)/(map->maxTemperature-mapData->hotThreshold);
+				double skewThreshold=0.5; // >0.5 shifts towards idA
+				factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
+			}
 		}
-
 	} else {
 		// alpine
 		idA=MapGen::TextureIdLowAlpine;
