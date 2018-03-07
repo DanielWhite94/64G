@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 	const int defaultZoom=4;
 	const int TilesWide=24;
 	const int TilesHigh=18;
-	const double fps=120.0;
+	const double fps=30.0;
 
 	const int windowWidth=(TilesWide*Physics::CoordsPerTile*defaultZoom);
 	const int windowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
 				break;
 			}
 
-		const int moveSpeed=(playerRunning ? Physics::CoordsPerTile/2 : 1);
+		const int moveSpeed=(playerRunning ? 2*Physics::CoordsPerTile : 1);
 		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta*moveSpeed);
 
 		// Tick map every so often.
