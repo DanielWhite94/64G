@@ -32,6 +32,7 @@ typedef struct {
 	// These are not computed immediately, see main.
 	double coldThreshold;
 	double hotThreshold;
+	double riverMoistureThreshold;
 
 	// These are computed after ground water/land modify tiles stage.
 	unsigned long long landCount, waterCount, arableCount, totalCount; // with arableCount<=landCount
@@ -114,8 +115,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 		factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
 	} else if (height<=mapData->map->alpineLevel) {
 		// River?
-		const double riverThreshold=sqrt(map->maxMoisture);
-		if (tile->getMoisture()>riverThreshold) {
+		if (tile->getMoisture()>mapData->riverMoistureThreshold) {
 			idA=MapGen::TextureIdRiver;
 			idB=MapGen::TextureIdRiver;
 			factor=0.0;
@@ -483,6 +483,12 @@ int main(int argc, char **argv) {
 	printf("Searching for hot threshold level (with desired coverage %.2f%%)...\n", desiredHotCoverage*100.0);
 	mapData.hotThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredHotCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
 	printf("	Hot temperature %f\n", mapData.hotThreshold);
+
+	// Calculate river moisture threshold.
+	double desiredRiverCoverage=0.005;
+	printf("Searching for river moisture threshold (with desired coverage %.2f%%)...\n", desiredRiverCoverage*100.0);
+	mapData.riverMoistureThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredRiverCoverage, 0.45, mapData.map->minMoisture, mapData.map->maxMoisture, &mapGenNarySearchGetFunctorMoisture, NULL);
+	printf("	River moisture threshold %f\n", mapData.riverMoistureThreshold);
 
 	// Run modify tiles for bimomes.
 	size_t biomesModifyTilesArrayCount=2;
