@@ -1187,8 +1187,9 @@ namespace Engine {
 			assert(0.0<=threshold<=1.0);
 			assert(getFunctor!=NULL);
 
-			// Calcualte expected iterMax in case the map is particularly unfriendly to our search.
-			int iterMax=ceil(log((sampleMax-sampleMin)/(2*epsilon))/log(n+1))+1; // Extra +1 is just to be safe.
+			// Calculate expected iterMax and use it just in case we cannot narrow down the range for some reason.
+			// This calculation is based on the idea that each iteration reduces the range by #samples+1..
+			int iterMax=ceil(log((sampleMax-sampleMin)/(2*epsilon))/log(n+1));
 
 			// Initialize data struct.
 			NArySearchData data;
