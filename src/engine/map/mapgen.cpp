@@ -753,7 +753,7 @@ namespace Engine {
 
 			unsigned tx, ty;
 
-			const int doorW=2;
+			const int doorW=(flags & AddHouseFullFlags::ShowDoor) ? 2 : 0;
 
 			// Check arguments are reasonable.
 			if (totalW<5 || totalH<5)
@@ -808,6 +808,17 @@ namespace Engine {
 				int chimneyX=chimneyXOffset+baseX;
 				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseChimneyTop, .hitmask=HitMask(HitMask::fullMask)});
 				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (baseY+1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseChimney, .hitmask=HitMask(HitMask::fullMask)});
+			}
+
+			// Add some decoration.
+			if ((flags & AddHouseFullFlags::AddDecoration)) {
+				// Add path infront of door (if any).
+				if (flags & AddHouseFullFlags::ShowDoor) {
+					for(int offset=0; offset<doorW; ++offset) {
+						int posX=baseX+doorXOffset+offset;
+						map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=MapGen::TextureIdBrickPath, .hitmask=HitMask()});
+					}
+				}
 			}
 
 			return true;
@@ -926,8 +937,8 @@ namespace Engine {
 						houseData.side=Util::randBool();
 						int offset=Util::randIntInInterval(0, road.getLen()-houseData.genWidth);
 
-						houseData.x=(road.isHorizontal() ? road.x0+offset : (houseData.side ? road.trueX1 : road.x0-houseData.genDepth));
-						houseData.y=(road.isVertical() ? road.y0+offset : (houseData.side ? road.trueY1 : road.y0-houseData.genDepth));
+						houseData.x=(road.isHorizontal() ? road.x0+offset : (houseData.side ? road.trueX1 : road.x0-houseData.genDepth-1));
+						houseData.y=(road.isVertical() ? road.y0+offset : (houseData.side ? road.trueY1 : road.y0-houseData.genDepth-1));
 						houseData.mapW=(road.isHorizontal() ? houseData.genWidth : houseData.genDepth);
 						houseData.mapH=(road.isVertical() ? houseData.genWidth : houseData.genDepth);
 
@@ -942,7 +953,9 @@ namespace Engine {
 
 						// Compute house parameters.
 						bool showDoor=(road.isHorizontal() && !houseData.side);
-						houseData.flags=(AddHouseFullFlags)(AddHouseFullFlags::ShowChimney|(showDoor ? AddHouseFullFlags::ShowDoor : AddHouseFullFlags::None));
+						houseData.flags=(AddHouseFullFlags)(AddHouseFullFlags::AddDecoration|AddHouseFullFlags::ShowChimney);
+						if (showDoor)
+							houseData.flags=(AddHouseFullFlags)(houseData.flags|AddHouseFullFlags::ShowDoor);
 
 						const double houseRoofRatio=0.6;
 						houseData.roofHeight=(int)floor(houseRoofRatio*houseData.mapH);
@@ -1020,20 +1033,6 @@ namespace Engine {
 
 					// Add sign.
 					map->getTileAtCoordVec(CoordVec(signX*Physics::CoordsPerTile, (houseData.y+houseData.mapH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(houseTileLayer, {.textureId=signTextureId, .hitmask=HitMask(HitMask::fullMask)});
-				}
-
-				// Add some decoration.
-				if ((houseData.flags & AddHouseFullFlags::AddDecoration) && Util::randIntInInterval(0, 4)==0) {
-					// Choose position (avoiding the door).
-					int offset=Util::randIntInInterval(0, houseData.mapW-1);
-					if (offset>=houseData.doorOffset)
-						++offset;
-					assert(offset>=0 && offset<houseData.mapW);
-
-					int posX=offset+houseData.x;
-
-					// Add rosebush.
-					map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (houseData.y+houseData.mapH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(2/*.....houseTileLayer*/, {.textureId=MapGen::TextureIdRoseBush/*.....*/, .hitmask=HitMask()});
 				}
 			}
 
