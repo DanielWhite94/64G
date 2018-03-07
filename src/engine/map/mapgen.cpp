@@ -1182,11 +1182,14 @@ namespace Engine {
 			modifyTiles(map, x, y, width, height, &mapGenRecalculateStatsModifyTilesFunctor, NULL, progressFunctor, progressUserData);
 		}
 
-		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, int iterMax, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData) {
+		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData) {
 			assert(map!=NULL);
 			assert(n>0);
 			assert(0.0<=threshold<=1.0);
 			assert(getFunctor!=NULL);
+
+			// Calcualte expected iterMax in case the map is particularly unfriendly to our search.
+			int iterMax=ceil(log((sampleMax-sampleMin)/(2*epsilon))/log(n+1))+1; // Extra +1 is just to be safe.
 
 			// Initialize data struct.
 			NArySearchData data;

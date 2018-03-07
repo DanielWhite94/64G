@@ -443,7 +443,7 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (1/2)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run moisture/river calculation.
@@ -463,24 +463,24 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (2/2)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 4, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Calculate alpine level.
 	printf("Searching for alpine level (with desired coverage %.2f%%)...\n", desiredAlpineFraction*100.0);
-	mapData.map->alpineLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredAlpineFraction, 4, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->alpineLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredAlpineFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Alpine level %f\n", mapData.map->alpineLevel);
 
 	// Calculate cold threshold.
 	double desiredColdCoverage=0.4;
 	printf("Searching for cold threshold (with desired coverage %.2f%%)...\n", desiredColdCoverage*100.0);
-	mapData.coldThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredColdCoverage, 4, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
+	mapData.coldThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredColdCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
 	printf("	Cold temperature %f\n", mapData.coldThreshold);
 
 	// Calculate hot threshold level.
 	double desiredHotCoverage=0.2;
 	printf("Searching for hot threshold level (with desired coverage %.2f%%)...\n", desiredHotCoverage*100.0);
-	mapData.hotThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredHotCoverage, 4, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
+	mapData.hotThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredHotCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
 	printf("	Hot temperature %f\n", mapData.hotThreshold);
 
 	// Run modify tiles for bimomes.
