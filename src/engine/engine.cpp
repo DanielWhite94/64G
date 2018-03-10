@@ -17,10 +17,15 @@ using namespace Engine::Map;
 
 int main(int argc, char **argv) {
 	// Parse arguments.
-	if (argc!=4) {
-		printf("Usage: %s mapfile starttilex starttiley\n", argv[0]);
+	if (argc!=4 && argc!=5) {
+		printf("Usage: %s mapfile starttilex starttiley [--debug]\n", argv[0]);
 		return EXIT_FAILURE;
 	}
+
+	const char *path=argv[1];
+	int startTileX=atoi(argv[2]);
+	int startTileY=atoi(argv[3]);
+	bool debug=(argc==5 && strcmp(argv[4], "--debug")==0);
 
 	// Set various constants/parameters.
 	const int maxZoom=8;
@@ -37,7 +42,6 @@ int main(int argc, char **argv) {
 	bool playerRunning=false;
 
 	// Load map.
-	const char *path=argv[1];
 	printf("Loading map at '%s'.\n", path);
 	class Map *map=new class Map(path);
 	if (map==NULL || !map->initialized) {
@@ -46,8 +50,6 @@ int main(int argc, char **argv) {
 	}
 
 	// Add player object.
-	int startTileX=atoi(argv[2]);
-	int startTileY=atoi(argv[3]);
 	MapObject objectPlayer(CoordAngle0, CoordVec(startTileX*Physics::CoordsPerTile, startTileY*Physics::CoordsPerTile), 1, 1);
 	HitMask playerHitmask;
 	const unsigned playerW=4, playerH=6;
@@ -171,10 +173,12 @@ int main(int argc, char **argv) {
 			SDL_Delay(delay);
 
 		// Debugging.
-		if (delay>0)
-			printf("Main: tick (player position (%i,%i)). render took %u.%03us (delaying for %u.%03us)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000, delay/1000, delay%1000);
-		else
-			printf("Main: tick (player position (%i,%i)). render took %u.%03us (no delay)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000);
+		if (debug) {
+			if (delay>0)
+				printf("Main: tick (player position (%i,%i)). render took %u.%03us (delaying for %u.%03us)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000, delay/1000, delay%1000);
+			else
+				printf("Main: tick (player position (%i,%i)). render took %u.%03us (no delay)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000);
+		}
 	}
 
 	return EXIT_SUCCESS;
