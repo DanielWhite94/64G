@@ -108,6 +108,7 @@ namespace Engine {
 				Bush,
 				Sheep,
 				Dog,
+				Chest,
 			};
 
 			struct GenerateBinaryNoiseModifyTilesData {

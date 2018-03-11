@@ -709,6 +709,34 @@ namespace Engine {
 
 					return object;
 				} break;
+				case BuiltinObject::Chest:
+					// Create hitmask.
+					HitMask hitmask(HitMask::fullMask);
+
+					// Create object.
+					MapObject *object=new MapObject(rotation, pos, 1, 1);
+
+					object->setHitMaskByTileOffset(0, 0, hitmask);
+
+					object->setTextureIdForAngle(CoordAngle0, TextureIdChestClosed);
+					object->setTextureIdForAngle(CoordAngle90, TextureIdChestClosed);
+					object->setTextureIdForAngle(CoordAngle180, TextureIdChestClosed);
+					object->setTextureIdForAngle(CoordAngle270, TextureIdChestClosed);
+
+					object->setItemData(mapObjectItemTypeChest, 1);
+
+					object->inventoryEmpty(24);
+					MapObjectItem item={.type=mapObjectItemTypeCoins, .count=(MapObjectItemCount)(5+rand()%5)};
+					object->inventoryAddItem(item);
+
+					// Add object to map.
+					if (!map->addObject(object)) {
+						delete object;
+						return NULL;
+					}
+
+					return object;
+				break;
 			}
 
 			assert(false);
