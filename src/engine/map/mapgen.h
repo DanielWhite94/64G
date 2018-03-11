@@ -5,6 +5,8 @@
 #include <iomanip>
 
 #include "map.h"
+#include "maptexture.h"
+#include "maptile.h"
 #include "../noisearray.h"
 #include "../util.h"
 
