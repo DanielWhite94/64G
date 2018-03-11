@@ -208,7 +208,10 @@ int main(int argc, char **argv) {
 							case MapGen::TextureIdSheepS:
 							case MapGen::TextureIdSheepW:
 							case MapGen::TextureIdDog:
-								// NPCs etc
+							case MapGen::TextureIdCoins:
+							case MapGen::TextureIdChestClosed:
+							case MapGen::TextureIdChestOpen:
+								// NPCs, items etc
 								r=255,g=0,b=0;
 							break;
 							case MapGen::TextureIdHouseDoorBL:

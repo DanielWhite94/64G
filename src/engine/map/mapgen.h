@@ -91,7 +91,10 @@ namespace Engine {
 			static const MapTexture::Id TextureIdSheepW=41;
 			static const MapTexture::Id TextureIdDog=42;
 			static const MapTexture::Id TextureIdRoseBush=43;
-			static const MapTexture::Id TextureIdHeatMapMin=44;
+			static const MapTexture::Id TextureIdCoins=44;
+			static const MapTexture::Id TextureIdChestClosed=45;
+			static const MapTexture::Id TextureIdChestOpen=46;
+			static const MapTexture::Id TextureIdHeatMapMin=47;
 			static const MapTexture::Id TextureIdHeatMapRange=256;
 			static const MapTexture::Id TextureIdHeatMapMax=TextureIdHeatMapMin+TextureIdHeatMapRange;
 			static const MapTexture::Id TextureIdNB=TextureIdHeatMapMax;

@@ -434,7 +434,10 @@ namespace Engine {
 				[TextureIdSheepS]="../images/npcs/sheep/south.png",
 				[TextureIdSheepW]="../images/npcs/sheep/west.png",
 				[TextureIdRoseBush]="../images/objects/rosebush.png",
+				[TextureIdCoins]="../images/objects/coins.png",
 				[TextureIdDog]="../images/npcs/dog/east.png",
+				[TextureIdChestClosed]="../images/npcs/dog/chestclosed.png",
+				[TextureIdChestOpen]="../images/npcs/dog/chestopen.png",
 			};
 			int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
@@ -480,7 +483,10 @@ namespace Engine {
 				[TextureIdSheepS]=8,
 				[TextureIdSheepW]=8,
 				[TextureIdRoseBush]=8,
+				[TextureIdCoins]=8,
 				[TextureIdDog]=8,
+				[TextureIdChestClosed]=4,
+				[TextureIdChestOpen]=4,
 			};
 
 			unsigned textureId;
