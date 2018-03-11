@@ -128,6 +128,11 @@ namespace Engine {
 							continue;
 						}
 
+						// Check if there is even a texture set for this object.
+						const MapTexture::Id objectTextureId=object->getTextureIdCurrent();
+						if (objectTextureId==0)
+							continue;
+
 						// Compute which part of the object we are drawing for this vertical slice.
 						CoordVec objectCoordTopLeft=object->getCoordTopLeft();
 
@@ -153,34 +158,20 @@ namespace Engine {
 						const int textureCoordOffsetY=0;
 						const int textureCoordOffsetH=coordObjectSize.y;
 
-						// Draw slice of texture for this x-offset.
-						const MapTexture::Id objectTextureId=object->getTextureIdCurrent();
-						if (objectTextureId>0) {
-							// Grab texture.
-							const Texture *texture=getTexture(*map, objectTextureId);
-							if (texture==NULL)
-								continue;
+						// Grab texture.
+						const Texture *texture=getTexture(*map, objectTextureId);
+						if (texture==NULL)
+							continue;
 
-							// Draw texture slice.
-							const int scale=texture->getScale();
+						// Draw texture slice.
+						const int scale=texture->getScale();
 
-							assert(texture->getWidth()/scale==coordObjectSize.x);
-							assert(texture->getHeight()/scale==coordObjectSize.y);
+						assert(texture->getWidth()/scale==coordObjectSize.x);
+						assert(texture->getHeight()/scale==coordObjectSize.y);
 
-							SDL_Rect srcRect={.x=textureCoordOffsetX*scale, .y=textureCoordOffsetY*scale, .w=textureCoordOffsetW*scale, .h=textureCoordOffsetH*scale};
-							SDL_Rect destRect={.x=sliceScreenX1, .y=sliceScreenY1, .w=sliceScreenW, .h=sliceScreenH};
-							SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), &srcRect, &destRect);
-						} else {
-							// TEMP
-
-							SDL_Rect rect;
-							rect.x=sliceScreenX1;
-							rect.y=sliceScreenY1;
-							rect.w=sliceScreenW;
-							rect.h=sliceScreenH;
-							SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
-							SDL_RenderFillRect(renderer, &rect);
-						}
+						SDL_Rect srcRect={.x=textureCoordOffsetX*scale, .y=textureCoordOffsetY*scale, .w=textureCoordOffsetW*scale, .h=textureCoordOffsetH*scale};
+						SDL_Rect destRect={.x=sliceScreenX1, .y=sliceScreenY1, .w=sliceScreenW, .h=sliceScreenH};
+						SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), &srcRect, &destRect);
 					}
 				}
 			}
