@@ -17,7 +17,7 @@ namespace Engine {
 			drawHitMasksActive=false;
 			drawHitMasksInactive=false;
 			drawHitMasksIntersections=false;
-			drawMinimap=true;
+			drawMinimap=false;
 
 			// Init SDL.
 			SDL_Init(SDL_INIT_VIDEO);

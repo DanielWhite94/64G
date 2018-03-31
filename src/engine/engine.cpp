@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
 
 	// Create renderer.
 	Renderer renderer(windowWidth, windowHeight);
+	renderer.drawMinimap=true;
 
 	// Create camera variables.
 	Camera camera(CoordVec(0,0), defaultZoom);
