@@ -26,7 +26,7 @@ namespace Engine {
 			Renderer(unsigned windowWidth, unsigned windowHeight);
 			~Renderer();
 
-			void refresh(const Engine::Graphics::Camera *camera, class Map *map);
+			void refresh(const Engine::Graphics::Camera *camera, class Map *map, const MapObject *player);
 
 			bool getFullscreen(void);
 			void toggleFullscreen(void);

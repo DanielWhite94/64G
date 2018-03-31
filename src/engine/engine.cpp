@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
 
 		// Redraw screen.
 		camera.setVec(objectPlayer.getCoordTopLeft());
-		renderer.refresh(&camera, map);
+		renderer.refresh(&camera, map, &objectPlayer);
 
 		// Check keyboard and events and move camera.
 		SDL_Event event;
