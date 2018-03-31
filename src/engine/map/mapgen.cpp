@@ -436,8 +436,8 @@ namespace Engine {
 				[TextureIdRoseBush]="../images/objects/rosebush.png",
 				[TextureIdCoins]="../images/objects/coins.png",
 				[TextureIdDog]="../images/npcs/dog/east.png",
-				[TextureIdChestClosed]="../images/npcs/dog/chestclosed.png",
-				[TextureIdChestOpen]="../images/npcs/dog/chestopen.png",
+				[TextureIdChestClosed]="../images/objects/chestclosed.png",
+				[TextureIdChestOpen]="../images/objects/chestopen.png",
 			};
 			int textureScales[TextureIdNB]={
 				[TextureIdNone]=1,
