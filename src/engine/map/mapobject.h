@@ -96,6 +96,9 @@ namespace Engine {
 
 			void setItemData(MapObjectItemType type, MapObjectItemCount count);
 
+			bool inventoryExists(void) const;
+			MapObjectItemCount inventoryGetNumSlots(void) const;
+			MapObjectItem inventoryGetItem(MapObjectItemCount slot) const;
 			void inventoryEmpty(MapObjectItemCount numSlots);
 			MapObjectItemCount inventoryAddItem(const MapObjectItem &item); // Returns number of items successfully added.
 		private:

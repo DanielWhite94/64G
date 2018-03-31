@@ -260,6 +260,23 @@ namespace Engine {
 			itemData.count=count;
 		}
 
+		bool MapObject::inventoryExists(void) const {
+			return isInventory;
+		}
+
+		MapObjectItemCount MapObject::inventoryGetNumSlots(void) const {
+			assert(isInventory);
+
+			return inventoryData.numSlots;
+		}
+
+		MapObjectItem MapObject::inventoryGetItem(MapObjectItemCount slot) const {
+			assert(isInventory);
+			assert(slot<inventoryGetNumSlots());
+
+			return inventoryData.items[slot];
+		}
+
 		void MapObject::inventoryEmpty(MapObjectItemCount numSlots) {
 			isInventory=true;
 			inventoryData.numSlots=numSlots;
