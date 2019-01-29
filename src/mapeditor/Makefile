@@ -1,6 +1,6 @@
 CPP = clang++
-CFLAGS = -Wall -std=c++11 `pkg-config gtkmm-3.0 --cflags`
-LFLAGS = `pkg-config gtkmm-3.0 --libs`
+CFLAGS = -Wall -std=c++11 `pkg-config --cflags gtk+-3.0`
+LFLAGS = `pkg-config --libs gtk+-3.0`
 
 OBJS = ../engine/map/map.o ../engine/map/mapgen.o ../engine/map/mapobject.o ../engine/map/mapregion.o ../engine/map/maptexture.o ../engine/map/maptile.o ../engine/physics/hitmask.o ../engine/physics/coord.o ../engine/fbnnoise.o ../engine/noisearray.o ../engine/opensimplexnoise.o ../engine/util.o main.o mainwindow.o
 
