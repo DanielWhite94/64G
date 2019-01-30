@@ -1,8 +1,6 @@
 #ifndef MAPEDITOR_MAIN_H
 #define MAPEDITOR_MAIN_H
 
-#include "../engine/map/map.h"
-
 #include "mainwindow.h"
 
 namespace MapEditor {
@@ -12,7 +10,6 @@ namespace MapEditor {
 		~Main();
 
 	private:
-		class Map *map;
 		MainWindow *mainWindow;
 	};
 };
