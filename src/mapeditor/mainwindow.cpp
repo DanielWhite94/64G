@@ -66,7 +66,6 @@ namespace MapEditor {
 		// Destroy window (and all other child widgets)
 		if (window!=NULL)
 			gtk_widget_destroy(window);
-
 	}
 
 	void MainWindow::show() {
@@ -323,9 +322,6 @@ namespace MapEditor {
 };
 
 gboolean mapEditorMainWindowWrapperWindowDeleteEvent(GtkWidget *widget, GdkEvent *event, void *userData) {
-	assert(widget!=NULL);
-	assert(userData!=NULL);
-
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->deleteEvent(widget, event);
 }
