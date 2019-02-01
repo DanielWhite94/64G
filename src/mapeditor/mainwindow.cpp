@@ -57,6 +57,9 @@ namespace MapEditor {
 		// Free memory used by GtkBuilder object.
 		g_object_unref(G_OBJECT(builder));
 
+		// Try to ensure the window is maximised on startup
+		gtk_window_maximize(GTK_WINDOW(window));
+
 		// Ensure widgets are setup correctly before showing the window
 		updateFileMenuSensitivity();
 		updateTitle();
