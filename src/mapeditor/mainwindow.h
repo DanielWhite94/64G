@@ -23,6 +23,9 @@ namespace MapEditor {
 		bool menuFileCloseActivate(GtkWidget *widget);
 		bool menuFileQuitActivate(GtkWidget *widget);
 
+		bool menuViewZoomInActivate(GtkWidget *widget);
+		bool menuViewZoomOutActivate(GtkWidget *widget);
+
 		GtkWidget *window;
 		GtkWidget *menuFileNew;
 		GtkWidget *menuFileOpen;
@@ -30,9 +33,15 @@ namespace MapEditor {
 		GtkWidget *menuFileSaveAs;
 		GtkWidget *menuFileClose;
 		GtkWidget *menuFileQuit;
+		GtkWidget *menuViewZoomIn;
+		GtkWidget *menuViewZoomOut;
 		GtkWidget *statusLabel;
+		GtkWidget *positionLabel;
 
 		class Map *map;
+
+		const int zoomLevelMin=0, zoomLevelMax=11;
+		int zoomLevel;
 	private:
 		bool mapNew(void);
 		bool mapOpen(void); // Returns true if successfully opened, false if user clicks cancel of the choosen folder is not a valid map.
@@ -42,8 +51,12 @@ namespace MapEditor {
 		void mapQuit(void);
 		bool mapGetUnsavedChanges(void);
 
+		double getZoomFactor(void);
+		double getZoomFactorHuman(void);
+
 		void updateFileMenuSensitivity(void);
 		void updateTitle(void);
+		void updatePositionLabel(void);
 	};
 };
 

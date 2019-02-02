@@ -1,4 +1,6 @@
 #include <cassert>
+#include <clocale>
+#include <cmath>
 #include <cstdio>
 #include <exception>
 #include <iostream>
@@ -16,10 +18,14 @@ gboolean mapEditorMainWindowWrapperMenuFileSaveAsActivate(GtkWidget *widget, gpo
 gboolean mapEditorMainWindowWrapperMenuFileCloseActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpointer userData);
 
+gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpointer userData);
+gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData);
+
 namespace MapEditor {
 	MainWindow::MainWindow() {
 		// Clear basic fields
 		map=NULL;
+		zoomLevel=zoomLevelMin;
 
 		// Use GtkBuilder to build our interface from the XML file.
 		GtkBuilder *builder=gtk_builder_new();
@@ -42,6 +48,8 @@ namespace MapEditor {
 		error|=(menuFileClose=GTK_WIDGET(gtk_builder_get_object(builder, "menuFileClose")))==NULL;
 		error|=(menuFileQuit=GTK_WIDGET(gtk_builder_get_object(builder, "menuFileQuit")))==NULL;
 		error|=(statusLabel=GTK_WIDGET(gtk_builder_get_object(builder, "statusLabel")))==NULL;
+		error|=(menuViewZoomIn=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomIn")))==NULL;
+		error|=(menuViewZoomOut=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomOut")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
@@ -53,6 +61,8 @@ namespace MapEditor {
 		g_signal_connect(menuFileSaveAs, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuFileSaveAsActivate), (void *)this);
 		g_signal_connect(menuFileClose, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuFileCloseActivate), (void *)this);
 		g_signal_connect(menuFileQuit, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuFileQuitActivate), (void *)this);
+		g_signal_connect(menuViewZoomIn, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomInActivate), (void *)this);
+		g_signal_connect(menuViewZoomOut, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomOutActivate), (void *)this);
 
 		// Free memory used by GtkBuilder object.
 		g_object_unref(G_OBJECT(builder));
@@ -63,6 +73,7 @@ namespace MapEditor {
 		// Ensure widgets are setup correctly before showing the window
 		updateFileMenuSensitivity();
 		updateTitle();
+		updatePositionLabel();
 	}
 
 	MainWindow::~MainWindow() {
@@ -116,6 +127,23 @@ namespace MapEditor {
 		return false;
 	}
 
+	bool MainWindow::menuViewZoomInActivate(GtkWidget *widget) {
+		if (zoomLevel<zoomLevelMax) {
+			++zoomLevel;
+			updateDrawingArea();
+			updatePositionLabel();
+		}
+		return false;
+	}
+
+	bool MainWindow::menuViewZoomOutActivate(GtkWidget *widget) {
+		if (zoomLevel>zoomLevelMin) {
+			--zoomLevel;
+			updateDrawingArea();
+			updatePositionLabel();
+		}
+		return false;
+	}
 	bool MainWindow::mapNew(void) {
 		// Close the current map (if any)
 		if (!mapClose())
@@ -149,6 +177,7 @@ namespace MapEditor {
 
 		updateFileMenuSensitivity();
 		updateTitle();
+		updatePositionLabel();
 
 		// Tidy up
 		g_free(filename);
@@ -189,6 +218,7 @@ namespace MapEditor {
 
 		updateFileMenuSensitivity();
 		updateTitle();
+		updatePositionLabel();
 
 		// Tidy up
 		g_free(filename);
@@ -287,6 +317,7 @@ namespace MapEditor {
 
 		updateFileMenuSensitivity();
 		updateTitle();
+		updatePositionLabel();
 
 		return true;
 	}
@@ -305,6 +336,15 @@ namespace MapEditor {
 		return false;
 	}
 
+
+	double MainWindow::getZoomFactor(void) {
+		return pow(4.0, zoomLevel-zoomLevelMax);
+	}
+
+	double MainWindow::getZoomFactorHuman(void) {
+		return pow(4.0, zoomLevel);
+	}
+
 	void MainWindow::updateFileMenuSensitivity(void) {
 		bool mapOpen=(map!=NULL);
 		bool mapChanges=mapGetUnsavedChanges();
@@ -321,6 +361,17 @@ namespace MapEditor {
 		else
 			sprintf(str, "Map Editor");
 		gtk_window_set_title(GTK_WINDOW(window), str);
+	}
+
+	void MainWindow::updatePositionLabel(void) {
+		char str[1024]; // TODO: better
+
+		char *oldLocale = setlocale(LC_NUMERIC, NULL);
+		setlocale(LC_NUMERIC, "");
+		sprintf(str, "Zoom: x%'.0f", getZoomFactorHuman());
+		setlocale(LC_NUMERIC, oldLocale);
+
+		gtk_label_set_text(GTK_LABEL(positionLabel), str);
 	}
 };
 
@@ -357,4 +408,14 @@ gboolean mapEditorMainWindowWrapperMenuFileCloseActivate(GtkWidget *widget, gpoi
 gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuFileQuitActivate(widget);
+}
+
+gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuViewZoomInActivate(widget);
+}
+
+gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuViewZoomOutActivate(widget);
 }
