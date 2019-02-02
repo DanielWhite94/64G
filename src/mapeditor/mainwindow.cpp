@@ -21,6 +21,13 @@ gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpoin
 gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData);
 
+gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
+
+gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpointer userData);
+
+gboolean mapEditorMainWindowWrapperMenuViewShowRegionGridToggled(GtkWidget *widget, gpointer userData);
+gboolean mapEditorMainWindowWrapperMenuViewShowTileGridToggled(GtkWidget *widget, gpointer userData);
+
 namespace MapEditor {
 	MainWindow::MainWindow() {
 		// Clear basic fields
@@ -48,6 +55,10 @@ namespace MapEditor {
 		error|=(menuFileClose=GTK_WIDGET(gtk_builder_get_object(builder, "menuFileClose")))==NULL;
 		error|=(menuFileQuit=GTK_WIDGET(gtk_builder_get_object(builder, "menuFileQuit")))==NULL;
 		error|=(statusLabel=GTK_WIDGET(gtk_builder_get_object(builder, "statusLabel")))==NULL;
+		error|=(positionLabel=GTK_WIDGET(gtk_builder_get_object(builder, "positionLabel")))==NULL;
+		error|=(drawingArea=GTK_WIDGET(gtk_builder_get_object(builder, "drawingArea")))==NULL;
+		error|=(menuViewShowRegionGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowRegionGrid")))==NULL;
+		error|=(menuViewShowTileGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowTileGrid")))==NULL;
 		error|=(menuViewZoomIn=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomIn")))==NULL;
 		error|=(menuViewZoomOut=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomOut")))==NULL;
 		if (error)
@@ -63,6 +74,9 @@ namespace MapEditor {
 		g_signal_connect(menuFileQuit, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuFileQuitActivate), (void *)this);
 		g_signal_connect(menuViewZoomIn, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomInActivate), (void *)this);
 		g_signal_connect(menuViewZoomOut, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomOutActivate), (void *)this);
+		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
+		g_signal_connect(menuViewShowRegionGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowRegionGridToggled), (void *)this);
+		g_signal_connect(menuViewShowTileGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowTileGridToggled), (void *)this);
 
 		// Free memory used by GtkBuilder object.
 		g_object_unref(G_OBJECT(builder));
@@ -144,6 +158,121 @@ namespace MapEditor {
 		}
 		return false;
 	}
+
+	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+		const double userTileSizeX=32.0;
+		const double userTileSizeY=32.0;
+
+		// Special case if no map loaded
+		if (map==NULL) {
+			// Simply clear screen to black
+			cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+			cairo_paint(cr);
+			return false;
+		}
+
+		// Clear screen to pink to make any undrawn portions clear
+		cairo_set_source_rgb(cr, 1.0, 0.2, 0.6);
+		cairo_paint(cr);
+
+		// Transform cairo for given zoom and panning offset
+		double zoomFactor=getZoomFactor();
+		cairo_scale(cr, zoomFactor, zoomFactor);
+
+		// Call extents of what is on screen both in device units and user space units.
+		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
+		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
+		double deviceBottomRightY=gtk_widget_get_allocated_height(drawingArea);
+		double userTopLeftX=deviceTopLeftX, userTopLeftY=deviceTopLeftY;
+		cairo_device_to_user(cr, &userTopLeftX, &userTopLeftY);
+		double userBottomRightX=deviceBottomRightX, userBottomRightY=deviceBottomRightY;
+		cairo_device_to_user(cr, &userBottomRightX, &userBottomRightY);
+
+		// Draw tile grid if needed
+		if (menuViewShowTileGridIsActive() && zoomLevel>=19) {
+			double userStartX=(floor(userTopLeftX/userTileSizeX)-1)*userTileSizeX;
+			double userStartY=(floor(userTopLeftY/userTileSizeY)-1)*userTileSizeY;
+			double userEndX=(ceil(userBottomRightX/userTileSizeX)+1)*userTileSizeX;
+			double userEndY=(ceil(userBottomRightY/userTileSizeY)+1)*userTileSizeY;
+
+			cairo_save(cr);
+			cairo_set_line_width(cr, 1.0);
+			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+			cairo_new_path(cr);
+
+			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=userTileSizeY) {
+				cairo_new_sub_path(cr);
+				cairo_move_to(cr, userStartX, userCurrY);
+				cairo_line_to(cr, userEndX, userCurrY);
+			}
+
+			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=userTileSizeX) {
+				cairo_new_sub_path(cr);
+				cairo_move_to(cr, userCurrX, userStartY);
+				cairo_line_to(cr, userCurrX, userEndY);
+			}
+
+			cairo_stroke(cr);
+			cairo_restore(cr);
+		}
+
+		// Draw region grid if needed
+		if (menuViewShowRegionGridIsActive() && zoomLevel>=12) {
+			const double userRegionSizeX=MapRegion::tilesWide*userTileSizeX;
+			const double userRegionSizeY=MapRegion::tilesHigh*userTileSizeY;
+
+			double userStartX=(floor(userTopLeftX/userRegionSizeX)-1)*userRegionSizeX;
+			double userStartY=(floor(userTopLeftY/userRegionSizeY)-1)*userRegionSizeY;
+			double userEndX=(ceil(userBottomRightX/userRegionSizeX)+1)*userRegionSizeX;
+			double userEndY=(ceil(userBottomRightY/userRegionSizeY)+1)*userRegionSizeY;
+
+			cairo_save(cr);
+			if (zoomLevel>=19)
+				cairo_set_line_width(cr, 2.0/pow(2.0, zoomLevel-zoomLevelMax));
+			else if (zoomLevel>=14)
+				cairo_set_line_width(cr, 32.0);
+			else
+				cairo_set_line_width(cr, pow(2.0, (19.0-zoomLevel)));
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+			cairo_new_path(cr);
+
+			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=userRegionSizeY) {
+				cairo_new_sub_path(cr);
+				cairo_move_to(cr, userStartX, userCurrY);
+				cairo_line_to(cr, userEndX, userCurrY);
+			}
+
+			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=userRegionSizeX) {
+				cairo_new_sub_path(cr);
+				cairo_move_to(cr, userCurrX, userStartY);
+				cairo_line_to(cr, userCurrX, userEndY);
+			}
+
+			cairo_stroke(cr);
+			cairo_restore(cr);
+		}
+
+		return false;
+	}
+
+	bool MainWindow::menuViewShowRegionGridIsActive(void) {
+		return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewShowRegionGrid));
+	}
+
+	bool MainWindow::menuViewShowRegionGridToggled(GtkWidget *widget) {
+		updateDrawingArea();
+		return false;
+	}
+
+	bool MainWindow::menuViewShowTileGridIsActive(void) {
+		return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewShowTileGrid));
+	}
+
+	bool MainWindow::menuViewShowTileGridToggled(GtkWidget *widget) {
+		updateDrawingArea();
+		return false;
+	}
+
 	bool MainWindow::mapNew(void) {
 		// Close the current map (if any)
 		if (!mapClose())
@@ -177,6 +306,7 @@ namespace MapEditor {
 
 		updateFileMenuSensitivity();
 		updateTitle();
+		updateDrawingArea();
 		updatePositionLabel();
 
 		// Tidy up
@@ -218,6 +348,7 @@ namespace MapEditor {
 
 		updateFileMenuSensitivity();
 		updateTitle();
+		updateDrawingArea();
 		updatePositionLabel();
 
 		// Tidy up
@@ -317,6 +448,7 @@ namespace MapEditor {
 
 		updateFileMenuSensitivity();
 		updateTitle();
+		updateDrawingArea();
 		updatePositionLabel();
 
 		return true;
@@ -338,11 +470,11 @@ namespace MapEditor {
 
 
 	double MainWindow::getZoomFactor(void) {
-		return pow(4.0, zoomLevel-zoomLevelMax);
+		return pow(2.0, zoomLevel-zoomLevelMax);
 	}
 
 	double MainWindow::getZoomFactorHuman(void) {
-		return pow(4.0, zoomLevel);
+		return pow(2.0, zoomLevel);
 	}
 
 	void MainWindow::updateFileMenuSensitivity(void) {
@@ -363,12 +495,16 @@ namespace MapEditor {
 		gtk_window_set_title(GTK_WINDOW(window), str);
 	}
 
+	void MainWindow::updateDrawingArea(void) {
+		gtk_widget_queue_draw(drawingArea);
+	}
+
 	void MainWindow::updatePositionLabel(void) {
 		char str[1024]; // TODO: better
 
 		char *oldLocale = setlocale(LC_NUMERIC, NULL);
 		setlocale(LC_NUMERIC, "");
-		sprintf(str, "Zoom: x%'.0f", getZoomFactorHuman());
+		sprintf(str, "Zoom level %i (x%'.0f)", zoomLevel, getZoomFactorHuman());
 		setlocale(LC_NUMERIC, oldLocale);
 
 		gtk_label_set_text(GTK_LABEL(positionLabel), str);
@@ -418,4 +554,19 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpo
 gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuViewZoomOutActivate(widget);
+}
+
+gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->drawingAreaDraw(widget, cr);
+}
+
+gboolean mapEditorMainWindowWrapperMenuViewShowRegionGridToggled(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuViewShowRegionGridToggled(widget);
+}
+
+gboolean mapEditorMainWindowWrapperMenuViewShowTileGridToggled(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuViewShowTileGridToggled(widget);
 }

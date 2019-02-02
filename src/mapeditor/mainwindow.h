@@ -2,6 +2,7 @@
 #define MAPEDITOR_MAINWINDOW_H
 
 #include <gtk/gtk.h>
+#include <cairo.h>
 
 #include "../engine/map/map.h"
 
@@ -26,6 +27,13 @@ namespace MapEditor {
 		bool menuViewZoomInActivate(GtkWidget *widget);
 		bool menuViewZoomOutActivate(GtkWidget *widget);
 
+		bool drawingAreaDraw(GtkWidget *widget, cairo_t *cr);
+
+		bool menuViewShowRegionGridIsActive(void);
+		bool menuViewShowRegionGridToggled(GtkWidget *widget);
+		bool menuViewShowTileGridIsActive(void);
+		bool menuViewShowTileGridToggled(GtkWidget *widget);
+
 		GtkWidget *window;
 		GtkWidget *menuFileNew;
 		GtkWidget *menuFileOpen;
@@ -37,10 +45,13 @@ namespace MapEditor {
 		GtkWidget *menuViewZoomOut;
 		GtkWidget *statusLabel;
 		GtkWidget *positionLabel;
+		GtkWidget *drawingArea;
+		GtkWidget *menuViewShowRegionGrid;
+		GtkWidget *menuViewShowTileGrid;
 
 		class Map *map;
 
-		const int zoomLevelMin=0, zoomLevelMax=11;
+		const int zoomLevelMin=0, zoomLevelMax=22;
 		int zoomLevel;
 	private:
 		bool mapNew(void);
@@ -56,6 +67,7 @@ namespace MapEditor {
 
 		void updateFileMenuSensitivity(void);
 		void updateTitle(void);
+		void updateDrawingArea(void);
 		void updatePositionLabel(void);
 	};
 };
