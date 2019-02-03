@@ -30,6 +30,8 @@ namespace MapEditor {
 		bool menuViewZoomOutActivate(GtkWidget *widget);
 
 		bool drawingAreaDraw(GtkWidget *widget, cairo_t *cr);
+		gboolean drawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event);
+		gboolean drawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event);
 
 		bool menuViewShowRegionGridIsActive(void);
 		bool menuViewShowRegionGridToggled(GtkWidget *widget);
@@ -58,6 +60,8 @@ namespace MapEditor {
 
 		static const int zoomLevelMin=0, zoomLevelMax=11;
 		int zoomLevel;
+
+		bool keyPanningLeft, keyPanningRight, keyPanningUp, keyPanningDown;
 		gint64 lastTickTimeMs;
 	private:
 		bool mapNew(void);

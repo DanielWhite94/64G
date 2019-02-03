@@ -22,6 +22,8 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpo
 gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
+gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
+gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpointer userData);
 
@@ -35,6 +37,11 @@ namespace MapEditor {
 		map=NULL;
 		zoomLevel=zoomLevelMin;
 		lastTickTimeMs=0;
+
+		keyPanningLeft=false;
+		keyPanningRight=false;
+		keyPanningUp=false;
+		keyPanningDown=false;
 
 		// Use GtkBuilder to build our interface from the XML file.
 		GtkBuilder *builder=gtk_builder_new();
@@ -78,6 +85,8 @@ namespace MapEditor {
 		g_signal_connect(menuViewZoomIn, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomInActivate), (void *)this);
 		g_signal_connect(menuViewZoomOut, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomOutActivate), (void *)this);
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
+		g_signal_connect(drawingArea, "key-press-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyPressEvent), (void *)this);
+		g_signal_connect(drawingArea, "key-release-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent), (void *)this);
 		g_signal_connect(menuViewShowRegionGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowRegionGridToggled), (void *)this);
 		g_signal_connect(menuViewShowTileGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowTileGridToggled), (void *)this);
 		g_signal_connect(menuViewShowKmGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowKmGridToggled), (void *)this);
@@ -314,6 +323,46 @@ namespace MapEditor {
 			cairo_restore(cr);
 		}
 
+		return false;
+	}
+
+	gboolean MainWindow::drawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event) {
+		if (event->keyval==GDK_KEY_Left) {
+			keyPanningLeft=true;
+			return true;
+		}
+		if (event->keyval==GDK_KEY_Right) {
+			keyPanningRight=true;
+			return true;
+		}
+		if (event->keyval==GDK_KEY_Up) {
+			keyPanningUp=true;
+			return true;
+		}
+		if (event->keyval==GDK_KEY_Down) {
+			keyPanningDown=true;
+			return true;
+		}
+		return false;
+	}
+
+	gboolean MainWindow::drawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event) {
+		if (event->keyval==GDK_KEY_Left) {
+			keyPanningLeft=false;
+			return true;
+		}
+		if (event->keyval==GDK_KEY_Right) {
+			keyPanningRight=false;
+			return true;
+		}
+		if (event->keyval==GDK_KEY_Up) {
+			keyPanningUp=false;
+			return true;
+		}
+		if (event->keyval==GDK_KEY_Down) {
+			keyPanningDown=false;
+			return true;
+		}
 		return false;
 	}
 
@@ -630,6 +679,16 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gp
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->drawingAreaDraw(widget, cr);
+}
+
+gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->drawingAreaKeyPressEvent(widget, event);
+}
+
+gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->drawingAreaKeyReleaseEvent(widget, event);
 }
 
 gboolean mapEditorMainWindowWrapperMenuViewShowRegionGridToggled(GtkWidget *widget, gpointer userData) {
