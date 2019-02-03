@@ -36,6 +36,10 @@ namespace MapEditor {
 		// Clear basic fields
 		map=NULL;
 		zoomLevel=zoomLevelMin;
+		const double userTileSizeX=32.0;
+		const double userTileSizeY=32.0;
+		userCentreX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSizeX/2.0;
+		userCentreY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSizeY/2.0;
 		lastTickTimeMs=0;
 
 		keyPanningLeft=false;
@@ -124,6 +128,24 @@ namespace MapEditor {
 		gint64 tickTimeMs=g_get_monotonic_time()/1000.0;
 		double timeDeltaMs=(lastTickTimeMs>0 ? tickTimeMs-lastTickTimeMs : 1);
 		lastTickTimeMs=tickTimeMs;
+
+		// Calculate device delta
+		double speedFactor=0.25*(timeDeltaMs/1000.0);
+		double deviceW=gtk_widget_get_allocated_width(drawingArea);
+		double deviceH=gtk_widget_get_allocated_height(drawingArea);
+		double deviceSpeedX=deviceW*speedFactor;
+		double deviceSpeedY=deviceH*speedFactor;
+		double deviceDeltaX=deviceSpeedX*((keyPanningLeft ? -1.0 : 0.0)+(keyPanningRight ? 1.0 : 0.0));
+		double deviceDeltaY=deviceSpeedY*((keyPanningUp ? -1.0 : 0.0)+(keyPanningDown ? 1.0 : 0.0));
+
+		// Convert to user space delta
+		double zoomFactorInverse=1.0/getZoomFactor();
+		double userDeltaX=deviceDeltaX*zoomFactorInverse;
+		double userDeltaY=deviceDeltaY*zoomFactorInverse;
+
+		// Update offset
+		userCentreX+=userDeltaX;
+		userCentreY+=userDeltaY;
 
 		// Redraw etc
 		updateDrawingArea();
@@ -217,7 +239,10 @@ namespace MapEditor {
 
 		// Transform cairo for given zoom and panning offset
 		double zoomFactor=getZoomFactor();
+
+		cairo_translate(cr, deviceBottomRightX/2, deviceBottomRightY/2);
 		cairo_scale(cr, zoomFactor, zoomFactor);
+		cairo_translate(cr, -userCentreX, -userCentreY);
 
 		// Calculate extents of what is on screen in user space units.
 		double userTopLeftX=deviceTopLeftX, userTopLeftY=deviceTopLeftY;

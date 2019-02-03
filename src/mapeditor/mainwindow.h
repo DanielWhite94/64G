@@ -60,6 +60,7 @@ namespace MapEditor {
 
 		static const int zoomLevelMin=0, zoomLevelMax=11;
 		int zoomLevel;
+		double userCentreX, userCentreY;
 
 		bool keyPanningLeft, keyPanningRight, keyPanningUp, keyPanningDown;
 		gint64 lastTickTimeMs;
