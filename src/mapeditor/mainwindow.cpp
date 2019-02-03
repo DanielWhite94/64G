@@ -160,9 +160,13 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+		// Various parameters
 		const double userTileSizeX=32.0;
 		const double userTileSizeY=32.0;
 
+		//                                                zoom level = {  0   1   2   3   4   5   6   7   8   9  10  11}
+		const double tileGridLineWidths[zoomLevelMax+1-zoomLevelMin]  ={0  ,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1};
+		const double regionGridLineWidths[zoomLevelMax+1-zoomLevelMin]={0  ,128, 64, 32, 32, 32, 16, 16, 16,  8,  4,  4};
 		// Special case if no map loaded
 		if (map==NULL) {
 			// Simply clear screen to black
@@ -189,14 +193,14 @@ namespace MapEditor {
 		cairo_device_to_user(cr, &userBottomRightX, &userBottomRightY);
 
 		// Draw tile grid if needed
-		if (menuViewShowTileGridIsActive() && zoomLevel>=19) {
+		if (menuViewShowTileGridIsActive() && zoomLevel>=8) {
 			double userStartX=(floor(userTopLeftX/userTileSizeX)-1)*userTileSizeX;
 			double userStartY=(floor(userTopLeftY/userTileSizeY)-1)*userTileSizeY;
 			double userEndX=(ceil(userBottomRightX/userTileSizeX)+1)*userTileSizeX;
 			double userEndY=(ceil(userBottomRightY/userTileSizeY)+1)*userTileSizeY;
 
 			cairo_save(cr);
-			cairo_set_line_width(cr, 1.0);
+			cairo_set_line_width(cr, tileGridLineWidths[zoomLevel]);
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 			cairo_new_path(cr);
 
@@ -217,7 +221,7 @@ namespace MapEditor {
 		}
 
 		// Draw region grid if needed
-		if (menuViewShowRegionGridIsActive() && zoomLevel>=12) {
+		if (menuViewShowRegionGridIsActive() && zoomLevel>=1) {
 			const double userRegionSizeX=MapRegion::tilesWide*userTileSizeX;
 			const double userRegionSizeY=MapRegion::tilesHigh*userTileSizeY;
 
@@ -227,12 +231,7 @@ namespace MapEditor {
 			double userEndY=(ceil(userBottomRightY/userRegionSizeY)+1)*userRegionSizeY;
 
 			cairo_save(cr);
-			if (zoomLevel>=19)
-				cairo_set_line_width(cr, 2.0/pow(2.0, zoomLevel-zoomLevelMax));
-			else if (zoomLevel>=14)
-				cairo_set_line_width(cr, 32.0);
-			else
-				cairo_set_line_width(cr, pow(2.0, (19.0-zoomLevel)));
+			cairo_set_line_width(cr, regionGridLineWidths[zoomLevel]);
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 			cairo_new_path(cr);
 

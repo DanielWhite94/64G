@@ -51,7 +51,7 @@ namespace MapEditor {
 
 		class Map *map;
 
-		const int zoomLevelMin=0, zoomLevelMax=22;
+		static const int zoomLevelMin=0, zoomLevelMax=11;
 		int zoomLevel;
 	private:
 		bool mapNew(void);
