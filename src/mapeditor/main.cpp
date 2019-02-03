@@ -5,6 +5,10 @@
 
 #include "main.h"
 
+const int mainTickIntervalMs=25;
+
+gint mainTick(gpointer data);
+
 int main(int argc, char **argv) {
 	// Initialize gtk
 	if (!gtk_init_check(&argc, &argv)) {
@@ -17,6 +21,7 @@ int main(int argc, char **argv) {
 		MapEditor::Main m;
 
 		// Main loop.
+		g_timeout_add(mainTickIntervalMs, &mainTick, (void *)&m);
 		gtk_main();
 	} catch (const std::exception& e) {
 		std::cout << "Could not init map editor: " << e.what() << "\n";
@@ -24,6 +29,12 @@ int main(int argc, char **argv) {
 	}
 
 	return EXIT_SUCCESS;
+}
+
+gint mainTick(gpointer data) {
+	MapEditor::Main *m=(MapEditor::Main *)data;
+	m->tick();
+	return TRUE;
 }
 
 namespace MapEditor {
@@ -34,6 +45,10 @@ namespace MapEditor {
 
 	Main::~Main() {
 		delete mainWindow;
+	}
+
+	void Main::tick(void) {
+		mainWindow->tick();
 	}
 };
 

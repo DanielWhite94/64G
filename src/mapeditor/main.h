@@ -9,6 +9,8 @@ namespace MapEditor {
 		Main();
 		~Main();
 
+		void tick(void);
+
 	private:
 		MainWindow *mainWindow;
 	};

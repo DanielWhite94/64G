@@ -34,6 +34,7 @@ namespace MapEditor {
 		// Clear basic fields
 		map=NULL;
 		zoomLevel=zoomLevelMin;
+		lastTickTimeMs=0;
 
 		// Use GtkBuilder to build our interface from the XML file.
 		GtkBuilder *builder=gtk_builder_new();
@@ -107,6 +108,17 @@ namespace MapEditor {
 
 	void MainWindow::hide() {
 		gtk_widget_hide(window);
+	}
+
+	void MainWindow::tick(void) {
+		// Compute time since last tick
+		gint64 tickTimeMs=g_get_monotonic_time()/1000.0;
+		double timeDeltaMs=(lastTickTimeMs>0 ? tickTimeMs-lastTickTimeMs : 1);
+		lastTickTimeMs=tickTimeMs;
+
+		// Redraw etc
+		updateDrawingArea();
+		updatePositionLabel();
 	}
 
 	bool MainWindow::deleteEvent(GtkWidget *widget, GdkEvent *event) {

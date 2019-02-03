@@ -15,6 +15,8 @@ namespace MapEditor {
 		void show();
 		void hide();
 
+		void tick(void);
+
 		bool deleteEvent(GtkWidget *widget, GdkEvent *event);
 
 		bool menuFileNewActivate(GtkWidget *widget);
@@ -56,6 +58,7 @@ namespace MapEditor {
 
 		static const int zoomLevelMin=0, zoomLevelMax=11;
 		int zoomLevel;
+		gint64 lastTickTimeMs;
 	private:
 		bool mapNew(void);
 		bool mapOpen(void); // Returns true if successfully opened, false if user clicks cancel of the choosen folder is not a valid map.
