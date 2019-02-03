@@ -184,6 +184,14 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+		// Special case if no map loaded
+		if (map==NULL) {
+			// Simply clear screen to black
+			cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+			cairo_paint(cr);
+			return false;
+		}
+
 		// Various parameters
 		const double userTileSizeX=32.0;
 		const double userTileSizeY=32.0;
@@ -199,13 +207,9 @@ namespace MapEditor {
 		const double regionGridLineWidths[zoomLevelMax+1-zoomLevelMin]={0  ,128, 64, 32, 32, 32, 16, 16, 16,  8,  4,  4};
 		const double kmGridLineWidths[zoomLevelMax+1-zoomLevelMin]    ={512,512,256,128,128,128, 64, 32, 16, 16,  8,  8};
 
-		// Special case if no map loaded
-		if (map==NULL) {
-			// Simply clear screen to black
-			cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-			cairo_paint(cr);
-			return false;
-		}
+		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
+		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
+		double deviceBottomRightY=gtk_widget_get_allocated_height(drawingArea);
 
 		// Clear screen to pink to make any undrawn portions clear
 		cairo_set_source_rgb(cr, 1.0, 0.2, 0.6);
@@ -215,10 +219,7 @@ namespace MapEditor {
 		double zoomFactor=getZoomFactor();
 		cairo_scale(cr, zoomFactor, zoomFactor);
 
-		// Call extents of what is on screen both in device units and user space units.
-		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
-		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
-		double deviceBottomRightY=gtk_widget_get_allocated_height(drawingArea);
+		// Calculate extents of what is on screen in user space units.
 		double userTopLeftX=deviceTopLeftX, userTopLeftY=deviceTopLeftY;
 		cairo_device_to_user(cr, &userTopLeftX, &userTopLeftY);
 		double userBottomRightX=deviceBottomRightX, userBottomRightY=deviceBottomRightY;
@@ -587,7 +588,6 @@ namespace MapEditor {
 		// TODO: this
 		return false;
 	}
-
 
 	double MainWindow::getZoomFactor(void) {
 		return pow(2.0, zoomLevel-zoomLevelMax);
