@@ -105,6 +105,14 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
+                      <object class="GtkCheckMenuItem" id="menuViewShowTileGrid">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Show Tile Grid</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkCheckMenuItem" id="menuViewShowRegionGrid">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -113,10 +121,10 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="menuViewShowTileGrid">
+                      <object class="GtkCheckMenuItem" id="menuViewShowKmGrid">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Show Tile Grid</property>
+                        <property name="label" translatable="yes">Show Km Grid</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>

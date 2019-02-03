@@ -33,6 +33,8 @@ namespace MapEditor {
 		bool menuViewShowRegionGridToggled(GtkWidget *widget);
 		bool menuViewShowTileGridIsActive(void);
 		bool menuViewShowTileGridToggled(GtkWidget *widget);
+		bool menuViewShowKmGridIsActive(void);
+		bool menuViewShowKmGridToggled(GtkWidget *widget);
 
 		GtkWidget *window;
 		GtkWidget *menuFileNew;
@@ -48,6 +50,7 @@ namespace MapEditor {
 		GtkWidget *drawingArea;
 		GtkWidget *menuViewShowRegionGrid;
 		GtkWidget *menuViewShowTileGrid;
+		GtkWidget *menuViewShowKmGrid;
 
 		class Map *map;
 

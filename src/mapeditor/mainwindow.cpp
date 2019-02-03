@@ -27,6 +27,7 @@ gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpoin
 
 gboolean mapEditorMainWindowWrapperMenuViewShowRegionGridToggled(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuViewShowTileGridToggled(GtkWidget *widget, gpointer userData);
+gboolean mapEditorMainWindowWrapperMenuViewShowKmGridToggled(GtkWidget *widget, gpointer userData);
 
 namespace MapEditor {
 	MainWindow::MainWindow() {
@@ -59,6 +60,7 @@ namespace MapEditor {
 		error|=(drawingArea=GTK_WIDGET(gtk_builder_get_object(builder, "drawingArea")))==NULL;
 		error|=(menuViewShowRegionGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowRegionGrid")))==NULL;
 		error|=(menuViewShowTileGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowTileGrid")))==NULL;
+		error|=(menuViewShowKmGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowKmGrid")))==NULL;
 		error|=(menuViewZoomIn=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomIn")))==NULL;
 		error|=(menuViewZoomOut=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomOut")))==NULL;
 		if (error)
@@ -77,6 +79,7 @@ namespace MapEditor {
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
 		g_signal_connect(menuViewShowRegionGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowRegionGridToggled), (void *)this);
 		g_signal_connect(menuViewShowTileGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowTileGridToggled), (void *)this);
+		g_signal_connect(menuViewShowKmGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowKmGridToggled), (void *)this);
 
 		// Free memory used by GtkBuilder object.
 		g_object_unref(G_OBJECT(builder));
@@ -167,6 +170,8 @@ namespace MapEditor {
 		//                                                zoom level = {  0   1   2   3   4   5   6   7   8   9  10  11}
 		const double tileGridLineWidths[zoomLevelMax+1-zoomLevelMin]  ={0  ,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1};
 		const double regionGridLineWidths[zoomLevelMax+1-zoomLevelMin]={0  ,128, 64, 32, 32, 32, 16, 16, 16,  8,  4,  4};
+		const double kmGridLineWidths[zoomLevelMax+1-zoomLevelMin]    ={512,512,256,128,128,128, 64, 32, 16, 16,  8,  8};
+
 		// Special case if no map loaded
 		if (map==NULL) {
 			// Simply clear screen to black
@@ -251,6 +256,39 @@ namespace MapEditor {
 			cairo_restore(cr);
 		}
 
+		// Draw km grid if needed
+		if (menuViewShowKmGridIsActive()) {
+			const double userRegionSizeX=MapRegion::tilesWide*userTileSizeX;
+			const double userRegionSizeY=MapRegion::tilesHigh*userTileSizeY;
+			const double userKmSizeX=4.0*userRegionSizeX;
+			const double userKmSizeY=4.0*userRegionSizeY;
+
+			double userStartX=(floor(userTopLeftX/userKmSizeX)-1)*userKmSizeX;
+			double userStartY=(floor(userTopLeftY/userKmSizeY)-1)*userKmSizeY;
+			double userEndX=(ceil(userBottomRightX/userKmSizeX)+1)*userKmSizeX;
+			double userEndY=(ceil(userBottomRightY/userKmSizeY)+1)*userKmSizeY;
+
+			cairo_save(cr);
+			cairo_set_line_width(cr, kmGridLineWidths[zoomLevel]);
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+			cairo_new_path(cr);
+
+			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=userKmSizeY) {
+				cairo_new_sub_path(cr);
+				cairo_move_to(cr, userStartX, userCurrY);
+				cairo_line_to(cr, userEndX, userCurrY);
+			}
+
+			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=userKmSizeX) {
+				cairo_new_sub_path(cr);
+				cairo_move_to(cr, userCurrX, userStartY);
+				cairo_line_to(cr, userCurrX, userEndY);
+			}
+
+			cairo_stroke(cr);
+			cairo_restore(cr);
+		}
+
 		return false;
 	}
 
@@ -268,6 +306,15 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::menuViewShowTileGridToggled(GtkWidget *widget) {
+		updateDrawingArea();
+		return false;
+	}
+
+	bool MainWindow::menuViewShowKmGridIsActive(void) {
+		return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewShowKmGrid));
+	}
+
+	bool MainWindow::menuViewShowKmGridToggled(GtkWidget *widget) {
 		updateDrawingArea();
 		return false;
 	}
@@ -568,4 +615,9 @@ gboolean mapEditorMainWindowWrapperMenuViewShowRegionGridToggled(GtkWidget *widg
 gboolean mapEditorMainWindowWrapperMenuViewShowTileGridToggled(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuViewShowTileGridToggled(widget);
+}
+
+gboolean mapEditorMainWindowWrapperMenuViewShowKmGridToggled(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuViewShowKmGridToggled(widget);
 }
