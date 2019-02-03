@@ -166,6 +166,12 @@ namespace MapEditor {
 		// Various parameters
 		const double userTileSizeX=32.0;
 		const double userTileSizeY=32.0;
+		const double userRegionSizeX=MapRegion::tilesWide*userTileSizeX;
+		const double userRegionSizeY=MapRegion::tilesHigh*userTileSizeY;
+		const double userKmSizeX=4.0*userRegionSizeX;
+		const double userKmSizeY=4.0*userRegionSizeY;
+		const double userMapSizeX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSizeX;
+		const double userMapSizeY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSizeY;
 
 		//                                                zoom level = {  0   1   2   3   4   5   6   7   8   9  10  11}
 		const double tileGridLineWidths[zoomLevelMax+1-zoomLevelMin]  ={0  ,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1};
@@ -204,6 +210,11 @@ namespace MapEditor {
 			double userEndX=(ceil(userBottomRightX/userTileSizeX)+1)*userTileSizeX;
 			double userEndY=(ceil(userBottomRightY/userTileSizeY)+1)*userTileSizeY;
 
+			if (userStartX<0.0) userStartX=0.0;
+			if (userStartY<0.0) userStartY=0.0;
+			if (userEndX>=userMapSizeX) userEndX=userMapSizeX;
+			if (userEndY>=userMapSizeY) userEndY=userMapSizeY;
+
 			cairo_save(cr);
 			cairo_set_line_width(cr, tileGridLineWidths[zoomLevel]);
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
@@ -227,13 +238,15 @@ namespace MapEditor {
 
 		// Draw region grid if needed
 		if (menuViewShowRegionGridIsActive() && zoomLevel>=1) {
-			const double userRegionSizeX=MapRegion::tilesWide*userTileSizeX;
-			const double userRegionSizeY=MapRegion::tilesHigh*userTileSizeY;
-
 			double userStartX=(floor(userTopLeftX/userRegionSizeX)-1)*userRegionSizeX;
 			double userStartY=(floor(userTopLeftY/userRegionSizeY)-1)*userRegionSizeY;
 			double userEndX=(ceil(userBottomRightX/userRegionSizeX)+1)*userRegionSizeX;
 			double userEndY=(ceil(userBottomRightY/userRegionSizeY)+1)*userRegionSizeY;
+
+			if (userStartX<0.0) userStartX=0.0;
+			if (userStartY<0.0) userStartY=0.0;
+			if (userEndX>=userMapSizeX) userEndX=userMapSizeX;
+			if (userEndY>=userMapSizeY) userEndY=userMapSizeY;
 
 			cairo_save(cr);
 			cairo_set_line_width(cr, regionGridLineWidths[zoomLevel]);
@@ -258,15 +271,15 @@ namespace MapEditor {
 
 		// Draw km grid if needed
 		if (menuViewShowKmGridIsActive()) {
-			const double userRegionSizeX=MapRegion::tilesWide*userTileSizeX;
-			const double userRegionSizeY=MapRegion::tilesHigh*userTileSizeY;
-			const double userKmSizeX=4.0*userRegionSizeX;
-			const double userKmSizeY=4.0*userRegionSizeY;
-
 			double userStartX=(floor(userTopLeftX/userKmSizeX)-1)*userKmSizeX;
 			double userStartY=(floor(userTopLeftY/userKmSizeY)-1)*userKmSizeY;
 			double userEndX=(ceil(userBottomRightX/userKmSizeX)+1)*userKmSizeX;
 			double userEndY=(ceil(userBottomRightY/userKmSizeY)+1)*userKmSizeY;
+
+			if (userStartX<0.0) userStartX=0.0;
+			if (userStartY<0.0) userStartY=0.0;
+			if (userEndX>=userMapSizeX) userEndX=userMapSizeX;
+			if (userEndY>=userMapSizeY) userEndY=userMapSizeY;
 
 			cairo_save(cr);
 			cairo_set_line_width(cr, kmGridLineWidths[zoomLevel]);
