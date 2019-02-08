@@ -108,16 +108,16 @@ int main(int argc, char **argv) {
 
 	unsigned regionX, regionY;
 	for(regionY=regionY0; regionY<regionY1; ++regionY) {
-		const unsigned regionTileY0=regionY*MapRegion::tilesHigh;
-		const unsigned regionTileY1=regionTileY0+MapRegion::tilesHigh;
+		const int regionTileY0=regionY*MapRegion::tilesHigh;
+		const int regionTileY1=regionTileY0+MapRegion::tilesHigh;
 		for(regionX=regionX0; regionX<regionX1; ++regionX) {
-			const unsigned regionTileX0=regionX*MapRegion::tilesWide;
-			const unsigned regionTileX1=regionTileX0+MapRegion::tilesWide;
+			const int regionTileX0=regionX*MapRegion::tilesWide;
+			const int regionTileX1=regionTileX0+MapRegion::tilesWide;
 
-			const unsigned imageX0=std::max((unsigned)0, (unsigned)floor((regionTileX0-mapTileX)/xScale));
-			const unsigned imageX1=std::min((unsigned)imageWidth, (unsigned)floor((regionTileX1-mapTileX)/xScale));
-			const unsigned imageY0=std::max((unsigned)0, (unsigned)floor((regionTileY0-mapTileY)/yScale));
-			const unsigned imageY1=std::min((unsigned)imageHeight, (unsigned)floor((regionTileY1-mapTileY)/yScale));
+			const unsigned imageX0=std::max(0, (int)floor((regionTileX0-mapTileX)/xScale));
+			const unsigned imageX1=std::min(imageWidth, (int)floor((regionTileX1-mapTileX)/xScale));
+			const unsigned imageY0=std::max(0, (int)floor((regionTileY0-mapTileY)/yScale));
+			const unsigned imageY1=std::min(imageHeight, (int)floor((regionTileY1-mapTileY)/yScale));
 
 			unsigned imageX, imageY;
 			for(imageY=imageY0; imageY<imageY1; ++imageY) {
