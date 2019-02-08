@@ -9,9 +9,11 @@ release: CFLAGS += -O3 -DNDEBUG
 
 debug: $(OBJS)
 	$(CPP) $(CFLAGS) $(OBJS) -o ../../bin/mapeditor $(LFLAGS)
+	cp -f mainwindow.glade ../../bin/mainwindow.glade
 
 release: $(OBJS)
 	$(CPP) $(CFLAGS) $(OBJS) -o ../../bin/mapeditor $(LFLAGS)
+	cp -f mainwindow.glade ../../bin/mainwindow.glade
 
 %.o: %.cpp %.h
 	$(CPP) $(CFLAGS) -c -o $@ $<
