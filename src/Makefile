@@ -3,15 +3,18 @@ debug:
 	cd demogen && make debug
 	cd mappng && make debug
 	cd mapviewer && make debug
+	cd mapeditor && make debug
 
 release:
 	cd engine && make release
 	cd demogen && make release
 	cd mappng && make release
 	cd mapviewer && make release
+	cd mapeditor && make release
 
 clean:
 	cd engine && make clean
 	cd demogen && make clean
 	cd mappng && make clean
 	cd mapviewer && make clean
+	cd mapeditor && make clean
