@@ -166,7 +166,7 @@ namespace Engine {
 			// Do we need to create the base directory?
 			const char *mapBaseDirPath=getBaseDir();
 			if (!Util::isDir(mapBaseDirPath)) {
-				if (mkdir(mapBaseDirPath, 0777)!=0) {
+				if (!Util::makeDir(mapBaseDirPath)) {
 					perror(NULL);
 					fprintf(stderr, "error: could not create map base dir at '%s'\n", mapBaseDirPath);
 					return false;
@@ -176,7 +176,7 @@ namespace Engine {
 			// Do we need to create regions directory?
 			const char *regionsDirPath=getRegionsDir();
 			if (!Util::isDir(regionsDirPath)) {
-				if (mkdir(regionsDirPath, 0777)!=0) {
+				if (!Util::makeDir(regionsDirPath)) {
 					fprintf(stderr,"error: could not create map regions dir at '%s'\n", regionsDirPath);
 					return false;
 				}
@@ -185,7 +185,7 @@ namespace Engine {
 			// Do we need to create textures directory?
 			const char *texturesDirPath=getTexturesDir();
 			if (!Util::isDir(texturesDirPath)) {
-				if (mkdir(texturesDirPath, 0777)!=0) {
+				if (!Util::makeDir(texturesDirPath)) {
 					fprintf(stderr,"error: could not create map textures dir at '%s'\n", texturesDirPath);
 					return false;
 				}
