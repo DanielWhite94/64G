@@ -90,6 +90,25 @@ bool Util::isDir(const char *path) {
 	return S_ISDIR(pathStat.st_mode);
 }
 
+bool Util::isFile(const char *path) {
+	assert(path!=NULL);
+
+	struct stat pathStat;
+	if (stat(path, &pathStat)!=0)
+		return false;
+	return S_ISREG(pathStat.st_mode);
+}
+
+bool Util::makeDir(const char *path) {
+	assert(path!=NULL);
+
+	return (mkdir(path, 0777)==0);
+}
+
+bool Util::unlinkFile(const char *path) {
+	return (unlink(path)==0);
+}
+
 Util::TimeMs Util::getTimeMs(void) {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

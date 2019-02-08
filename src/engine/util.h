@@ -17,6 +17,9 @@ namespace Engine {
 		static unsigned chooseWithProb(const double *probabilities, size_t count);
 
 		static bool isDir(const char *path);
+		static bool isFile(const char *path);
+		static bool makeDir(const char *path);
+		static bool unlinkFile(const char *path);
 
 		typedef long long int TimeMs;
 		static TimeMs getTimeMs(void);
