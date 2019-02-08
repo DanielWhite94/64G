@@ -75,6 +75,11 @@ int main(int argc, char **argv) {
 	if (!quiet)
 		printf("Creating image at '%s'.\n", imagePath);
 	FILE *file=fopen(imagePath, "wb"); // TODO: Check return.
+	if (file==NULL) {
+		if (!quiet)
+			printf("Could not create image file at '%s'.\n", imagePath);
+		return EXIT_FAILURE;
+	}
 
 	// Setup PNG image.
 	png_structp pngPtr=png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
