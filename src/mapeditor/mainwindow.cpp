@@ -5,6 +5,8 @@
 #include <exception>
 #include <iostream>
 
+#include "../engine/map/maptiled.h"
+
 #include "mainwindow.h"
 
 const char mainWindowXmlFile[]="mainwindow.glade";
@@ -247,6 +249,69 @@ namespace MapEditor {
 		cairo_device_to_user(cr, &userTopLeftX, &userTopLeftY);
 		double userBottomRightX=deviceBottomRightX, userBottomRightY=deviceBottomRightY;
 		cairo_device_to_user(cr, &userBottomRightX, &userBottomRightY);
+
+		// Draw regions
+		if (1) {
+			// Calculate which set of map tile images to use (i.e. which zoom level)
+			int mapTileZl=lrint(log2(userTileSize/MapTiled::pixelsPerTileAtMaxZoom))+zoomLevel; // as generated map tile images may use a different resolution for the same zoom level, we may need to make an adjustment
+			if (mapTileZl>=0 && mapTileZl<MapTiled::maxZoom) {
+				double userDevicePixelSize=pow(2.0, zoomLevelMax-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
+				double userMapTileImageSize=userDevicePixelSize*MapTiled::imageSize;
+
+				int mapTileStartX=floor(userTopLeftX/userMapTileImageSize)-1;
+				int mapTileStartY=floor(userTopLeftY/userMapTileImageSize)-1;
+				int mapTileEndX=ceil(userBottomRightX/userMapTileImageSize)+1;
+				int mapTileEndY=ceil(userBottomRightY/userMapTileImageSize)+1;
+				int mapTileMax=((1u)<<mapTileZl);
+
+				if (mapTileStartX<0)
+					mapTileStartX=0;
+				if (mapTileStartX>=mapTileMax)
+					mapTileStartX=mapTileMax-1;
+				if (mapTileStartY<0)
+					mapTileStartY=0;
+				if (mapTileStartY>=mapTileMax)
+					mapTileStartY=mapTileMax-1;
+
+				if (mapTileEndX<0)
+					mapTileEndX=0;
+				if (mapTileEndX>=mapTileMax)
+					mapTileEndX=mapTileMax-1;
+				if (mapTileEndY<0)
+					mapTileEndY=0;
+				if (mapTileEndY>=mapTileMax)
+					mapTileEndY=mapTileMax-1;
+
+				for(int mapTileY=mapTileStartY; mapTileY<=mapTileEndY; ++mapTileY) {
+					double userMapTileTopLeftY=mapTileY*userMapTileImageSize;
+					for(int mapTileX=mapTileStartX; mapTileX<=mapTileEndX; ++mapTileX) {
+						double userMapTileTopLeftX=mapTileX*userMapTileImageSize;
+
+						// Attempt to load png image as a cairo surfaace
+						char mapTileFilename[1024];
+						MapTiled::getZoomXYPath(map, mapTileZl, mapTileX, mapTileY, mapTileFilename);
+						cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
+							// To blit the png surface we will reset the cairo transformation matrix.
+							// So before we do that work out where we should be drawing said surface.
+							double deviceMapTileTopLeftX=userMapTileTopLeftX;
+							double deviceMapTileTopLeftY=userMapTileTopLeftY;
+							cairo_user_to_device(cr, &deviceMapTileTopLeftX, &deviceMapTileTopLeftY);
+
+							// Reset transformation matrix and blit
+							cairo_save(cr);
+							cairo_identity_matrix(cr);
+							cairo_set_source_surface(cr, mapTileSurface, deviceMapTileTopLeftX, deviceMapTileTopLeftY);
+							cairo_paint(cr);
+							cairo_surface_destroy(mapTileSurface);
+							cairo_restore(cr);
+						} else {
+							// TODO: draw something here (indicating either not yet rendered, or nothing to render)
+						}
+					}
+				}
+			}
+		}
 
 		// Draw tile grid if needed
 		if (menuViewShowTileGridIsActive() && zoomLevel>=8) {
