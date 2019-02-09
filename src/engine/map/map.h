@@ -57,6 +57,7 @@ namespace Engine {
 			const MapTexture *getTexture(unsigned id) const;
 
 			const char *getBaseDir(void) const;
+			const char *getMapTiledDir(void) const;
 
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
@@ -71,6 +72,7 @@ namespace Engine {
 			char *baseDir;
 			char *texturesDir;
 			char *regionsDir;
+			char *mapTiledDir;
 
 			struct RegionData {
 				MapRegion *ptr; // Pointer to region itself.

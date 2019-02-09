@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "map.h"
+#include "maptiled.h"
 #include "../graphics/renderer.h"
 #include "../util.h"
 
@@ -26,6 +27,7 @@ namespace Engine {
 			baseDir=NULL;
 			texturesDir=NULL;
 			regionsDir=NULL;
+			mapTiledDir=NULL;
 
 			regionsByIndexNext=0;
 			for(i=0; i<regionsLoadedMax; ++i)
@@ -55,6 +57,11 @@ namespace Engine {
 			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
 			regionsDir=(char *)malloc(regionsDirPathLen+1); // TODO: check return
 			sprintf(regionsDir, "%s/%s", mapBaseDirPath, regionsDirName);
+
+			const char *mapTiledDirName="maptiled";
+			size_t mapTiledDirPathLen=mapBaseDirPathLen+1+strlen(mapTiledDirName); // +1 is for '/'
+			mapTiledDir=(char *)malloc(mapTiledDirPathLen+1); // TODO: check return
+			sprintf(mapTiledDir, "%s/%s", mapBaseDirPath, mapTiledDirName);
 
 			// Load metadata file if exists.
 			char metadataFilePath[1024]; // TODO: Prevent overflows.
@@ -138,6 +145,7 @@ namespace Engine {
 			free(baseDir);
 			free(texturesDir);
 			free(regionsDir);
+			free(mapTiledDir);
 
 			// Clear initialized flag to be safe.
 			initialized=false;
@@ -187,6 +195,19 @@ namespace Engine {
 			if (!Util::isDir(texturesDirPath)) {
 				if (!Util::makeDir(texturesDirPath)) {
 					fprintf(stderr,"error: could not create map textures dir at '%s'\n", texturesDirPath);
+					return false;
+				}
+			}
+
+			// Do we need to create map tiled directory?
+			const char *mapTiledDirPath=getMapTiledDir();
+			if (!Util::isDir(mapTiledDirPath)) {
+				if (!Util::makeDir(mapTiledDirPath)) {
+					fprintf(stderr,"error: could not create map mapTiled dir at '%s'\n", mapTiledDirPath);
+					return false;
+				}
+				if (!MapTiled::createDirs(this)) {
+					fprintf(stderr,"error: could not create map mapTiled sub-dirs (within '%s')\n", mapTiledDirPath);
 					return false;
 				}
 			}
@@ -522,6 +543,10 @@ namespace Engine {
 
 		const char *Map::getBaseDir(void) const {
 			return baseDir;
+		}
+
+		const char *Map::getMapTiledDir(void) const {
+			return mapTiledDir;
 		}
 
 		const char *Map::getRegionsDir(void) const {
