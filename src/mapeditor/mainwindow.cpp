@@ -36,10 +36,9 @@ namespace MapEditor {
 		// Clear basic fields
 		map=NULL;
 		zoomLevel=zoomLevelMin;
-		const double userTileSizeX=32.0;
-		const double userTileSizeY=32.0;
-		userCentreX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSizeX/2.0;
-		userCentreY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSizeY/2.0;
+		const double userTileSize=32.0;
+		userCentreX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSize/2.0;
+		userCentreY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSize/2.0;
 		lastTickTimeMs=0;
 
 		keyPanningLeft=false;
@@ -215,14 +214,13 @@ namespace MapEditor {
 		}
 
 		// Various parameters
-		const double userTileSizeX=32.0;
-		const double userTileSizeY=32.0;
-		const double userRegionSizeX=MapRegion::tilesWide*userTileSizeX;
-		const double userRegionSizeY=MapRegion::tilesHigh*userTileSizeY;
+		const double userTileSize=32.0;
+		const double userRegionSizeX=MapRegion::tilesWide*userTileSize;
+		const double userRegionSizeY=MapRegion::tilesHigh*userTileSize;
 		const double userKmSizeX=4.0*userRegionSizeX;
 		const double userKmSizeY=4.0*userRegionSizeY;
-		const double userMapSizeX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSizeX;
-		const double userMapSizeY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSizeY;
+		const double userMapSizeX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSize;
+		const double userMapSizeY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSize;
 
 		//                                                zoom level = {  0   1   2   3   4   5   6   7   8   9  10  11}
 		const double tileGridLineWidths[zoomLevelMax+1-zoomLevelMin]  ={0  ,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1};
@@ -252,10 +250,10 @@ namespace MapEditor {
 
 		// Draw tile grid if needed
 		if (menuViewShowTileGridIsActive() && zoomLevel>=8) {
-			double userStartX=(floor(userTopLeftX/userTileSizeX)-1)*userTileSizeX;
-			double userStartY=(floor(userTopLeftY/userTileSizeY)-1)*userTileSizeY;
-			double userEndX=(ceil(userBottomRightX/userTileSizeX)+1)*userTileSizeX;
-			double userEndY=(ceil(userBottomRightY/userTileSizeY)+1)*userTileSizeY;
+			double userStartX=(floor(userTopLeftX/userTileSize)-1)*userTileSize;
+			double userStartY=(floor(userTopLeftY/userTileSize)-1)*userTileSize;
+			double userEndX=(ceil(userBottomRightX/userTileSize)+1)*userTileSize;
+			double userEndY=(ceil(userBottomRightY/userTileSize)+1)*userTileSize;
 
 			if (userStartX<0.0) userStartX=0.0;
 			if (userStartY<0.0) userStartY=0.0;
@@ -267,13 +265,13 @@ namespace MapEditor {
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 			cairo_new_path(cr);
 
-			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=userTileSizeY) {
+			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=userTileSize) {
 				cairo_new_sub_path(cr);
 				cairo_move_to(cr, userStartX, userCurrY);
 				cairo_line_to(cr, userEndX, userCurrY);
 			}
 
-			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=userTileSizeX) {
+			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=userTileSize) {
 				cairo_new_sub_path(cr);
 				cairo_move_to(cr, userCurrX, userStartY);
 				cairo_line_to(cr, userCurrX, userEndY);
