@@ -19,5 +19,17 @@ namespace Engine {
 		MapTiled::~MapTiled() {
 		};
 
+		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
+			sprintf(path, "%s/%u", map->getMapTiledDir(), zoom);
+		}
+
+		void MapTiled::getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]) {
+			sprintf(path, "%s/%u/%u", map->getMapTiledDir(), zoom, x);
+		}
+
+		void MapTiled::getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, char path[1024]) {
+			sprintf(path, "%s/%u/%u/%u.png", map->getMapTiledDir(), zoom, x, y);
+		}
+
 	};
 };
