@@ -5,7 +5,7 @@
 
 #include "main.h"
 
-const int mainTickIntervalMs=25;
+const int mainTickIntervalMs=100;
 
 gint mainTick(gpointer data);
 
