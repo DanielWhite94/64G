@@ -18,6 +18,8 @@ namespace Engine {
 			~MapTiled();
 
 			static bool createDirs(const class Map *map);
+
+			static void generateTileMap(const class Map *map, unsigned zoom, unsigned x, unsigned y);
 			static void getZoomPath(const class Map *map, unsigned zoom, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, char path[1024]); // TODO: improve hardcoded size
