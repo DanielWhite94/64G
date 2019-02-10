@@ -37,7 +37,7 @@ namespace Engine {
 			return true;
 		}
 
-		void MapTiled::generateTileMap(const class Map *map, unsigned zoom, unsigned x, unsigned y) {
+		void MapTiled::generateTileMap(const class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned depth) {
 			char path[1024];
 			getZoomXYPath(map, zoom, x, y, path);
 
@@ -63,7 +63,8 @@ namespace Engine {
 				return;
 			}
 
-			// If not a leaf node then need to compose from 4 children. First ensure they exist and generate their paths
+			// If not a leaf node then need to compose from 4 children. First generate their paths and check if they exist.
+			bool allchildrenExist=true;
 			char childPaths[2][2][1024]; // TODO: Improve this.
 			unsigned childZoom=zoom+1;
 			unsigned childBaseX=x*2;
@@ -73,14 +74,52 @@ namespace Engine {
 					unsigned childX=childBaseX+tx;
 					unsigned childY=childBaseY+ty;
 					getZoomXYPath(map, childZoom, childX, childY, childPaths[tx][ty]);
-					generateTileMap(map, childZoom, childX, childY);
+
+					if (!Util::isFile(childPaths[tx][ty]))
+						allchildrenExist=false;
 				}
 
-			// Shrink 4 child images in half and stitch them together
+			// If all children exist, can simply stitch together regardless of depth option.
+			if (allchildrenExist) {
+				// Shrink 4 child images in half and stitch them together
+				char stitchCommand[4096]; // TODO: better
+				sprintf(stitchCommand, "montage -geometry 50%%x50%%+0+0 %s %s %s %s %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
+				system(stitchCommand);
+
+				return;
+			}
+
+			// Otherwise if depth is 0 then generate manually.
+			if (depth==0) {
+				// Compute mappng arguments.
+				unsigned mapSize=(imageSize*(1u<<(maxZoom-1-zoom)))/pixelsPerTileAtMaxZoom;
+				unsigned mapX=x*mapSize;
+				unsigned mapY=y*mapSize;
+
+				// Create mappng command.
+				char baseCommand[4096];
+				sprintf(baseCommand, "./mappng --quiet %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapSize, mapSize, imageSize, imageSize, path);
+
+				// Run mappng command.
+				system(baseCommand); // TODO: This better (silence output, check for errors etc).
+
+				return;
+			}
+
+			// Otherwise recurse to generate children and stitch together
+			for(unsigned tx=0; tx<2; ++tx)
+				for(unsigned ty=0; ty<2; ++ty) {
+					unsigned childX=childBaseX+tx;
+					unsigned childY=childBaseY+ty;
+
+					generateTileMap(map, childZoom, childX, childY, depth-1);
+				}
+
 			char stitchCommand[4096]; // TODO: better
 			sprintf(stitchCommand, "montage -geometry 50%%x50%%+0+0 %s %s %s %s %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
 			system(stitchCommand);
 		}
+
 		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
 			sprintf(path, "%s/%u", map->getMapTiledDir(), zoom);
 		}
