@@ -10,6 +10,7 @@ namespace MapEditor {
 		~Main();
 
 		void tick(void);
+		void idleTick(void);
 
 	private:
 		MainWindow *mainWindow;
