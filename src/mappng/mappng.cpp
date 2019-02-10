@@ -290,15 +290,18 @@ int main(int argc, char **argv) {
 					pngRows[(imageY*imageWidth+imageX)*3+1]=g;
 					pngRows[(imageY*imageWidth+imageX)*3+2]=b;
 				}
-			}
 
-			// Update progress.
-			if (!quiet)
-				Util::clearConsoleLine();
-			double progress=100.0*((regionX-regionX0)+(regionY-regionY0)*(regionX1-regionX0))/((regionY1-regionY0)*(regionX1-regionX0));
-			if (!quiet)
-				printf("Creating rows... %.1f%%", progress);
-			fflush(stdout);
+				// Update progress.
+				if (!quiet) {
+					Util::clearConsoleLine();
+					double imageYDelta=imageY1-imageY0;
+					double regionXDelta=regionX1-regionX0;
+					double regionYDelta=regionY1-regionY0;
+					double progress=100.0*((imageY-imageY0)+imageYDelta*((regionX-regionX0)+regionXDelta*(regionY-regionY0)))/(regionYDelta*regionXDelta*imageYDelta);
+					printf("Creating rows... %.1f%%", progress);
+					fflush(stdout);
+				}
+			}
 		}
 	}
 	if (!quiet)
