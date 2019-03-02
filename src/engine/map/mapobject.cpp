@@ -282,7 +282,7 @@ namespace Engine {
 			inventoryData.numSlots=numSlots;
 			for(unsigned i=0; i<inventoryData.numSlots; ++i) {
 				inventoryData.items[i].type=mapObjectItemTypeEmpty;
-				inventoryData.items[i].count=1;
+				inventoryData.items[i].count=0;
 			}
 		}
 
