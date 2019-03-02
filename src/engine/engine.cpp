@@ -63,6 +63,12 @@ int main(int argc, char **argv) {
 	objectPlayer.setTextureIdForAngle(CoordAngle180, MapGen::TextureIdOldManN);
 	objectPlayer.setTextureIdForAngle(CoordAngle270, MapGen::TextureIdOldManE);
 
+	objectPlayer.inventoryEmpty(24);
+	MapObjectItem coins={.type=mapObjectItemTypeCoins, .count=1035};
+	objectPlayer.inventoryAddItem(coins);
+	MapObjectItem chest={.type=mapObjectItemTypeChest, .count=19};
+	objectPlayer.inventoryAddItem(chest);
+
 	if (!map->addObject(&objectPlayer)) {
 		printf("Could not add player object.\n");
 		return EXIT_FAILURE;
@@ -71,6 +77,7 @@ int main(int argc, char **argv) {
 	// Create renderer.
 	Renderer renderer(windowWidth, windowHeight);
 	renderer.drawMinimap=true;
+	renderer.drawInventory=true;
 
 	// Create camera variables.
 	Camera camera(CoordVec(0,0), defaultZoom);
