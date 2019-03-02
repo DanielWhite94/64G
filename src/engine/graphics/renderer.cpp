@@ -247,13 +247,13 @@ namespace Engine {
 
 						// Compute tile position and attempt to grab.
 						const MapTile *tile=map->getTileAtCoordVec(tilePos, Map::Map::GetTileFlag::None);
-						if (tile==NULL)
-							continue;
 
 						// Choose colour (first looking at objects, then based on topmost tile layer with a texture set).
 						int r=255, g=0, b=255;
 
-						if (tile->getObjectCount()>0) {
+						if (tile==NULL) {
+							r=g=b=64;
+						} else if (tile->getObjectCount()>0) {
 							// TODO: Better colours.
 							r=255, g=0, b=0;
 						} else {
