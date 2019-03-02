@@ -18,6 +18,7 @@ namespace Engine {
 			drawHitMasksInactive=false;
 			drawHitMasksIntersections=false;
 			drawMinimap=false;
+			drawInventory=false;
 
 			// Init SDL.
 			SDL_Init(SDL_INIT_VIDEO);
@@ -412,6 +413,46 @@ namespace Engine {
 						SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
 						SDL_RenderFillRect(renderer, &screenRect);
 					}
+				}
+			}
+
+			// Draw inventory (if needed).
+			if (drawInventory && player!=NULL && player->inventoryExists()) {
+				const int slotSize=32;
+				const int inventorySpacing=10;
+				const int slotsWide=4;
+				const int slotsHigh=(player->inventoryGetNumSlots()+slotsWide-1)/slotsWide;
+				const int inventoryWidth=(inventorySpacing+slotSize)*slotsWide+inventorySpacing;
+				const int inventoryHeight=(inventorySpacing+slotSize)*slotsHigh+inventorySpacing;
+				const int inventoryBaseX=windowWidth-inventoryWidth;
+				const int inventoryBaseY=windowHeight-inventoryHeight;
+
+				SDL_Rect bgRect;
+				bgRect.x=inventoryBaseX;
+				bgRect.y=inventoryBaseY;
+				bgRect.w=inventoryWidth;
+				bgRect.h=inventoryHeight;
+				SDL_SetRenderDrawColor(renderer, 64, 64, 64, SDL_ALPHA_OPAQUE);
+				SDL_RenderFillRect(renderer, &bgRect);
+
+				for(unsigned slot=0; slot<player->inventoryGetNumSlots(); ++slot) {
+					MapObjectItem item=player->inventoryGetItem(slot);
+
+					// Determine which texture to use.
+					MapTexture::Id textureId=mapObjectItemTypeData[item.type].iconTexture;
+					if (textureId==0)
+						continue;
+
+					// Grab texture.
+					const Texture *texture=getTexture(*map, textureId);
+					if (texture==NULL)
+						continue;
+
+					// Draw texture.
+					int slotX=slot%slotsWide;
+					int slotY=slot/slotsWide;
+					SDL_Rect destRect={.x=(int)(inventoryBaseX+inventorySpacing+(inventorySpacing+slotSize)*slotX), .y=inventoryBaseY+inventorySpacing+(inventorySpacing+slotSize)*slotY, .w=slotSize, .h=slotSize};
+					SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), NULL, &destRect);
 				}
 			}
 

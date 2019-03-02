@@ -22,6 +22,7 @@ namespace Engine {
 			bool drawHitMasksInactive;
 			bool drawHitMasksIntersections;
 			bool drawMinimap;
+			bool drawInventory;
 
 			Renderer(unsigned windowWidth, unsigned windowHeight);
 			~Renderer();
