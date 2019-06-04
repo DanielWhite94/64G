@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "camera.h"
 #include "texture.h"
@@ -37,6 +38,7 @@ namespace Engine {
 		private:
 			SDL_Window *window;
 			SDL_Renderer *renderer;
+			TTF_Font *inventoryItemCountFont;
 
 			CoordVec topLeft, bottomRight;
 

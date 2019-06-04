@@ -23,6 +23,7 @@ namespace Engine {
 			// Init SDL.
 			SDL_Init(SDL_INIT_VIDEO);
 			IMG_Init(IMG_INIT_PNG);
+			TTF_Init();
 
 			// Create window.
 			window=SDL_CreateWindow("title", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, 0); // TODO: Check return and set a title.
@@ -34,9 +35,13 @@ namespace Engine {
 			unsigned i;
 			for(i=0; i<MapTexture::IdMax; ++i)
 				textures[i]=NULL;
+
+			// Load fonts
+			inventoryItemCountFont=TTF_OpenFont("FreeSans.ttf", 24); // TODO: Check return
 		}
 
 		Renderer::~Renderer() {
+			TTF_CloseFont(inventoryItemCountFont);
 			SDL_DestroyRenderer(renderer);
 			SDL_DestroyWindow(window);
 
@@ -453,6 +458,21 @@ namespace Engine {
 					int slotY=slot/slotsWide;
 					SDL_Rect destRect={.x=(int)(inventoryBaseX+inventorySpacing+(inventorySpacing+slotSize)*slotX), .y=inventoryBaseY+inventorySpacing+(inventorySpacing+slotSize)*slotY, .w=slotSize, .h=slotSize};
 					SDL_RenderCopy(renderer, (SDL_Texture *)texture->getTexture(), NULL, &destRect);
+
+					// Draw item count
+					SDL_Color textColour={255, 255, 255};
+					char itemCountStr[32];
+					sprintf(itemCountStr, "%u", item.count);
+					SDL_Surface* textSurface=TTF_RenderText_Solid(inventoryItemCountFont, itemCountStr, textColour);
+					SDL_Texture* textTexture=SDL_CreateTextureFromSurface(renderer, textSurface);
+					SDL_FreeSurface(textSurface);
+
+					SDL_Rect textRect=destRect;
+					textRect.w/=2;
+					textRect.h/=2;
+					SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+
+					SDL_DestroyTexture(textTexture);
 				}
 			}
 
