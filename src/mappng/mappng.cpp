@@ -39,25 +39,25 @@ int main(int argc, char **argv) {
 
 	if (mapTileX<0 || mapTileX>=Engine::Map::Map::regionsWide*MapRegion::tilesWide) {
 		if (!quiet)
-			printf("Bad mapX (%i)", mapTileX);
+			printf("Bad mapX '%i': must be at least zero and less than max map width (%i)\n", mapTileX, Engine::Map::Map::regionsWide*MapRegion::tilesWide);
 		return EXIT_FAILURE;
 	}
 
 	if (mapTileY<0 || mapTileY>=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh) {
 		if (!quiet)
-			printf("Bad mapY (%i)", mapTileY);
+			printf("Bad mapY '%i': must be at least zero and less than max map height (%i)\n", mapTileY, Engine::Map::Map::regionsHigh*MapRegion::tilesHigh);
 		return EXIT_FAILURE;
 	}
 
 	if (mapTileWidth<=0 || mapTileHeight<=0) {
 		if (!quiet)
-			printf("Bad map width or height (%i and %i)", mapTileWidth, mapTileHeight);
+			printf("Bad map width or height '%i' and '%i': both must be greater than zero\n", mapTileWidth, mapTileHeight);
 		return EXIT_FAILURE;
 	}
 
 	if (imageWidth<=0 || imageHeight<=0) {
 		if (!quiet)
-			printf("Bad image width or height (%i and %i)", imageWidth, imageHeight);
+			printf("Bad image width or height '%i' and '%i': both must be greater than zero\n", imageWidth, imageHeight);
 		return EXIT_FAILURE;
 	}
 
