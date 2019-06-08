@@ -13,6 +13,8 @@
 using namespace Engine;
 using namespace Engine::Map;
 
+void mappngGetColourForTile(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
+
 int main(int argc, char **argv) {
 	// Grab arguments.
 	if (argc!=9 && argc!=10) {
@@ -140,158 +142,8 @@ int main(int argc, char **argv) {
 
 					// Choose colour (based on topmost layer with a texture set).
 					uint8_t r=0, g=0, b=0;
-
-					// Standard case.
-					if (tile!=NULL) {
-						for(int z=MapTile::layersMax-1; z>=0; --z) {
-							const MapTile::Layer *layer=tile->getLayer(z);
-
-							// Special case for heatmap textures.
-							if (layer->textureId>=MapGen::TextureIdHeatMapMin && layer->textureId<MapGen::TextureIdHeatMapMax) {
-								unsigned index=layer->textureId-MapGen::TextureIdHeatMapMin;
-								r=g=b=(index*255)/(MapGen::TextureIdHeatMapRange-1);
-								break; // We have found something to draw
-							}
-
-							switch(layer->textureId) {
-								case MapGen::TextureIdNone:
-									continue; // Try next layer instead
-								break;
-								case MapGen::TextureIdGrass0:
-								case MapGen::TextureIdGrass1:
-								case MapGen::TextureIdGrass2:
-								case MapGen::TextureIdGrass3:
-								case MapGen::TextureIdGrass4:
-								case MapGen::TextureIdGrass5: {
-									double height=tile->getHeight();
-
-									height=std::min(height, map->alpineLevel);
-									height=std::max(height, map->seaLevel);
-
-									height=(height-map->seaLevel)/(map->alpineLevel-map->seaLevel);
-
-									double min=64, max=255;
-
-									r=b=0;
-									g=min+height*(max-min);
-								} break;
-								case MapGen::TextureIdBrickPath:
-								case MapGen::TextureIdDock:
-									r=102,g=51,b=0;
-								break;
-								case MapGen::TextureIdDirt:
-									r=0xCC,g=0x66,b=0x00;
-								break;
-								case MapGen::TextureIdRiver: {
-									double moisture=tile->getMoisture();
-									moisture=(moisture-map->minMoisture)/(map->maxMoisture-map->minMoisture);
-
-									double min=196, max=255;
-									r=g=0;
-									b=min+moisture*(max-min);
-								} break;
-								case MapGen::TextureIdWater:
-								case MapGen::TextureIdDeepWater: {
-									double height=tile->getHeight();
-
-									height=std::min(height, map->seaLevel);
-									height=std::max(height, map->minHeight);
-
-									height=(height-map->minHeight)/(map->seaLevel-map->minHeight);
-
-									double min=64, max=196;
-
-									r=g=0;
-									b=min+height*(max-min);
-								} break;
-								case MapGen::TextureIdTree1:
-								case MapGen::TextureIdTree2:
-								case MapGen::TextureIdTree3:
-								case MapGen::TextureIdRoseBush:
-									r=0,g=100,b=0;
-								break;
-								case MapGen::TextureIdMan1:
-								case MapGen::TextureIdOldManN:
-								case MapGen::TextureIdOldManE:
-								case MapGen::TextureIdOldManS:
-								case MapGen::TextureIdOldManW:
-								case MapGen::TextureIdSheepN:
-								case MapGen::TextureIdSheepE:
-								case MapGen::TextureIdSheepS:
-								case MapGen::TextureIdSheepW:
-								case MapGen::TextureIdDog:
-								case MapGen::TextureIdCoins:
-								case MapGen::TextureIdChestClosed:
-								case MapGen::TextureIdChestOpen:
-									// NPCs, items etc
-									r=255,g=0,b=0;
-								break;
-								case MapGen::TextureIdHouseDoorBL:
-								case MapGen::TextureIdHouseDoorBR:
-								case MapGen::TextureIdHouseDoorTL:
-								case MapGen::TextureIdHouseDoorTR:
-								case MapGen::TextureIdHouseRoof:
-								case MapGen::TextureIdHouseRoofTop:
-								case MapGen::TextureIdHouseWall2:
-								case MapGen::TextureIdHouseWall3:
-								case MapGen::TextureIdHouseWall4:
-								case MapGen::TextureIdHouseChimney:
-								case MapGen::TextureIdHouseChimneyTop:
-								case MapGen::TextureIdShopCobbler:
-									r=255,g=128,b=0;
-								break;
-								case MapGen::TextureIdSand:
-								case MapGen::TextureIdHotSand: {
-									double height=tile->getHeight();
-
-									height=std::min(height, map->alpineLevel);
-									height=std::max(height, map->seaLevel);
-
-									height=(height-map->seaLevel)/(map->alpineLevel-map->seaLevel);
-
-									double min=0, max=100;
-									r=255;
-									g=(layer->textureId==MapGen::TextureIdHotSand ? 102 : 204);
-									b=min+height*(max-min);
-								} break;
-								case MapGen::TextureIdSnow: {
-									double height=tile->getHeight();
-
-									height=std::min(height, map->maxHeight);
-									height=std::max(height, map->seaLevel);
-
-									height=(height-map->seaLevel)/(map->maxHeight-map->seaLevel);
-
-									double min=196, max=255;
-
-									r=g=b=min+height*(max-min);
-								} break;
-								case MapGen::TextureIdHighAlpine:
-								case MapGen::TextureIdLowAlpine: {
-									double height=tile->getHeight();
-
-									height=std::min(height, map->maxHeight);
-									height=std::max(height, map->alpineLevel);
-
-									height=(height-map->alpineLevel)/(map->maxHeight-map->alpineLevel);
-
-									double min=127, max=255;
-									if (layer->textureId==MapGen::TextureIdHighAlpine) {
-										min/=2;
-										max/=2;
-									}
-
-									r=g=b=min+height*(max-min);
-								} break;
-								case MapGen::TextureIdNB:
-									assert(false);
-									continue; // Try next layer instead
-								break;
-							}
-
-							break; // We have found something to draw
-						}
-					}
+					if (tile!=NULL)
+						mappngGetColourForTile(map, tile, &r, &g, &b);
 
 					// Write pixel.
 					pngRows[(imageY*imageWidth+imageX)*3+0]=r;
@@ -345,4 +197,162 @@ int main(int argc, char **argv) {
 	delete map;
 
 	return EXIT_SUCCESS;
+}
+
+void mappngGetColourForTile(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+	assert(map!=NULL);
+	assert(tile!=NULL);
+	assert(r!=NULL);
+	assert(g!=NULL);
+	assert(b!=NULL);
+
+	// Loop over layers from top to bottom looking for one with a texture set
+	for(int z=MapTile::layersMax-1; z>=0; --z) {
+		const MapTile::Layer *layer=tile->getLayer(z);
+
+		// Special case for heatmap textures.
+		if (layer->textureId>=MapGen::TextureIdHeatMapMin && layer->textureId<MapGen::TextureIdHeatMapMax) {
+			unsigned index=layer->textureId-MapGen::TextureIdHeatMapMin;
+			*r=*g=*b=(index*255)/(MapGen::TextureIdHeatMapRange-1);
+			break; // We have found something to draw
+		}
+
+		switch(layer->textureId) {
+			case MapGen::TextureIdNone:
+				continue; // Try next layer instead
+			break;
+			case MapGen::TextureIdGrass0:
+			case MapGen::TextureIdGrass1:
+			case MapGen::TextureIdGrass2:
+			case MapGen::TextureIdGrass3:
+			case MapGen::TextureIdGrass4:
+			case MapGen::TextureIdGrass5: {
+				double height=tile->getHeight();
+
+				height=std::min(height, map->alpineLevel);
+				height=std::max(height, map->seaLevel);
+
+				height=(height-map->seaLevel)/(map->alpineLevel-map->seaLevel);
+
+				double min=64, max=255;
+
+				*r=*b=0;
+				*g=min+height*(max-min);
+			} break;
+			case MapGen::TextureIdBrickPath:
+			case MapGen::TextureIdDock:
+				*r=102,*g=51,*b=0;
+			break;
+			case MapGen::TextureIdDirt:
+				*r=0xCC,*g=0x66,*b=0x00;
+			break;
+			case MapGen::TextureIdRiver: {
+				double moisture=tile->getMoisture();
+				moisture=(moisture-map->minMoisture)/(map->maxMoisture-map->minMoisture);
+
+				double min=196, max=255;
+				*r=*g=0;
+				*b=min+moisture*(max-min);
+			} break;
+			case MapGen::TextureIdWater:
+			case MapGen::TextureIdDeepWater: {
+				double height=tile->getHeight();
+
+				height=std::min(height, map->seaLevel);
+				height=std::max(height, map->minHeight);
+
+				height=(height-map->minHeight)/(map->seaLevel-map->minHeight);
+
+				double min=64, max=196;
+
+				*r=*g=0;
+				*b=min+height*(max-min);
+			} break;
+			case MapGen::TextureIdTree1:
+			case MapGen::TextureIdTree2:
+			case MapGen::TextureIdTree3:
+			case MapGen::TextureIdRoseBush:
+				*r=0,*g=100,*b=0;
+			break;
+			case MapGen::TextureIdMan1:
+			case MapGen::TextureIdOldManN:
+			case MapGen::TextureIdOldManE:
+			case MapGen::TextureIdOldManS:
+			case MapGen::TextureIdOldManW:
+			case MapGen::TextureIdSheepN:
+			case MapGen::TextureIdSheepE:
+			case MapGen::TextureIdSheepS:
+			case MapGen::TextureIdSheepW:
+			case MapGen::TextureIdDog:
+			case MapGen::TextureIdCoins:
+			case MapGen::TextureIdChestClosed:
+			case MapGen::TextureIdChestOpen:
+				// NPCs, items etc
+				*r=255,*g=0,*b=0;
+			break;
+			case MapGen::TextureIdHouseDoorBL:
+			case MapGen::TextureIdHouseDoorBR:
+			case MapGen::TextureIdHouseDoorTL:
+			case MapGen::TextureIdHouseDoorTR:
+			case MapGen::TextureIdHouseRoof:
+			case MapGen::TextureIdHouseRoofTop:
+			case MapGen::TextureIdHouseWall2:
+			case MapGen::TextureIdHouseWall3:
+			case MapGen::TextureIdHouseWall4:
+			case MapGen::TextureIdHouseChimney:
+			case MapGen::TextureIdHouseChimneyTop:
+			case MapGen::TextureIdShopCobbler:
+				*r=255,*g=128,*b=0;
+			break;
+			case MapGen::TextureIdSand:
+			case MapGen::TextureIdHotSand: {
+				double height=tile->getHeight();
+
+				height=std::min(height, map->alpineLevel);
+				height=std::max(height, map->seaLevel);
+
+				height=(height-map->seaLevel)/(map->alpineLevel-map->seaLevel);
+
+				double min=0, max=100;
+				*r=255;
+				*g=(layer->textureId==MapGen::TextureIdHotSand ? 102 : 204);
+				*b=min+height*(max-min);
+			} break;
+			case MapGen::TextureIdSnow: {
+				double height=tile->getHeight();
+
+				height=std::min(height, map->maxHeight);
+				height=std::max(height, map->seaLevel);
+
+				height=(height-map->seaLevel)/(map->maxHeight-map->seaLevel);
+
+				double min=196, max=255;
+
+				*r=*g=*b=min+height*(max-min);
+			} break;
+			case MapGen::TextureIdHighAlpine:
+			case MapGen::TextureIdLowAlpine: {
+				double height=tile->getHeight();
+
+				height=std::min(height, map->maxHeight);
+				height=std::max(height, map->alpineLevel);
+
+				height=(height-map->alpineLevel)/(map->maxHeight-map->alpineLevel);
+
+				double min=127, max=255;
+				if (layer->textureId==MapGen::TextureIdHighAlpine) {
+					min/=2;
+					max/=2;
+				}
+
+				*r=*g=*b=min+height*(max-min);
+			} break;
+			case MapGen::TextureIdNB:
+				assert(false);
+				continue; // Try next layer instead
+			break;
+		}
+
+		break; // We have found something to draw
+	}
 }
