@@ -80,7 +80,7 @@ namespace Engine {
 				unsigned offsetX, offsetY; // Indicies into regionsByOffset array.
 			};
 
-			unsigned regionsByIndexNext;
+			unsigned regionsCount;
 			RegionData *regionsByIndex[regionsLoadedMax]; // These are pointers into regionsByOffset array.
 			RegionData *regionsByAge[regionsLoadedMax]; // These are pointers into regionsByOffset array.
 			RegionData regionsByOffset[regionsHigh][regionsWide];

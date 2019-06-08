@@ -29,7 +29,7 @@ namespace Engine {
 			regionsDir=NULL;
 			mapTiledDir=NULL;
 
-			regionsByIndexNext=0;
+			regionsCount=0;
 			for(i=0; i<regionsLoadedMax; ++i)
 				regionsByIndex[i]=NULL;
 			for(i=0; i<regionsLoadedMax; ++i)
@@ -134,8 +134,8 @@ namespace Engine {
 			unsigned i;
 
 			// Remove regions.
-			while(regionsByIndexNext>0)
-				regionUnload(regionsByIndexNext-1);
+			while(regionsCount>0)
+				regionUnload(regionsCount-1);
 
 			// Remove textures.
 			for(i=0; i<MapTexture::IdMax; ++i)
@@ -260,7 +260,7 @@ namespace Engine {
 			// Save all regions.
 			const char *regionsDirPath=getRegionsDir();
 
-			for(unsigned i=0; i<regionsByIndexNext; ++i) {
+			for(unsigned i=0; i<regionsCount; ++i) {
 				// Grab region.
 				MapRegion *region=getRegionAtIndex(i);
 
@@ -306,7 +306,7 @@ namespace Engine {
 
 		void Map::tick(void) {
 			// Call region tick on each loaded region.
-			for(unsigned i=0; i<regionsByIndexNext; ++i) {
+			for(unsigned i=0; i<regionsCount; ++i) {
 				MapRegion *region=regionsByIndex[i]->ptr;
 
 				// TODO: Move this logic into MapRegion itself so that objects list can be made private.
@@ -377,7 +377,7 @@ namespace Engine {
 					if (!loadRegion(regionX, regionY, regionPath)) {
 						if (!create) {
 							// Failed - ensure this region is unloaded as it is not correct.
-							for(unsigned r=0; r<regionsByIndexNext; ++r)
+							for(unsigned r=0; r<regionsCount; ++r)
 								if (regionsByIndex[r]->offsetX==regionX && regionsByIndex[r]->offsetY==regionY) {
 									regionUnload(r);
 									break;
@@ -558,13 +558,13 @@ namespace Engine {
 		}
 
 		MapRegion *Map::getRegionAtIndex(unsigned index) {
-			assert(index<regionsByIndexNext);
+			assert(index<regionsCount);
 
 			return regionsByIndex[index]->ptr;
 		}
 
 		const MapRegion *Map::getRegionAtIndex(unsigned index) const {
-			assert(index<regionsByIndexNext);
+			assert(index<regionsCount);
 
 			return regionsByIndex[index]->ptr;
 		}
@@ -583,15 +583,15 @@ namespace Engine {
 				return false;
 
 			// Add region.
-			assert(regionsByIndexNext<regionsLoadedMax);
+			assert(regionsCount<regionsLoadedMax);
 			regionsByOffset[regionY][regionX].ptr=region;
-			regionsByOffset[regionY][regionX].index=regionsByIndexNext;
+			regionsByOffset[regionY][regionX].index=regionsCount;
 			regionsByOffset[regionY][regionX].offsetX=regionX;
 			regionsByOffset[regionY][regionX].offsetY=regionY;
-			regionsByIndex[regionsByIndexNext]=&(regionsByOffset[regionY][regionX]);
-			assert(regionsByAge[regionsByIndexNext]==NULL);
-			regionsByAge[regionsByIndexNext]=regionsByIndex[regionsByIndexNext];
-			regionsByIndexNext++;
+			regionsByIndex[regionsCount]=&(regionsByOffset[regionY][regionX]);
+			assert(regionsByAge[regionsCount]==NULL);
+			regionsByAge[regionsCount]=regionsByIndex[regionsCount];
+			regionsCount++;
 
 			updateRegionAge(region);
 
@@ -600,10 +600,10 @@ namespace Engine {
 
 		bool Map::ensureSpaceForRegion(void) {
 			// Do we need to evict something?
-			assert(regionsByIndexNext<=regionsLoadedMax);
-			if (regionsByIndexNext==regionsLoadedMax) {
+			assert(regionsCount<=regionsLoadedMax);
+			if (regionsCount==regionsLoadedMax) {
 				// Find the last-recently used region.
-				RegionData *regionData=regionsByAge[regionsByIndexNext-1];
+				RegionData *regionData=regionsByAge[regionsCount-1];
 				assert(regionData!=NULL);
 				MapRegion *region=regionData->ptr;
 
@@ -615,13 +615,13 @@ namespace Engine {
 				regionUnload(regionData->index);
 			}
 
-			return (regionsByIndexNext<regionsLoadedMax);
+			return (regionsCount<regionsLoadedMax);
 		}
 
 		void Map::updateRegionAge(const MapRegion *region) {
 			assert(region!=NULL);
 
-			for(int i=0; i<regionsByIndexNext; i++) {
+			for(int i=0; i<regionsCount; i++) {
 				if (regionsByAge[i]->ptr==region) {
 					// Found - move to front.
 					RegionData *regionDataPtr=regionsByAge[i];
@@ -634,13 +634,13 @@ namespace Engine {
 		}
 
 		void Map::regionUnload(unsigned index) {
-			assert(index<regionsByIndexNext);
+			assert(index<regionsCount);
 
 			// Remove from regionsByAge array.
-			for(unsigned i=0; i<regionsByIndexNext; ++i) {
+			for(unsigned i=0; i<regionsCount; ++i) {
 				if (regionsByAge[i]==regionsByIndex[index]) {
-					memmove(regionsByAge+i, regionsByAge+i+1, (regionsByIndexNext-1-i)*sizeof(RegionData *));
-					regionsByAge[regionsByIndexNext-1]=NULL;
+					memmove(regionsByAge+i, regionsByAge+i+1, (regionsCount-1-i)*sizeof(RegionData *));
+					regionsByAge[regionsCount-1]=NULL;
 					break;
 				}
 			}
@@ -652,11 +652,11 @@ namespace Engine {
 			regionsByIndex[index]->ptr=NULL;
 
 			// Copy last array element into this gap and update its index.
-			regionsByIndex[index]=regionsByIndex[regionsByIndexNext-1];
+			regionsByIndex[index]=regionsByIndex[regionsCount-1];
 			regionsByIndex[index]->index=index;
 
 			// Decrement index next.
-			--regionsByIndexNext;
+			--regionsCount;
 		}
 	};
 };
