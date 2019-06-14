@@ -5,10 +5,10 @@
 #include <cstdlib>
 #include <png.h>
 
-#include "mappnglib.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
+#include "../engine/map/mappnglib.h"
 #include "../engine/util.h"
 
 using namespace Engine;
