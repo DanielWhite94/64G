@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <png.h>
 
 #include "maptiled.h"
 #include "../physics/coord.h"
@@ -19,14 +20,16 @@ namespace Engine {
 		MapTiled::~MapTiled() {
 		};
 
-		bool MapTiled::createDirs(const class Map *map) {
+		bool MapTiled::createMetadata(const class Map *map) {
 			char path[2048]; // TODO: better
 
+			// Create directories for each zoom level
 			for(unsigned zoom=0; zoom<maxZoom; ++zoom) {
 				getZoomPath(map, zoom, path);
 				if (!Util::isDir(path) && !Util::makeDir(path))
 					return false;
 
+				// Create directories for each x coordinate
 				unsigned maxX=(1u<<zoom);
 				for(unsigned x=0; x<maxX; ++x) {
 					getZoomXPath(map, zoom, x, path);
@@ -34,6 +37,37 @@ namespace Engine {
 						return false;
 				}
 			}
+
+			// Create blank image (can be used if an image has not yet been generated)
+			char imagePath[2048]; // TODO: better
+			sprintf(imagePath, "%s/blank.png", map->getMapTiledDir());
+			FILE *imageFile=fopen(imagePath, "wb");
+			png_structp pngPtr=png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+			png_init_io(pngPtr, imageFile);
+			png_infop infoPtr=png_create_info_struct(pngPtr);
+			png_set_IHDR(pngPtr, infoPtr, imageSize, imageSize, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+			png_write_info(pngPtr, infoPtr);
+			png_set_compression_level(pngPtr, 3);
+
+			png_bytep pngRows=(png_bytep)malloc(imageSize*imageSize*3*sizeof(png_byte));
+			uint8_t r=255, g=0, b=255;
+			unsigned imageY;
+			for(imageY=0; imageY<imageSize; ++imageY) {
+				unsigned imageX;
+				for(imageX=0; imageX<imageSize; ++imageX) {
+					pngRows[(imageY*imageSize+imageX)*3+0]=r;
+					pngRows[(imageY*imageSize+imageX)*3+1]=g;
+					pngRows[(imageY*imageSize+imageX)*3+2]=b;
+				}
+				png_write_row(pngPtr, &pngRows[(imageY*imageSize+0)*3*sizeof(png_byte)]);
+			}
+			free(pngRows);
+
+			png_write_end(pngPtr, NULL);
+			fclose(imageFile);
+			png_free_data(pngPtr, infoPtr, PNG_FREE_ALL, -1);
+			png_destroy_write_struct(&pngPtr, (png_infopp)NULL);
+
 			return true;
 		}
 

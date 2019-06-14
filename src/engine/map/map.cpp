@@ -206,8 +206,8 @@ namespace Engine {
 					fprintf(stderr,"error: could not create map mapTiled dir at '%s'\n", mapTiledDirPath);
 					return false;
 				}
-				if (!MapTiled::createDirs(this)) {
-					fprintf(stderr,"error: could not create map mapTiled sub-dirs (within '%s')\n", mapTiledDirPath);
+				if (!MapTiled::createMetadata(this)) {
+					fprintf(stderr,"error: could not create map mapTiled metadata (within '%s')\n", mapTiledDirPath);
 					return false;
 				}
 			}
