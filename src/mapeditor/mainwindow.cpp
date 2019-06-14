@@ -295,6 +295,13 @@ namespace MapEditor {
 						char mapTileFilename[1024];
 						MapTiled::getZoomXYPath(map, mapTileZl, mapTileX, mapTileY, mapTileFilename);
 						cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+						if (cairo_surface_status(mapTileSurface)!=CAIRO_STATUS_SUCCESS) {
+							// No image avaiable - use standard blank one until it has been generated
+							cairo_surface_destroy(mapTileSurface);
+							MapTiled::getBlankImagePath(map, mapTileFilename);
+							mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+						}
+
 						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
 							// To blit the png surface we will reset the cairo transformation matrix.
 							// So before we do that work out where we should be drawing said surface.
@@ -309,8 +316,6 @@ namespace MapEditor {
 							cairo_paint(cr);
 							cairo_surface_destroy(mapTileSurface);
 							cairo_restore(cr);
-						} else {
-							// TODO: draw something here (indicating either not yet rendered, or nothing to render)
 						}
 					}
 				}
