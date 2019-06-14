@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <cstdio>
 #include <cstdlib>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -24,6 +25,8 @@ namespace Engine {
 			// Set Map to clean state.
 			unsigned i, j;
 
+			lockFd=-1;
+
 			baseDir=NULL;
 			texturesDir=NULL;
 			regionsDir=NULL;
@@ -42,6 +45,13 @@ namespace Engine {
 				textures[i]=NULL;
 
 			initialized=false; // Needed as initclean sets this to true.
+
+			// Attempt to obtain the lock file
+			char lockPath[1024]; // TODO: better
+			sprintf(lockPath, "%s/lock", mapBaseDirPath);
+			lockFd=open(lockPath, O_RDWR|O_CREAT|O_EXCL, S_IWUSR);
+			if (lockFd==-1)
+				return; // Already open
 
 			// Create directory strings.
 			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
@@ -141,11 +151,24 @@ namespace Engine {
 			for(i=0; i<MapTexture::IdMax; ++i)
 				removeTexture(i);
 
+			// Close and remove lock file
+			if (lockFd!=-1)
+				close(lockFd);
+			if (baseDir!=NULL) {
+				char lockPath[1024]; // TODO: better
+				sprintf(lockPath, "%s/lock", baseDir);
+				unlink(lockPath);
+			}
+
 			// Free paths.
 			free(baseDir);
+			baseDir=NULL;
 			free(texturesDir);
+			texturesDir=NULL;
 			free(regionsDir);
+			regionsDir=NULL;
 			free(mapTiledDir);
+			mapTiledDir=NULL;
 
 			// Clear initialized flag to be safe.
 			initialized=false;

@@ -69,6 +69,8 @@ namespace Engine {
 		private:
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 
+			int lockFd;
+
 			char *baseDir;
 			char *texturesDir;
 			char *regionsDir;
