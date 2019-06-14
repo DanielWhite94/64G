@@ -40,7 +40,7 @@ namespace Engine {
 
 			// Create blank image (can be used if an image has not yet been generated)
 			char imagePath[2048]; // TODO: better
-			sprintf(imagePath, "%s/blank.png", map->getMapTiledDir());
+			getBlankImagePath(map, imagePath);
 			FILE *imageFile=fopen(imagePath, "wb");
 			png_structp pngPtr=png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 			png_init_io(pngPtr, imageFile);
@@ -166,5 +166,8 @@ namespace Engine {
 			sprintf(path, "%s/%u/%u/%u.png", map->getMapTiledDir(), zoom, x, y);
 		}
 
+		void MapTiled::getBlankImagePath(const class Map *map, char path[1024]) {
+			sprintf(path, "%s/blank.png", map->getMapTiledDir());
+		}
 	};
 };
