@@ -130,6 +130,10 @@ namespace MapEditor {
 		double timeDeltaMs=(lastTickTimeMs>0 ? tickTimeMs-lastTickTimeMs : 1);
 		lastTickTimeMs=tickTimeMs;
 
+		// No panning?
+		if (!keyPanningLeft && !keyPanningRight && !keyPanningUp && !keyPanningDown)
+			return;
+
 		// Calculate device delta
 		double speedFactor=0.25*(timeDeltaMs/1000.0);
 		double deviceW=gtk_widget_get_allocated_width(drawingArea);
