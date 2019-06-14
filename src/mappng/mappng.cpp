@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 	png_set_IHDR(pngPtr, infoPtr, imageWidth, imageHeight, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 	png_write_info(pngPtr, infoPtr);
 
-	png_set_compression_level(pngPtr, Z_NO_COMPRESSION);
+	png_set_compression_level(pngPtr, 3);
 
 	// Create rows, looping one region at a time to avoid unnecessary unloading and reloading.
 	png_bytep pngRows=(png_bytep)malloc(imageHeight*imageWidth*3*sizeof(png_byte));
