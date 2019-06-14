@@ -161,9 +161,13 @@ namespace MapEditor {
 	void MainWindow::idleTick(void) {
 		// If there is a map loaded, we may need to generate more images.
 		if (map!=NULL && !mapTilesToGen.empty()) {
+			// Take most recently marked 'maptile' and generate it, then remove it from the queue.
 			const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
 			MapTiled::generateTileMap(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 0);
 			mapTilesToGen.pop_back();
+
+			// We presumably have something to show now for part of the screen, so redraw.
+			updateDrawingArea();
 		}
 	}
 
