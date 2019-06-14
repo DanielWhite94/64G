@@ -3,12 +3,17 @@
 
 #include <cairo.h>
 #include <gtk/gtk.h>
+#include <vector>
 
 #include "../engine/map/map.h"
 
 namespace MapEditor {
 	class MainWindow {
 	public:
+		struct DrawMapTileEntry {
+			int zoom, x, y;
+		};
+
 		MainWindow();
 		~MainWindow();
 
@@ -16,6 +21,7 @@ namespace MapEditor {
 		void hide();
 
 		void tick(void);
+		void idleTick(void);
 
 		bool deleteEvent(GtkWidget *widget, GdkEvent *event);
 
@@ -64,6 +70,8 @@ namespace MapEditor {
 
 		bool keyPanningLeft, keyPanningRight, keyPanningUp, keyPanningDown;
 		gint64 lastTickTimeMs;
+
+		vector<DrawMapTileEntry> mapTilesToGen;
 	private:
 		bool mapNew(void);
 		bool mapOpen(void); // Returns true if successfully opened, false if user clicks cancel of the choosen folder is not a valid map.

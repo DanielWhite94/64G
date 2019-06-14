@@ -36,6 +36,7 @@ gboolean mapEditorMainWindowWrapperMenuViewShowKmGridToggled(GtkWidget *widget, 
 namespace MapEditor {
 	MainWindow::MainWindow() {
 		// Clear basic fields
+		mapTilesToGen.clear();
 		map=NULL;
 		zoomLevel=zoomLevelMin;
 		const double userTileSize=32.0;
@@ -157,6 +158,15 @@ namespace MapEditor {
 		updatePositionLabel();
 	}
 
+	void MainWindow::idleTick(void) {
+		// If there is a map loaded, we may need to generate more images.
+		if (map!=NULL && !mapTilesToGen.empty()) {
+			const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
+			MapTiled::generateTileMap(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 0);
+			mapTilesToGen.pop_back();
+		}
+	}
+
 	bool MainWindow::deleteEvent(GtkWidget *widget, GdkEvent *event) {
 		mapQuit();
 		return TRUE;
@@ -211,6 +221,9 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+		// Clear 'to gen' list (ready to populate during this function)
+		mapTilesToGen.clear();
+
 		// Special case if no map loaded
 		if (map==NULL) {
 			// Simply clear screen to black
@@ -300,6 +313,10 @@ namespace MapEditor {
 							cairo_surface_destroy(mapTileSurface);
 							MapTiled::getBlankImagePath(map, mapTileFilename);
 							mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+
+							// Add to list of map tiles that need generating for the current scene
+							DrawMapTileEntry mapTileEntry={.zoom=mapTileZl, .x=mapTileX, .y=mapTileY};
+							mapTilesToGen.push_back(mapTileEntry);
 						}
 
 						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
