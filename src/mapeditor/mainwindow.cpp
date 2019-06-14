@@ -534,6 +534,8 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::mapOpen(void) {
+		char statusLabelStr[1024]; // TODO: better
+
 		// Close the current map (if any)
 		if (!mapClose())
 			return false;
@@ -556,11 +558,14 @@ namespace MapEditor {
 		if (map==NULL || !map->initialized) {
 			delete map;
 			map=NULL;
+
+			sprintf(statusLabelStr, "Could not open map at: %s", filename);
+			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
+
 			return false;
 		}
 
 		// Update various things
-		char statusLabelStr[1024]; // TODO: better
 		sprintf(statusLabelStr, "Opened map at: %s", filename);
 		gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 
