@@ -1,8 +1,8 @@
 #ifndef MAPEDITOR_MAINWINDOW_H
 #define MAPEDITOR_MAINWINDOW_H
 
-#include <gtk/gtk.h>
 #include <cairo.h>
+#include <gtk/gtk.h>
 
 #include "../engine/map/map.h"
 
