@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	// Create file for writing.
 	if (!quiet)
 		printf("Creating image at '%s'.\n", imagePath);
-	FILE *file=fopen(imagePath, "wb"); // TODO: Check return.
+	FILE *file=fopen(imagePath, "wb");
 	if (file==NULL) {
 		if (!quiet)
 			printf("Could not create image file at '%s'.\n", imagePath);
