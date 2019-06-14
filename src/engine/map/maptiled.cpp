@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <png.h>
 
+#include "mappnglib.h"
 #include "maptiled.h"
 #include "../physics/coord.h"
 #include "../util.h"
@@ -71,7 +72,7 @@ namespace Engine {
 			return true;
 		}
 
-		void MapTiled::generateTileMap(const class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned depth) {
+		void MapTiled::generateTileMap(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned depth) {
 			char path[1024];
 			getZoomXYPath(map, zoom, x, y, path);
 
@@ -82,17 +83,12 @@ namespace Engine {
 			// If we are at the maximum zoom level then this is a 'leaf node' that needs rendering from scratch.
 			if (zoom==maxZoom-1) {
 				// Compute mappng arguments.
-				unsigned mapW=imageSize/pixelsPerTileAtMaxZoom;
-				unsigned mapH=imageSize/pixelsPerTileAtMaxZoom;
-				unsigned mapX=x*mapW;
-				unsigned mapY=y*mapH;
+				unsigned mapSize=imageSize/pixelsPerTileAtMaxZoom;
+				unsigned mapX=x*mapSize;
+				unsigned mapY=y*mapSize;
 
-				// Create mappng command.
-				char baseCommand[4096];
-				sprintf(baseCommand, "./mappng --quiet %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, path);
-
-				// Run mappng command.
-				system(baseCommand); // TODO: This better (silence output, check for errors etc).
+				// Generate image
+				MapPngLib::generatePng(map, path, mapX, mapY, mapSize, mapSize, imageSize, imageSize, true); // TODO: Check return?
 
 				return;
 			}
@@ -130,12 +126,8 @@ namespace Engine {
 				unsigned mapX=x*mapSize;
 				unsigned mapY=y*mapSize;
 
-				// Create mappng command.
-				char baseCommand[4096];
-				sprintf(baseCommand, "./mappng --quiet %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapSize, mapSize, imageSize, imageSize, path);
-
-				// Run mappng command.
-				system(baseCommand); // TODO: This better (silence output, check for errors etc).
+				// Generate image
+				MapPngLib::generatePng(map, path, mapX, mapY, mapSize, mapSize, imageSize, imageSize, true); // TODO: Check return?
 
 				return;
 			}
