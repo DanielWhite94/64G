@@ -254,11 +254,11 @@ namespace MapEditor {
 		const double userMapSizeX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSize;
 		const double userMapSizeY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSize;
 
-		//                                              zoom level = {   0    1    2   3   4   5   6   7   8   9  10  11, 12, 13}
-		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={   0,   0,   0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1};
-		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={   0,   0,   0,128,128, 64, 32, 32, 16,  8,  8,  8,  4,  4};
-		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={2048,2048,1024,256,128,128, 64, 32, 32, 32,  16, 16, 8,  8};
-		assert(zoomLevelMax-zoomLevelMin==14);
+		//                                              zoom level = {   0    1    2    3    4   5   6   7   8   9  10  11, 12, 13, 14, 15}
+		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={   0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1};
+		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={   0,   0,   0,   0,   0,128,128, 64, 32, 32, 16,  8,  8,  8,  4,  4};
+		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={4096,4096,2048,2048,1024,256,128,128, 64, 32, 32, 32,  16, 16, 8,  8};
+		assert(zoomLevelMax-zoomLevelMin==16);
 
 		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
 		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
