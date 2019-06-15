@@ -105,6 +105,7 @@ namespace MapEditor {
 		updateFileMenuSensitivity();
 		updateTitle();
 		updatePositionLabel();
+		gtk_label_set_text(GTK_LABEL(statusLabel), "No map open");
 	}
 
 	MainWindow::~MainWindow() {
@@ -169,6 +170,13 @@ namespace MapEditor {
 				updateDrawingArea();
 			}
 
+			// Update status bar
+			char statusLabelStr[128];
+			if (!mapTilesToGen.empty())
+				sprintf(statusLabelStr, "%llu images still to render", (unsigned long long)mapTilesToGen.size());
+			else
+				sprintf(statusLabelStr, "image rendering complete");
+			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 		}
 	}
 
