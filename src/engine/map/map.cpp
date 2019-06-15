@@ -46,13 +46,6 @@ namespace Engine {
 
 			initialized=false; // Needed as initclean sets this to true.
 
-			// Attempt to obtain the lock file
-			char lockPath[1024]; // TODO: better
-			sprintf(lockPath, "%s/lock", mapBaseDirPath);
-			lockFd=open(lockPath, O_RDWR|O_CREAT|O_EXCL, S_IWUSR);
-			if (lockFd==-1)
-				return; // Already open
-
 			// Create directory strings.
 			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 			baseDir=(char *)malloc(mapBaseDirPathLen+1); // TODO: Check return.
@@ -72,6 +65,23 @@ namespace Engine {
 			size_t mapTiledDirPathLen=mapBaseDirPathLen+1+strlen(mapTiledDirName); // +1 is for '/'
 			mapTiledDir=(char *)malloc(mapTiledDirPathLen+1); // TODO: check return
 			sprintf(mapTiledDir, "%s/%s", mapBaseDirPath, mapTiledDirName);
+
+			// Do we need to create the base directory?
+			// Note: we do this here instead of with the other directories in createMetadata because otherwise we would not be able to create the lock file below.
+			if (!Util::isDir(mapBaseDirPath)) {
+				if (!Util::makeDir(mapBaseDirPath)) {
+					perror(NULL);
+					fprintf(stderr, "error: could not create map base dir at '%s'\n", mapBaseDirPath);
+					return;
+				}
+			}
+
+			// Attempt to obtain the lock file
+			char lockPath[1024]; // TODO: better
+			sprintf(lockPath, "%s/lock", mapBaseDirPath);
+			lockFd=open(lockPath, O_RDWR|O_CREAT|O_EXCL, S_IWUSR);
+			if (lockFd==-1)
+				return; // Already open
 
 			// Load metadata file if exists.
 			char metadataFilePath[1024]; // TODO: Prevent overflows.
@@ -194,16 +204,6 @@ namespace Engine {
 		}
 
 		bool Map::saveMetadata(void) const {
-			// Do we need to create the base directory?
-			const char *mapBaseDirPath=getBaseDir();
-			if (!Util::isDir(mapBaseDirPath)) {
-				if (!Util::makeDir(mapBaseDirPath)) {
-					perror(NULL);
-					fprintf(stderr, "error: could not create map base dir at '%s'\n", mapBaseDirPath);
-					return false;
-				}
-			}
-
 			// Do we need to create regions directory?
 			const char *regionsDirPath=getRegionsDir();
 			if (!Util::isDir(regionsDirPath)) {

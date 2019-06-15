@@ -407,7 +407,9 @@ int main(int argc, char **argv) {
 	printf("Creating map...\n");
 	mapData.map=new class Map(outputPath);
 	if (mapData.map==NULL || !mapData.map->initialized) {
-		printf("Could not create a map.\n");
+		printf("Could not create map.\n");
+		if (mapData.map!=NULL)
+			delete mapData.map;
 		return EXIT_FAILURE;
 	}
 
@@ -415,6 +417,8 @@ int main(int argc, char **argv) {
 	printf("Creating textures...\n");
 	if (!MapGen::addBaseTextures(mapData.map)) {
 		printf("Could not add base textures.\n");
+		if (mapData.map!=NULL)
+			delete mapData.map;
 		return EXIT_FAILURE;
 	}
 
@@ -559,9 +563,13 @@ int main(int argc, char **argv) {
 	// Save map.
 	if (!mapData.map->save()) {
 		printf("Could not save map to '%s'.\n", outputPath);
+		if (mapData.map!=NULL)
+			delete mapData.map;
 		return EXIT_FAILURE;
 	}
 	printf("Saved map to '%s'.\n", outputPath);
 
+	// Tidy up
+	delete mapData.map;
 	return EXIT_SUCCESS;
 }
