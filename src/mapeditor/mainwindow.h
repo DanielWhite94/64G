@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../engine/map/map.h"
+#include "../engine/map/maptiled.h"
 
 namespace MapEditor {
 	class MainWindow {
@@ -64,7 +65,7 @@ namespace MapEditor {
 
 		class Map *map;
 
-		static const int zoomLevelMin=0, zoomLevelMax=11;
+		static const int zoomLevelMin=0, zoomLevelMax=MapTiled::maxZoom;
 		int zoomLevel;
 		double userCentreX, userCentreY;
 

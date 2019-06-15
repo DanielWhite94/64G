@@ -5,8 +5,6 @@
 #include <exception>
 #include <iostream>
 
-#include "../engine/map/maptiled.h"
-
 #include "mainwindow.h"
 
 const char mainWindowXmlFile[]="mainwindow.glade";
@@ -161,13 +159,16 @@ namespace MapEditor {
 	void MainWindow::idleTick(void) {
 		// If there is a map loaded, we may need to generate more images.
 		if (map!=NULL && !mapTilesToGen.empty()) {
-			// Take most recently marked 'maptile' and generate it, then remove it from the queue.
-			const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
-			MapTiled::generateTileMap(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 0);
-			mapTilesToGen.pop_back();
+			if (!mapTilesToGen.empty()) {
+				// Take most recently marked 'maptile' and generate it, then remove it from the queue.
+				const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
+				MapTiled::generateTileMap(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 0);
+				mapTilesToGen.pop_back();
 
-			// We presumably have something to show now for part of the screen, so redraw.
-			updateDrawingArea();
+				// Force redraw to show new image
+				updateDrawingArea();
+			}
+
 		}
 	}
 
@@ -207,7 +208,7 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::menuViewZoomInActivate(GtkWidget *widget) {
-		if (zoomLevel<zoomLevelMax) {
+		if (zoomLevel+1<zoomLevelMax) {
 			++zoomLevel;
 			updateDrawingArea();
 			updatePositionLabel();
@@ -245,10 +246,11 @@ namespace MapEditor {
 		const double userMapSizeX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSize;
 		const double userMapSizeY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSize;
 
-		//                                                zoom level = {  0   1   2   3   4   5   6   7   8   9  10  11}
-		const double tileGridLineWidths[zoomLevelMax+1-zoomLevelMin]  ={0  ,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1};
-		const double regionGridLineWidths[zoomLevelMax+1-zoomLevelMin]={0  ,128, 64, 32, 32, 32, 16, 16, 16,  8,  4,  4};
-		const double kmGridLineWidths[zoomLevelMax+1-zoomLevelMin]    ={512,512,256,128,128,128, 64, 32, 16, 16,  8,  8};
+		//                                              zoom level = {  0   1   2   3   4   5   6   7   8   9  10  11, 12, 13}
+		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1};
+		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={  0,128, 64, 32, 32, 32, 16, 16, 16,  8,  8,  8,  4,  4};
+		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={512,512,256,128,128,128, 64, 32, 32, 32,  16, 16, 8,  8};
+		assert(zoomLevelMax-zoomLevelMin==14);
 
 		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
 		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
@@ -276,7 +278,7 @@ namespace MapEditor {
 			// Calculate which set of map tile images to use (i.e. which zoom level)
 			int mapTileZl=lrint(log2(userTileSize/MapTiled::pixelsPerTileAtMaxZoom))+zoomLevel; // as generated map tile images may use a different resolution for the same zoom level, we may need to make an adjustment
 			if (mapTileZl>=0 && mapTileZl<MapTiled::maxZoom) {
-				double userDevicePixelSize=pow(2.0, zoomLevelMax-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
+				double userDevicePixelSize=pow(2.0, zoomLevelMax-1-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
 				double userMapTileImageSize=userDevicePixelSize*MapTiled::imageSize;
 
 				int mapTileStartX=floor(userTopLeftX/userMapTileImageSize)-1;
@@ -713,7 +715,7 @@ namespace MapEditor {
 	}
 
 	double MainWindow::getZoomFactor(void) {
-		return pow(2.0, zoomLevel-zoomLevelMax);
+		return pow(2.0, zoomLevel-(zoomLevelMax-1));
 	}
 
 	double MainWindow::getZoomFactorHuman(void) {

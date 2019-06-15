@@ -11,8 +11,8 @@ namespace Engine {
 		class MapTiled {
 		public:
 			static const unsigned imageSize=256;
-			static const unsigned pixelsPerTileAtMaxZoom=8;
-			static const unsigned maxZoom=12; // zoom in range [0,maxZoom-1], equal to 1+log2((pixelsPerTileAtMaxZoom*Map::regionsWide*MapRegion::tilesWide)/imageSize)
+			static const unsigned pixelsPerTileAtMaxZoom=32;
+			static const unsigned maxZoom=14; // zoom in range [0,maxZoom-1], equal to 1+log2((pixelsPerTileAtMaxZoom*Map::regionsWide*MapRegion::tilesWide)/imageSize)
 
 			MapTiled();
 			~MapTiled();
