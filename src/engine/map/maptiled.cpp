@@ -113,7 +113,7 @@ namespace Engine {
 			if (allchildrenExist) {
 				// Shrink 4 child images in half and stitch them together
 				char stitchCommand[4096]; // TODO: better
-				sprintf(stitchCommand, "montage -geometry 50%%x50%%+0+0 %s %s %s %s %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
+				sprintf(stitchCommand, "montage %s %s %s %s -geometry 50%%x50%% -mode concatenate -tile 2x2 %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
 				system(stitchCommand);
 
 				return;
@@ -142,7 +142,7 @@ namespace Engine {
 				}
 
 			char stitchCommand[4096]; // TODO: better
-			sprintf(stitchCommand, "montage -geometry 50%%x50%%+0+0 %s %s %s %s %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
+			sprintf(stitchCommand, "montage %s %s %s %s -geometry 50%%x50%% -mode concatenate -tile 2x2 %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
 			system(stitchCommand);
 		}
 
