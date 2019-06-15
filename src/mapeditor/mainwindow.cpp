@@ -289,10 +289,10 @@ namespace MapEditor {
 				double userDevicePixelSize=pow(2.0, zoomLevelMax-1-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
 				double userMapTileImageSize=userDevicePixelSize*MapTiled::imageSize;
 
-				int mapTileStartX=floor(userTopLeftX/userMapTileImageSize)-1;
-				int mapTileStartY=floor(userTopLeftY/userMapTileImageSize)-1;
-				int mapTileEndX=ceil(userBottomRightX/userMapTileImageSize)+1;
-				int mapTileEndY=ceil(userBottomRightY/userMapTileImageSize)+1;
+				int mapTileStartX=floor(userTopLeftX/userMapTileImageSize);
+				int mapTileStartY=floor(userTopLeftY/userMapTileImageSize);
+				int mapTileEndX=ceil(userBottomRightX/userMapTileImageSize);
+				int mapTileEndY=ceil(userBottomRightY/userMapTileImageSize);
 				int mapTileMax=((1u)<<mapTileZl);
 
 				if (mapTileStartX<0)
