@@ -1,5 +1,5 @@
 CPP = clang++
-CFLAGS = -Wall -std=c++11
+CFLAGS = -Wall -std=c++20
 LFLAGS = -lpng
 
 OBJS = ../engine/map/map.o ../engine/map/mapgen.o ../engine/map/mapobject.o ../engine/map/mappnglib.o ../engine/map/mapregion.o ../engine/map/maptexture.o ../engine/map/maptiled.o ../engine/map/maptile.o ../engine/physics/hitmask.o ../engine/physics/coord.o ../engine/fbnnoise.o ../engine/noisearray.o ../engine/opensimplexnoise.o ../engine/util.o demogen.o
