@@ -23,12 +23,14 @@ namespace Engine {
 			// TODO: Fix the distribution and calculations if the given area is not a multiple of the region size (in either direction).
 
 			// Record start time.
-			Util::TimeMs startTime=Util::getTimeMs();
+			Util::TimeMs startTimeMs=Util::getTimeMs();
 
 			// Run progress functor initially (if needed).
+			Util::TimeMs lastProgressTimeMs=0;
 			if (progressFunctor!=NULL) {
-				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(map, 0.0, elapsedTimeMs, progressUserData);
+				Util::TimeMs currTimeMs=Util::getTimeMs();
+				progressFunctor(map, 0.0, currTimeMs-startTimeMs, progressUserData);
+				lastProgressTimeMs=Util::getTimeMs();
 			}
 
 			// Compute region loop bounds.
@@ -77,17 +79,20 @@ namespace Engine {
 					dropParticle(tileX, tileY);
 
 					// Call progress functor (if needed).
-					if (progressFunctor!=NULL && i%256==0) {
-						double progress=(rI+((double)i)/trials)/regionList.size();
-						Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-						progressFunctor(map, progress, elapsedTimeMs, progressUserData);
+					if (progressFunctor!=NULL) {
+						Util::TimeMs currTimeMs=Util::getTimeMs();
+						if (currTimeMs-lastProgressTimeMs>500) {
+							double progress=(rI+((double)i)/trials)/regionList.size();
+							progressFunctor(map, progress, currTimeMs-startTimeMs, progressUserData);
+							lastProgressTimeMs=currTimeMs;
+						}
 					}
 				}
 
 				// Call progress functor (if needed).
 				if (progressFunctor!=NULL) {
 					double progress=(rI+1.0)/regionList.size();
-					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTimeMs;
 					progressFunctor(map, progress, elapsedTimeMs, progressUserData);
 				}
 
