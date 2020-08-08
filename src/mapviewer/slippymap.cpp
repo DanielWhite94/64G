@@ -12,8 +12,11 @@
 namespace MapViewer {
 	int SlippyMap::imageSize=256;
 
-	SlippyMap::SlippyMap(const class Map *map, unsigned mapSize, const char *gImageDir): map(map), mapSize(mapSize) {
-		// Copy imageDir.
+	SlippyMap::SlippyMap(const char *gMapBaseDir, unsigned mapSize, const char *gImageDir): mapSize(mapSize) {
+		// Copy mapBaseDir and imageDir.
+		mapBaseDir=(char *)malloc(strlen(gMapBaseDir)+1); // TODO: Improve this
+		strcpy(mapBaseDir, gMapBaseDir);
+
 		imageDir=(char *)malloc(strlen(gImageDir)+1); // TODO: Improve this
 		strcpy(imageDir, gImageDir);
 
@@ -36,6 +39,7 @@ namespace MapViewer {
 	}
 
 	SlippyMap::~SlippyMap() {
+		free(mapBaseDir);
 		free(imageDir);
 	}
 
@@ -74,7 +78,7 @@ namespace MapViewer {
 
 				// Create mappng command.
 				char command[1024];
-				sprintf(command, "./mappng --quiet %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
+				sprintf(command, "./mappng --quiet %s %u %u %u %u %u %u %s", mapBaseDir, mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
 
 				// Run mappng command.
 				system(command); // TODO: This better (silence output, check for errors etc).
@@ -170,7 +174,7 @@ namespace MapViewer {
 
 				// Create mappng command.
 				char command[4*1024];
-				sprintf(command, "./mappng --quiet %s %u %u %u %u %u %u %s", map->getBaseDir(), mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
+				sprintf(command, "./mappng --quiet %s %u %u %u %u %u %u %s", mapBaseDir, mapX, mapY, mapW, mapH, imageSize, imageSize, imagePath);
 
 				// Run mappng command.
 				system(command); // TODO: This better (silence output, check for errors etc).

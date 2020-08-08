@@ -10,7 +10,7 @@ namespace MapViewer {
 	public:
 		typedef void (GenAllProgressFunctor)(double progress, void *userData);
 
-		SlippyMap(const class Map *map, unsigned mapSize, const char *imageDir);
+		SlippyMap(const char *mapBaseDir, unsigned mapSize, const char *imageDir);
 		~SlippyMap();
 
 		bool genAll(GenAllProgressFunctor *progressFunctor, void *progressUserData); // A faster special case function to allow progress reporting. Similar to calling getImageByZoom(0,0,0) and discarding the result.
@@ -32,7 +32,7 @@ namespace MapViewer {
 		static int imageSize;
 		char *imageDir;
 
-		const class Map *map;
+		char *mapBaseDir;
 		int mapSize;
 
 		int tileXToOffsetX(unsigned tileX, int tilesPerPixel) const;
