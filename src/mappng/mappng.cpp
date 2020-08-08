@@ -3,6 +3,7 @@
 #include <cstdbool>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <png.h>
 
 #include "../engine/map/map.h"
