@@ -15,7 +15,7 @@ From the root directory, run `make clean` followed by either `make release` or `
 
 # Examples #
 Note: these assume you are in the `bin` directory
-* Create a demo map 'mymap': ```./demogen 2048 2048 mymap ```
-* Create a PNG image of the entire map:  ```./mappng mymap 0 0 2048 2048 2048 2048 mymap.png```
-* Create a set of tiles for an interactive map: ```./slippymapgen mymap 2048``` (viewed by opening slippymap.html)
-* Run the engine: ```./engine mymap 1000 1024```
+* Create a demo map 'mymap': ```./demogen 2048 2048 ../maps/mymap ```
+* Create a PNG image of the entire map:  ```./mappng ../maps/mymap 0 0 2048 2048 2048 2048 ../maps/mymap.png```
+* Create a set of tiles for an interactive map: ```./slippymapgen ../maps/mymap 2048``` (viewed by opening slippymap.html)
+* Run the engine: ```./engine ../maps/mymap 1000 1024```
