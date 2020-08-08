@@ -1,8 +1,5 @@
 # Building
-```
-make clean
-make
-```
+From the root directory, run `make clean` followed by either `make release` or `make debug`.
 
 # Sub-projects
 * demogen - generates a 'demo' map of a given size (including rivers and towns)
