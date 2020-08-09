@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
 
 	if (!map->addObject(&objectPlayer)) {
 		printf("Could not add player object.\n");
+		delete map;
 		return EXIT_FAILURE;
 	}
 
@@ -188,6 +189,9 @@ int main(int argc, char **argv) {
 				printf("Main: tick (player position (%i,%i)). render took %u.%03us (no delay)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000);
 		}
 	}
+
+	// Tidy up
+	delete map;
 
 	return EXIT_SUCCESS;
 }
