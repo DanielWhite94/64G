@@ -563,8 +563,7 @@ int main(int argc, char **argv) {
 	// Save map.
 	if (!mapData.map->save()) {
 		printf("Could not save map to '%s'.\n", outputPath);
-		if (mapData.map!=NULL)
-			delete mapData.map;
+		delete mapData.map;
 		return EXIT_FAILURE;
 	}
 	printf("Saved map to '%s'.\n", outputPath);
