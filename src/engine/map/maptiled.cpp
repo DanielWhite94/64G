@@ -72,7 +72,7 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapTiled::generateTileMap(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned minZoomToGen, bool genOnce, bool *haveGen) {
+		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned minZoomToGen, bool genOnce, bool *haveGen) {
 			char path[1024];
 			getZoomXYPath(map, zoom, x, y, path);
 
@@ -152,7 +152,7 @@ namespace Engine {
 					unsigned childY=childBaseY+ty;
 
 					bool childHaveGen=false;
-					if (!generateTileMap(map, childZoom, childX, childY, minZoomToGen, genOnce, &childHaveGen))
+					if (!generateImage(map, childZoom, childX, childY, minZoomToGen, genOnce, &childHaveGen))
 						return false;
 					if (genOnce && childHaveGen)
 						return false;

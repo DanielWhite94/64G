@@ -163,7 +163,7 @@ namespace MapEditor {
 			if (!mapTilesToGen.empty()) {
 				// Take most recently marked 'maptile' and generate it, then remove it from the queue.
 				const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
-				if (MapTiled::generateTileMap(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 9, true, NULL))
+				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 9, true, NULL))
 					mapTilesToGen.pop_back();
 
 				// Force redraw to show new image

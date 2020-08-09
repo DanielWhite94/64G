@@ -19,14 +19,15 @@ namespace Engine {
 
 			static bool createMetadata(const class Map *map);
 
+			// The conditions following are considered in the order listed.
 			// If the image already exists, nothing is done.
-			// Otherwise if all children exist the image is stitched together from them.
-			// Otherwise we compare zoom and minZoomToGen.
-			// If zoom<minZoomToGen then we recurse to generate children before stitching,
-			// but if zoom>=minZoomToGen then we simply generate the desired image directly.
+			// If the zoom level is the max then we generate the image directly with MapPngLib.
+			// If all four children exist, we scale and stitch them to create the desired image.
+			// If zoom>=minZoomToGen then we generate the image directly with MapPngLib.
+			// Finally we recurse to generate children, before stitching together as described above.
 			// If genOnce is true then in the case of recursing to generate children,
-			// we will stop after generating a single image with mappnglib, and return false.
-			static bool generateTileMap(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned minZoomToGen, bool genOnce, bool *haveGen);
+			// we will stop after generating a single image with MapPngLib, and return false.
+			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned minZoomToGen, bool genOnce, bool *haveGen);
 
 			static void getZoomPath(const class Map *map, unsigned zoom, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]); // TODO: improve hardcoded size
