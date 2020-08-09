@@ -452,10 +452,15 @@ int main(int argc, char **argv) {
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run glacier calculation.
+	/*
+
+	Note: this is disabled for now as it is quite slow, although it does produce good effects
+
 	const char *progressStringGlaciers="Applying glacial effects ";
 	MapGen::RiverGen glacierGen(mapData.map, 7, false);
 	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, &mapGenModifyTilesProgressString, (void *)progressStringGlaciers);
 	printf("\n");
+	*/
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats2="Collecting global statistics (2/3) ";
