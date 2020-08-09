@@ -181,13 +181,13 @@ namespace Engine {
 				long long int *sampleTally, sampleTotal;
 			};
 
-			class RiverGen {
+			class ParticleFlow {
 			public:
-				RiverGen(Map *map, int erodeRadius, bool incMoisture): map(map), erodeRadius(erodeRadius), incMoisture(incMoisture) {
+				ParticleFlow(Map *map, int erodeRadius, bool incMoisture): map(map), erodeRadius(erodeRadius), incMoisture(incMoisture) {
 					double skew=0.8;
 					seaLevelExcess=map->minHeight+(map->seaLevel-map->minHeight)*skew;
 				}; // Requires the map have seaLevel set.
-				~RiverGen() {};
+				~ParticleFlow() {};
 
 				void dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData); // Calls dropParticle on random coordinates within the given area, where dropParticle is ran floor(coverage*(x1-x0)*(y1-y0)) times.
 				void dropParticle(double x, double y);

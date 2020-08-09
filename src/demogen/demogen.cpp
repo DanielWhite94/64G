@@ -457,7 +457,7 @@ int main(int argc, char **argv) {
 	Note: this is disabled for now as it is quite slow, although it does produce good effects
 
 	const char *progressStringGlaciers="Applying glacial effects ";
-	MapGen::RiverGen glacierGen(mapData.map, 7, false);
+	MapGen::ParticleFlow glacierGen(mapData.map, 7, false);
 	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, &mapGenModifyTilesProgressString, (void *)progressStringGlaciers);
 	printf("\n");
 	*/
@@ -478,7 +478,7 @@ int main(int argc, char **argv) {
 
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
-	MapGen::RiverGen riverGen(mapData.map, 2, true);
+	MapGen::ParticleFlow riverGen(mapData.map, 2, true);
 	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 

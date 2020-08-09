@@ -14,7 +14,7 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
-		void MapGen::RiverGen::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void MapGen::ParticleFlow::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
@@ -100,7 +100,7 @@ namespace Engine {
 			}
 		}
 
-		void MapGen::RiverGen::dropParticle(double xp, double yp) {
+		void MapGen::ParticleFlow::dropParticle(double xp, double yp) {
 			const double Kq=20, Kw=0.0005, Kr=0.95, Kd=0.02, Ki=0.1/4.0, minSlope=0.03, Kg=20*2;
 
 			#define DEPOSIT(H) \
@@ -273,7 +273,7 @@ namespace Engine {
 			#undef DEPOSIT
 		}
 
-		double MapGen::RiverGen::hMap(int x, int y, double unknownValue) {
+		double MapGen::ParticleFlow::hMap(int x, int y, double unknownValue) {
 			// Check bounds.
 			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
 				return unknownValue;
@@ -289,7 +289,7 @@ namespace Engine {
 			return tile->getHeight();
 		}
 
-		void MapGen::RiverGen::depositAt(int x, int y, double w, double ds) {
+		void MapGen::ParticleFlow::depositAt(int x, int y, double w, double ds) {
 			// Check bounds.
 			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
 				return;
