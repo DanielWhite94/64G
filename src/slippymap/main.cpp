@@ -28,9 +28,11 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	// Work out the minimum zoom level which encompasses the entire map
+	// Work out the various zoom parameters
 	unsigned mapSize=std::max(regionsWide*MapRegion::tilesWide, regionsHigh*MapRegion::tilesHigh); // in tile units
-	unsigned minZoom=MapTiled::maxZoom-1-std::ceil(std::log2(mapSize/MapTiled::imageSize));
+
+	unsigned slippyZoomOffset=MapTiled::maxZoom-1-std::ceil(std::log2(mapSize/MapTiled::imageSize));
+	unsigned slippyMaxNativeZoom=MapTiled::maxZoom-1-slippyZoomOffset;
 
 	// Generate slippymap.js file to pass on map-speicifc parameters such as min/max zoom
 	char slippymapJsPath[1024]; // TODO: better
@@ -49,9 +51,11 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "\n");
 	fprintf(slippymapJs, "L.tileLayer('maptiled/{z}/{x}/{y}.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
-	fprintf(slippymapJs, "	minZoom: 0,\n");
-	fprintf(slippymapJs, "	maxZoom: %u,\n", MapTiled::maxZoom-1-minZoom);
-	fprintf(slippymapJs, "	zoomOffset: %u,\n", minZoom);
+	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
+	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
+	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
+	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
 	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
 	fprintf(slippymapJs, "}).addTo(map);\n");
@@ -61,7 +65,7 @@ int main(int argc, char *argv[]) {
 	fclose(slippymapJs);
 
 	// Generate all needed images
-	if (!MapTiled::generateTileMap(map, minZoom, 0, 0, MapTiled::maxZoom, false, NULL)) {
+	if (!MapTiled::generateTileMap(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom, false, NULL)) {
 		printf("Could not generate all images\n");
 		return EXIT_FAILURE;
 	}
