@@ -4,25 +4,7 @@
 	<script src="leaflet.js"></script>
 </head>
 <body>
-
-<div id="mapid" style="height:100%;"></div>
-
-<script>
-	var map=L.map('mapid', {
-        zoomDelta: 0.25,
-        zoomSnap: 0,
-	});
-
-	L.tileLayer('maptiled/{z}/{x}/{y}.png', {
-		attribution: 'me',
-		minZoom: 1,
-		maxNativeZoom: 6,
-		maxZoom: 10,
-		noWrap: true,
-	}).addTo(map);
-
-	map.fitWorld();
-</script>
-
+	<div id="mapid" style="height:100%;"></div>
+	<script src="slippymap.js"></script>
 </body>
 </html>
