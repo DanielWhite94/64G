@@ -34,10 +34,10 @@ namespace Engine {
 			}
 
 			// Compute region loop bounds.
-			unsigned rX0=x0/MapRegion::tilesWide;
-			unsigned rY0=y0/MapRegion::tilesHigh;
-			unsigned rX1=x1/MapRegion::tilesWide;
-			unsigned rY1=y1/MapRegion::tilesHigh;
+			unsigned rX0=x0/MapRegion::tilesSize;
+			unsigned rY0=y0/MapRegion::tilesSize;
+			unsigned rX1=x1/MapRegion::tilesSize;
+			unsigned rY1=y1/MapRegion::tilesSize;
 
 			// Generate list of regions.
 			struct RegionPos { unsigned x, y; } regionPos;
@@ -51,7 +51,7 @@ namespace Engine {
 			std::shuffle(std::begin(regionList), std::end(regionList), rng);
 
 			// Calculate constants
-			double trialsPerRegion=coverage*MapRegion::tilesWide*MapRegion::tilesHigh;
+			double trialsPerRegion=coverage*MapRegion::tilesSize*MapRegion::tilesSize;
 
 			// Loop over regions (this saves unnecessary loading and saving of regions compared to picking random locations across the whole area given).
 			unsigned rI=0;
@@ -60,12 +60,12 @@ namespace Engine {
 				unsigned trials=floor(trialsPerRegion)+(trialsPerRegion>Util::randFloatInInterval(0.0, 1.0) ? 1 : 0);
 
 				// Runs said number of trials.
-				unsigned tileOffsetBaseX=regionPos.x*MapRegion::tilesWide;
-				unsigned tileOffsetBaseY=regionPos.y*MapRegion::tilesHigh;
+				unsigned tileOffsetBaseX=regionPos.x*MapRegion::tilesSize;
+				unsigned tileOffsetBaseY=regionPos.y*MapRegion::tilesSize;
 				for(unsigned i=0; i<trials; ++i) {
 					// Compute random tile position within this region.
-					double randX=Util::randFloatInInterval(0.0, MapRegion::tilesWide);
-					double randY=Util::randFloatInInterval(0.0, MapRegion::tilesHigh);
+					double randX=Util::randFloatInInterval(0.0, MapRegion::tilesSize);
+					double randY=Util::randFloatInInterval(0.0, MapRegion::tilesSize);
 
 					double tileX=tileOffsetBaseX+randX;
 					double tileY=tileOffsetBaseY+randY;
@@ -131,7 +131,7 @@ namespace Engine {
 			if (h00==DBL_MIN || h01==DBL_MIN || h10==DBL_MIN || h11==DBL_MIN)
 				return; // TODO: think about this
 
-			int maxPathLen=4.0*(MapRegion::tilesWide+MapRegion::tilesHigh);
+			int maxPathLen=4.0*(MapRegion::tilesSize+MapRegion::tilesSize);
 			for(int pathLen=0; pathLen<maxPathLen; ++pathLen) {
 				// Increment moisture counter for the current tile.
 				if (incMoisture) {
@@ -275,9 +275,9 @@ namespace Engine {
 
 		double MapGen::RiverGen::hMap(int x, int y, double unknownValue) {
 			// Check bounds.
-			if (x<0 || x>=Map::regionsWide*MapRegion::tilesWide)
+			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
 				return unknownValue;
-			if (y<0 || y>=Map::regionsHigh*MapRegion::tilesHigh)
+			if (y<0 || y>=Map::regionsSize*MapRegion::tilesSize)
 				return unknownValue;
 
 			// Grab tile.
@@ -291,9 +291,9 @@ namespace Engine {
 
 		void MapGen::RiverGen::depositAt(int x, int y, double w, double ds) {
 			// Check bounds.
-			if (x<0 || x>=Map::regionsWide*MapRegion::tilesWide)
+			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
 				return;
-			if (y<0 || y>=Map::regionsHigh*MapRegion::tilesHigh)
+			if (y<0 || y>=Map::regionsSize*MapRegion::tilesSize)
 				return;
 
 			// Grab tile.
@@ -1172,10 +1172,10 @@ namespace Engine {
 			const Util::TimeMs startTime=Util::getTimeMs();
 
 			// Calculate constants.
-			const unsigned regionX0=x/MapRegion::tilesWide;
-			const unsigned regionY0=y/MapRegion::tilesHigh;
-			const unsigned regionX1=(x+width)/MapRegion::tilesWide;
-			const unsigned regionY1=(y+height)/MapRegion::tilesHigh;
+			const unsigned regionX0=x/MapRegion::tilesSize;
+			const unsigned regionY0=y/MapRegion::tilesSize;
+			const unsigned regionX1=(x+width)/MapRegion::tilesSize;
+			const unsigned regionY1=(y+height)/MapRegion::tilesSize;
 			const unsigned regionIMax=(regionX1-regionX0)*(regionY1-regionY0);
 
 			// Initial progress update (if needed).
@@ -1187,15 +1187,15 @@ namespace Engine {
 			// Loop over each region
 			unsigned regionX, regionY, regionI=0;
 			for(regionY=regionY0; regionY<regionY1; ++regionY) {
-				const unsigned regionYOffset=regionY*MapRegion::tilesHigh;
+				const unsigned regionYOffset=regionY*MapRegion::tilesSize;
 				for(regionX=regionX0; regionX<regionX1; ++regionX) {
-					const unsigned regionXOffset=regionX*MapRegion::tilesWide;
+					const unsigned regionXOffset=regionX*MapRegion::tilesSize;
 
 					// Loop over all rows in this region.
 					unsigned tileX, tileY;
-					for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY) {
+					for(tileY=0; tileY<MapRegion::tilesSize; ++tileY) {
 						// Loop over all tiles in this row.
-						for(tileX=0; tileX<MapRegion::tilesWide; ++tileX) {
+						for(tileX=0; tileX<MapRegion::tilesSize; ++tileX) {
 							// Loop over functors.
 							for(size_t functorId=0; functorId<functorArrayCount; ++functorId)
 								functorArray[functorId].functor(map, regionXOffset+tileX, regionYOffset+tileY, functorArray[functorId].userData);

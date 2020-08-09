@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Work out the various zoom parameters
-	unsigned mapSize=std::max(regionsWide*MapRegion::tilesWide, regionsHigh*MapRegion::tilesHigh); // in tile units
+	unsigned mapSize=std::max(regionsWide*MapRegion::tilesSize, regionsHigh*MapRegion::tilesSize); // in tile units
 
 	unsigned slippyZoomOffset=MapTiled::maxZoom-1-std::ceil(std::log2(mapSize/MapTiled::imageSize));
 	unsigned slippyMaxNativeZoom=MapTiled::maxZoom-1-slippyZoomOffset;

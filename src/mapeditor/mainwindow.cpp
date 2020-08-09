@@ -38,8 +38,8 @@ namespace MapEditor {
 		map=NULL;
 		zoomLevel=zoomLevelMin;
 		const double userTileSize=32.0;
-		userCentreX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSize/2.0;
-		userCentreY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSize/2.0;
+		userCentreX=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize/2.0;
+		userCentreY=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize/2.0;
 		lastTickTimeMs=0;
 
 		keyPanningLeft=false;
@@ -247,12 +247,12 @@ namespace MapEditor {
 
 		// Various parameters
 		const double userTileSize=32.0;
-		const double userRegionSizeX=MapRegion::tilesWide*userTileSize;
-		const double userRegionSizeY=MapRegion::tilesHigh*userTileSize;
+		const double userRegionSizeX=MapRegion::tilesSize*userTileSize;
+		const double userRegionSizeY=MapRegion::tilesSize*userTileSize;
 		const double userKmSizeX=4.0*userRegionSizeX;
 		const double userKmSizeY=4.0*userRegionSizeY;
-		const double userMapSizeX=Engine::Map::Map::regionsWide*MapRegion::tilesWide*userTileSize;
-		const double userMapSizeY=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh*userTileSize;
+		const double userMapSizeX=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize;
+		const double userMapSizeY=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize;
 
 		//                                              zoom level = {   0    1    2    3    4   5   6   7   8   9  10  11, 12, 13, 14, 15}
 		// TODO: this will need adjusting after changing MapTiled image size parameters

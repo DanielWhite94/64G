@@ -27,7 +27,7 @@ namespace Engine {
 				CreateDirty=3,
 			};
 
-			static const unsigned regionsWide=256, regionsHigh=256;
+			static const unsigned regionsSize=256; // numbers of regions per side, with total number of regions equal to regionsSize squared
 
 			bool initialized;
 
@@ -87,7 +87,7 @@ namespace Engine {
 			unsigned regionsCount;
 			RegionData *regionsByIndex[regionsLoadedMax]; // These are pointers into regionsByOffset array.
 			RegionData *regionsByAge[regionsLoadedMax]; // These are pointers into regionsByOffset array.
-			RegionData regionsByOffset[regionsHigh][regionsWide];
+			RegionData regionsByOffset[regionsSize][regionsSize]; // [y][x]
 
 			MapTexture *textures[MapTexture::IdMax];
 

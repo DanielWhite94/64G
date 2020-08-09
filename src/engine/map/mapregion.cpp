@@ -18,8 +18,8 @@ namespace Engine {
 
 		// Update tile instances with their file data.
 		unsigned tileX, tileY;
-		for(tileY=0; tileY<MapRegion::tilesHigh; ++tileY)
-			for(tileX=0; tileX<MapRegion::tilesWide; ++tileX)
+		for(tileY=0; tileY<MapRegion::tilesSize; ++tileY)
+			for(tileX=0; tileX<MapRegion::tilesSize; ++tileX)
 				tileInstances[tileY][tileX].setFileData(&(tileFileData[tileY][tileX]));
 	}
 
@@ -35,7 +35,7 @@ namespace Engine {
 		bool result=true;
 
 		// Read tile data.
-		size_t tileCount=tilesWide*tilesHigh;
+		size_t tileCount=tilesSize*tilesSize;
 		result&=(fread(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
 
 		// Read object data.
@@ -68,7 +68,7 @@ namespace Engine {
 		bool result=true;
 
 		// Save tiles.
-		size_t tileCount=tilesWide*tilesHigh;
+		size_t tileCount=tilesSize*tilesSize;
 		result&=(fwrite(&tileFileData, sizeof(MapTile::FileData), tileCount, regionFile)==tileCount);
 
 		// Save objects.
@@ -97,10 +97,10 @@ namespace Engine {
 	MapTile *MapRegion::getTileAtCoordVec(const CoordVec &vec) {
 		CoordComponent tileX=vec.x/CoordsPerTile;
 		CoordComponent tileY=vec.y/CoordsPerTile;
-		CoordComponent offsetX=tileX%tilesWide;
-		CoordComponent offsetY=tileY%tilesHigh;
-		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
-		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
+		CoordComponent offsetX=tileX%tilesSize;
+		CoordComponent offsetY=tileY%tilesSize;
+		assert(offsetX>=0 && offsetX<tilesSize*CoordsPerTile);
+		assert(offsetY>=0 && offsetY<tilesSize*CoordsPerTile);
 
 		return getTileAtOffset(offsetX, offsetY);
 	}
@@ -108,24 +108,24 @@ namespace Engine {
 	const MapTile *MapRegion::getTileAtCoordVec(const CoordVec &vec) const {
 		CoordComponent tileX=vec.x/CoordsPerTile;
 		CoordComponent tileY=vec.y/CoordsPerTile;
-		CoordComponent offsetX=tileX%tilesWide;
-		CoordComponent offsetY=tileY%tilesHigh;
-		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
-		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
+		CoordComponent offsetX=tileX%tilesSize;
+		CoordComponent offsetY=tileY%tilesSize;
+		assert(offsetX>=0 && offsetX<tilesSize*CoordsPerTile);
+		assert(offsetY>=0 && offsetY<tilesSize*CoordsPerTile);
 
 		return getTileAtOffset(offsetX, offsetY);
 	}
 
 	MapTile *MapRegion::getTileAtOffset(unsigned offsetX, unsigned offsetY) {
-		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
-		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
+		assert(offsetX>=0 && offsetX<tilesSize*CoordsPerTile);
+		assert(offsetY>=0 && offsetY<tilesSize*CoordsPerTile);
 
 		return &tileInstances[offsetY][offsetX];
 	}
 
 	const MapTile *MapRegion::getTileAtOffset(unsigned offsetX, unsigned offsetY) const  {
-		assert(offsetX>=0 && offsetX<tilesWide*CoordsPerTile);
-		assert(offsetY>=0 && offsetY<tilesHigh*CoordsPerTile);
+		assert(offsetX>=0 && offsetX<tilesSize*CoordsPerTile);
+		assert(offsetY>=0 && offsetY<tilesSize*CoordsPerTile);
 
 		return &tileInstances[offsetY][offsetX];
 	}

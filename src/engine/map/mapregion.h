@@ -13,7 +13,7 @@ namespace Engine {
 	namespace Map {
 		class MapRegion {
 		public:
-			static const unsigned tilesWide=256, tilesHigh=256;
+			static const unsigned tilesSize=256; // numbers of tiles per side, with total number of tiles equal to tilesSize squared
 
 			MapRegion(unsigned regionX, unsigned regionY);
 			~MapRegion();
@@ -43,9 +43,8 @@ namespace Engine {
 		private:
 			bool isDirty;
 
-			MapTile tileInstances[tilesHigh][tilesWide];
-			MapTile::FileData tileFileData[tilesHigh][tilesWide];
-
+			MapTile tileInstances[tilesSize][tilesSize]; // [y][x]
+			MapTile::FileData tileFileData[tilesSize][tilesSize]; // [y][x]
 
 			bool saveObjects(FILE *regionFile);
 		};

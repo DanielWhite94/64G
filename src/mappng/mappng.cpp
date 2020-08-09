@@ -39,15 +39,15 @@ int main(int argc, char **argv) {
 	int imageHeight=atoi(argv[arg++]);
 	const char *imagePath=argv[arg++];
 
-	if (mapTileX<0 || mapTileX>=Engine::Map::Map::regionsWide*MapRegion::tilesWide) {
+	if (mapTileX<0 || mapTileX>=Engine::Map::Map::regionsSize*MapRegion::tilesSize) {
 		if (!quiet)
-			printf("Bad mapX '%i': must be at least zero and less than max map width (%i)\n", mapTileX, Engine::Map::Map::regionsWide*MapRegion::tilesWide);
+			printf("Bad mapX '%i': must be at least zero and less than max map width (%i)\n", mapTileX, Engine::Map::Map::regionsSize*MapRegion::tilesSize);
 		return EXIT_FAILURE;
 	}
 
-	if (mapTileY<0 || mapTileY>=Engine::Map::Map::regionsHigh*MapRegion::tilesHigh) {
+	if (mapTileY<0 || mapTileY>=Engine::Map::Map::regionsSize*MapRegion::tilesSize) {
 		if (!quiet)
-			printf("Bad mapY '%i': must be at least zero and less than max map height (%i)\n", mapTileY, Engine::Map::Map::regionsHigh*MapRegion::tilesHigh);
+			printf("Bad mapY '%i': must be at least zero and less than max map height (%i)\n", mapTileY, Engine::Map::Map::regionsSize*MapRegion::tilesSize);
 		return EXIT_FAILURE;
 	}
 

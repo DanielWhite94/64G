@@ -39,8 +39,8 @@ namespace Engine {
 				regionsByIndex[i]=NULL;
 			for(i=0; i<regionsLoadedMax; ++i)
 				regionsByAge[i]=NULL;
-			for(i=0; i<regionsHigh; ++i)
-				for(j=0; j<regionsWide; ++j)
+			for(i=0; i<regionsSize; ++i)
+				for(j=0; j<regionsSize; ++j)
 					regionsByOffset[i][j].ptr=NULL;
 
 			for(i=0; i<MapTexture::IdMax; ++i)
@@ -322,7 +322,7 @@ namespace Engine {
 		}
 
 		bool Map::loadRegion(unsigned regionX, unsigned regionY, const char *regionPath) {
-			assert(regionX<regionsWide && regionY<regionsHigh);
+			assert(regionX<regionsSize && regionY<regionsSize);
 			assert(regionPath!=NULL);
 			assert(regionsByOffset[regionY][regionX].ptr==NULL);
 
@@ -336,11 +336,11 @@ namespace Engine {
 		}
 
 		bool Map::markRegionDirtyAtTileOffset(unsigned offsetX, unsigned offsetY, bool create) {
-			assert(offsetX>=0 && offsetX<regionsWide*MapRegion::tilesWide);
-			assert(offsetY>=0 && offsetY<regionsHigh*MapRegion::tilesHigh);
+			assert(offsetX>=0 && offsetX<regionsSize*MapRegion::tilesSize);
+			assert(offsetY>=0 && offsetY<regionsSize*MapRegion::tilesSize);
 
-			unsigned regionX=offsetX/MapRegion::tilesWide;
-			unsigned regionY=offsetY/MapRegion::tilesHigh;
+			unsigned regionX=offsetX/MapRegion::tilesSize;
+			unsigned regionY=offsetY/MapRegion::tilesSize;
 			MapRegion *region=getRegionAtOffset(regionX, regionY, create);
 			if (region==NULL)
 				return false;
@@ -376,11 +376,11 @@ namespace Engine {
 		}
 
 		MapTile *Map::getTileAtOffset(unsigned offsetX, unsigned offsetY, GetTileFlag flags) {
-			assert(offsetX>=0 && offsetX<regionsWide*MapRegion::tilesWide);
-			assert(offsetY>=0 && offsetY<regionsHigh*MapRegion::tilesHigh);
+			assert(offsetX>=0 && offsetX<regionsSize*MapRegion::tilesSize);
+			assert(offsetY>=0 && offsetY<regionsSize*MapRegion::tilesSize);
 
-			unsigned regionX=offsetX/MapRegion::tilesWide;
-			unsigned regionY=offsetY/MapRegion::tilesHigh;
+			unsigned regionX=offsetX/MapRegion::tilesSize;
+			unsigned regionY=offsetY/MapRegion::tilesSize;
 			MapRegion *region=getRegionAtOffset(regionX, regionY, (flags & GetTileFlag::Create)!=0);
 			if (region==NULL)
 				return NULL;
@@ -388,8 +388,8 @@ namespace Engine {
 			if (flags & GetTileFlag::Dirty)
 				region->setDirty();
 
-			unsigned regionTileOffsetX=offsetX%MapRegion::tilesWide;
-			unsigned regionTileOffsetY=offsetY%MapRegion::tilesHigh;
+			unsigned regionTileOffsetX=offsetX%MapRegion::tilesSize;
+			unsigned regionTileOffsetY=offsetY%MapRegion::tilesSize;
 			return region->getTileAtOffset(regionTileOffsetX, regionTileOffsetY);
 		}
 
@@ -399,15 +399,15 @@ namespace Engine {
 
 			CoordComponent tileX=vec.x/Physics::CoordsPerTile;
 			CoordComponent tileY=vec.y/Physics::CoordsPerTile;
-			CoordComponent regionX=tileX/MapRegion::tilesWide;
-			CoordComponent regionY=tileY/MapRegion::tilesHigh;
+			CoordComponent regionX=tileX/MapRegion::tilesSize;
+			CoordComponent regionY=tileY/MapRegion::tilesSize;
 
 			return getRegionAtOffset(regionX, regionY, create);
 		}
 
 		MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY, bool create) {
 			// Out of bounds?
-			if (regionX>=regionsWide || regionY>=regionsHigh)
+			if (regionX>=regionsSize || regionY>=regionsSize)
 				return NULL;
 
 			// Region not loaded?
@@ -645,7 +645,7 @@ namespace Engine {
 		}
 
 		bool Map::createBlankRegion(unsigned regionX, unsigned regionY) {
-			assert(regionX<regionsWide && regionY<regionsHigh);
+			assert(regionX<regionsSize && regionY<regionsSize);
 			assert(regionsByOffset[regionY][regionX].ptr==NULL);
 
 			// Do we need to free a region to allocate this one?

@@ -38,19 +38,19 @@ namespace Engine {
 		const unsigned tileY0=mapTileY;
 		const unsigned tileX1=(imageWidth-1)*xScale+mapTileX;
 		const unsigned tileY1=(imageHeight-1)*yScale+mapTileY;
-		const unsigned regionX0=tileX0/MapRegion::tilesWide;
-		const unsigned regionY0=tileY0/MapRegion::tilesHigh;
-		const unsigned regionX1=tileX1/MapRegion::tilesWide+1;
-		const unsigned regionY1=tileY1/MapRegion::tilesHigh+1;
+		const unsigned regionX0=tileX0/MapRegion::tilesSize;
+		const unsigned regionY0=tileY0/MapRegion::tilesSize;
+		const unsigned regionX1=tileX1/MapRegion::tilesSize+1;
+		const unsigned regionY1=tileY1/MapRegion::tilesSize+1;
 
 		unsigned regionX, regionY;
 		for(regionY=regionY0; regionY<regionY1; ++regionY) {
-			const int regionTileY0=regionY*MapRegion::tilesHigh;
-			const int regionTileY1=regionTileY0+MapRegion::tilesHigh;
+			const int regionTileY0=regionY*MapRegion::tilesSize;
+			const int regionTileY1=regionTileY0+MapRegion::tilesSize;
 			for(regionX=regionX0; regionX<regionX1; ++regionX) {
 				// Loop over each pixel covered by the current region.
-				const int regionTileX0=regionX*MapRegion::tilesWide;
-				const int regionTileX1=regionTileX0+MapRegion::tilesWide;
+				const int regionTileX0=regionX*MapRegion::tilesSize;
+				const int regionTileX1=regionTileX0+MapRegion::tilesSize;
 
 				const unsigned imageX0=std::max(0, (int)floor((regionTileX0-mapTileX)/xScale));
 				const unsigned imageX1=std::min(imageWidth, (int)floor((regionTileX1-mapTileX)/xScale));
