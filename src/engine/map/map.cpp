@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
+#include <filesystem>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -233,6 +234,27 @@ namespace Engine {
 					fprintf(stderr,"error: could not create map mapTiled metadata (within '%s')\n", mapTiledDirPath);
 					return false;
 				}
+			}
+
+			// Copy slippymap files if needed
+			char slippymapPath[1024]; // TODO: better
+
+			sprintf(slippymapPath, "%s/leaflet.css", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/leaflet.css", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap leaflet.css file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/leaflet.js", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/leaflet.js", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap leaflet.js file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/slippymap.html", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/slippymap.html", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap slippymap.html file to '%s'\n", slippymapPath);
+				return false;
 			}
 
 			// Write metadata file.
