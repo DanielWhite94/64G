@@ -59,6 +59,8 @@ namespace Engine {
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
 
+			bool calculateRegionWidthHeight(unsigned *regionsWide, unsigned *regionsHigh); // inspects which regions have been touched and finds the greatest x/y values
+
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
 			double minTemperature, maxTemperature;

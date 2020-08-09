@@ -10,9 +10,9 @@ namespace Engine {
 	namespace Map {
 		class MapTiled {
 		public:
-			static const unsigned imageSize=64;
-			static const unsigned pixelsPerTileAtMaxZoom=32;
-			static const unsigned maxZoom=16; // zoom in range [0,maxZoom-1], equal to 1+log2((pixelsPerTileAtMaxZoom*Map::regionsWide*MapRegion::tilesWide)/imageSize)
+			static const unsigned imageSize=256;
+			static const unsigned pixelsPerTileAtMaxZoom=1;
+			static const unsigned maxZoom=9; // zoom in range [0,maxZoom-1], equal to 1+log2((Map::regionsWide*MapRegion::tilesWide)/imageSize)
 
 			MapTiled();
 			~MapTiled();
@@ -22,7 +22,7 @@ namespace Engine {
 			// If the image already exists, nothing is done.
 			// Otherwise if all children exist the image is stitched together from them.
 			// Otherwise we compare zoom and minZoomToGen.
-			// If zoom<minZoomToGen then we recuse to generate children before stitching,
+			// If zoom<minZoomToGen then we recurse to generate children before stitching,
 			// but if zoom>=minZoomToGen then we simply generate the desired image directly.
 			// If genOnce is true then in the case of recursing to generate children,
 			// we will stop after generating a single image with mappnglib, and return false.

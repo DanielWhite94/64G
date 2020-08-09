@@ -2,7 +2,9 @@
 #include <dirent.h>
 #include <cstdio>
 #include <cstdlib>
+#include <dirent.h>
 #include <fcntl.h>
+#include <filesystem>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -233,6 +235,27 @@ namespace Engine {
 					fprintf(stderr,"error: could not create map mapTiled metadata (within '%s')\n", mapTiledDirPath);
 					return false;
 				}
+			}
+
+			// Copy slippymap files if needed
+			char slippymapPath[1024]; // TODO: better
+
+			sprintf(slippymapPath, "%s/leaflet.css", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/leaflet.css", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap leaflet.css file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/leaflet.js", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/leaflet.js", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap leaflet.js file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/slippymap.html", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/slippymap.html", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap slippymap.html file to '%s'\n", slippymapPath);
+				return false;
 			}
 
 			// Write metadata file.
@@ -570,6 +593,35 @@ namespace Engine {
 
 		const char *Map::getMapTiledDir(void) const {
 			return mapTiledDir;
+		}
+
+		bool Map::calculateRegionWidthHeight(unsigned *regionsWide, unsigned *regionsHigh) {
+			DIR *dir=opendir(getRegionsDir());
+			if (dir==NULL)
+				return false;
+
+			if (regionsWide!=NULL)
+				*regionsWide=0;
+			if (regionsHigh!=NULL)
+				*regionsHigh=0;
+
+			struct dirent *dirEntry;
+			while((dirEntry=readdir(dir))!=NULL) {
+				// Parse x and y for this region
+				unsigned x, y;
+				if (sscanf(dirEntry->d_name, "%u,%u", &x, &y)!=2)
+					continue;
+
+				// Check for new furthest east/south region
+				if (regionsWide!=NULL && x>=*regionsWide)
+					*regionsWide=x+1;
+				if (regionsHigh!=NULL && y>=*regionsHigh)
+					*regionsHigh=y+1;
+			}
+
+			closedir(dir);
+
+			return true;
 		}
 
 		const char *Map::getRegionsDir(void) const {
