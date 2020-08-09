@@ -17,4 +17,4 @@ Note: these assume you are in the `bin` directory
 * Create a demo map 'mymap': ```./demogen 2048 2048 ../maps/mymap ```
 * Create a PNG image of the entire map:  ```./mappng ../maps/mymap 0 0 2048 2048 2048 2048 ../maps/mymap.png```
 * Create a set of tiles for an interactive/slippy map: ```./slippymap ../maps/mymap``` (viewed by opening `slippymap.html` in `../maps/mymap`)
-* Run the engine: ```./engine ../maps/mymap 1000 1024```
+* Run the engine: ```./engine ../maps/mymap 940 472```
