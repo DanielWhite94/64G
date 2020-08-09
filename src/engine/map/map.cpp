@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <cstdio>
 #include <cstdlib>
+#include <dirent.h>
 #include <fcntl.h>
 #include <filesystem>
 #include <sys/stat.h>
@@ -592,6 +593,35 @@ namespace Engine {
 
 		const char *Map::getMapTiledDir(void) const {
 			return mapTiledDir;
+		}
+
+		bool Map::calculateRegionWidthHeight(unsigned *regionsWide, unsigned *regionsHigh) {
+			DIR *dir=opendir(getRegionsDir());
+			if (dir==NULL)
+				return false;
+
+			if (regionsWide!=NULL)
+				*regionsWide=0;
+			if (regionsHigh!=NULL)
+				*regionsHigh=0;
+
+			struct dirent *dirEntry;
+			while((dirEntry=readdir(dir))!=NULL) {
+				// Parse x and y for this region
+				unsigned x, y;
+				if (sscanf(dirEntry->d_name, "%u,%u", &x, &y)!=2)
+					continue;
+
+				// Check for new furthest east/south region
+				if (regionsWide!=NULL && x>=*regionsWide)
+					*regionsWide=x+1;
+				if (regionsHigh!=NULL && y>=*regionsHigh)
+					*regionsHigh=y+1;
+			}
+
+			closedir(dir);
+
+			return true;
 		}
 
 		const char *Map::getRegionsDir(void) const {
