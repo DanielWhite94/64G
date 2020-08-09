@@ -79,6 +79,10 @@ namespace Engine {
 			if (haveGen!=NULL)
 				*haveGen=false;
 
+			// Bad zoom value?
+			if (zoom>=maxZoom)
+				return false;
+
 			// Does this map tile already exist?
 			if (Util::isFile(path))
 				return true;
