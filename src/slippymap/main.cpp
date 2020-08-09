@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 	fclose(slippymapJs);
 
 	// Generate all needed images
-	if (!MapTiled::generateTileMap(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom, false, NULL)) {
+	if (!MapTiled::generateTileMap(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom-1, false, NULL)) {
 		printf("Could not generate all images\n");
 		return EXIT_FAILURE;
 	}
