@@ -22,7 +22,7 @@ namespace Engine {
 			// If the image already exists, nothing is done.
 			// Otherwise if all children exist the image is stitched together from them.
 			// Otherwise we compare zoom and minZoomToGen.
-			// If zoom<minZoomToGen then we recuse to generate children before stitching,
+			// If zoom<minZoomToGen then we recurse to generate children before stitching,
 			// but if zoom>=minZoomToGen then we simply generate the desired image directly.
 			// If genOnce is true then in the case of recursing to generate children,
 			// we will stop after generating a single image with mappnglib, and return false.
