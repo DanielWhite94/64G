@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
 	unsigned regionsWide, regionsHigh;
 	if (!map->calculateRegionWidthHeight(&regionsWide, &regionsHigh)) {
 		printf("Could not get map size\n");
+		delete map;
 		return EXIT_FAILURE;
 	}
 
