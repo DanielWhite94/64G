@@ -403,6 +403,9 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
+	// Note start time
+	Util::TimeMs startTime=Util::getTimeMs();
+
 	// Create Map.
 	printf("Creating map...\n");
 	mapData.map=new class Map(outputPath);
@@ -572,6 +575,12 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	printf("Saved map to '%s'.\n", outputPath);
+
+	// Print elapsed total time
+	Util::TimeMs totalTime=Util::getTimeMs()-startTime;
+	printf("Total generation time: ");
+	mapGenPrintTime(totalTime);
+	printf("\n");
 
 	// Tidy up
 	delete mapData.map;
