@@ -258,6 +258,42 @@ namespace Engine {
 				return false;
 			}
 
+			sprintf(slippymapPath, "%s/images", baseDir);
+			if (!Util::isDir(slippymapPath) && !Util::makeDir(slippymapPath)) {
+				fprintf(stderr,"error: could not create slippymap images directory to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/images/layers.png", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/images/layers.png", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap layers.png image file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/images/layers-2x.png", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/images/layers-2x.png", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap layers-2x.png image file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/images/marker-icon.png", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/images/marker-icon.png", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap marker-icon.png image file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/images/marker-icon-2x.png", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/images/marker-icon-2x.png", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap marker-icon-2x.png image file to '%s'\n", slippymapPath);
+				return false;
+			}
+
+			sprintf(slippymapPath, "%s/images/marker-shadow.png", baseDir);
+			if (!Util::isFile(slippymapPath) && !std::filesystem::copy_file("../src/slippymap/images/marker-shadow.png", slippymapPath)) {
+				fprintf(stderr,"error: could not copy slippymap marker-shadow.png image file to '%s'\n", slippymapPath);
+				return false;
+			}
+
 			// Write metadata file.
 			char metadataFilePath[1024]; // TODO: Prevent overflows.
 			sprintf(metadataFilePath, "%s/metadata", baseDir);
