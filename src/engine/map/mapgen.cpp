@@ -59,7 +59,7 @@ namespace Engine {
 				// Compute number of trials to perform for this region (may be 0).
 				unsigned trials=floor(trialsPerRegion)+(trialsPerRegion>Util::randFloatInInterval(0.0, 1.0) ? 1 : 0);
 
-				// Runs said number of trials.
+				// Run said number of trials.
 				unsigned tileOffsetBaseX=regionPos.x*MapRegion::tilesSize;
 				unsigned tileOffsetBaseY=regionPos.y*MapRegion::tilesSize;
 				for(unsigned i=0; i<trials; ++i) {
