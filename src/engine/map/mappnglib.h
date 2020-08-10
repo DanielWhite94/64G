@@ -10,6 +10,7 @@
 #include "map.h"
 #include "mapgen.h"
 #include "mapobject.h"
+#include "maptiled.h"
 #include "../util.h"
 
 using namespace Engine;
@@ -19,9 +20,11 @@ namespace Engine {
 	namespace Map {
 		class MapPngLib {
 		public:
-			static bool generatePng(class Map *map, const char *imagePath, int mapTileX, int mapTileY, int mapTileWidth, int mapTileHeight, int imageWidth, int imageHeight, bool quiet);
+			static bool generatePng(class Map *map, const char *imagePath, int mapTileX, int mapTileY, int mapTileWidth, int mapTileHeight, int imageWidth, int imageHeight, MapTiled::ImageLayer layer, bool quiet);
 		private:
-			static void getColourForTile(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
+			static void getColourForTile(const class Map *map, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b);
+			static void getColourForTileBase(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
+			static void getColourForTileTemperature(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
 		};
 	};
 };

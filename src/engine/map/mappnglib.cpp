@@ -3,7 +3,7 @@
 #include "mappnglib.h"
 
 namespace Engine {
-	bool MapPngLib::generatePng(class Map *map, const char *imagePath, int mapTileX, int mapTileY, int mapTileWidth, int mapTileHeight, int imageWidth, int imageHeight, bool quiet) {
+	bool MapPngLib::generatePng(class Map *map, const char *imagePath, int mapTileX, int mapTileY, int mapTileWidth, int mapTileHeight, int imageWidth, int imageHeight, MapTiled::ImageLayer layer, bool quiet) {
 		assert(map!=NULL);
 		assert(mapTileX>=0);
 		assert(mapTileY>=0);
@@ -78,7 +78,7 @@ namespace Engine {
 						// Choose colour (based on topmost layer with a texture set).
 						uint8_t r=0, g=0, b=0;
 						if (tile!=NULL)
-							getColourForTile(map, tile, &r, &g, &b);
+							getColourForTile(map, tile, layer, &r, &g, &b);
 
 						// Write pixel.
 						pngRows[(imageY*imageWidth+imageX)*3+0]=r;
@@ -131,13 +131,27 @@ namespace Engine {
 		return true;
 	}
 
-	void MapPngLib::getColourForTile(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+	void MapPngLib::getColourForTile(const class Map *map, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b) {
 		assert(map!=NULL);
 		assert(tile!=NULL);
 		assert(r!=NULL);
 		assert(g!=NULL);
 		assert(b!=NULL);
 
+		switch(layer) {
+			case MapTiled::ImageLayerBase:
+				return MapPngLib::getColourForTileBase(map, tile, r, g, b);
+			break;
+			case MapTiled::ImageLayerTemperature:
+				return MapPngLib::getColourForTileTemperature(map, tile, r, g, b);
+			break;
+		}
+
+		assert(false);
+		*r=*g=*b=0;
+	}
+
+	void MapPngLib::getColourForTileBase(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
 		// Loop over layers from top to bottom looking for one with a texture set
 		for(int z=MapTile::layersMax-1; z>=0; --z) {
 			const MapTile::Layer *layer=tile->getLayer(z);
@@ -286,6 +300,39 @@ namespace Engine {
 			}
 
 			break; // We have found something to draw
+		}
+	}
+
+	void MapPngLib::getColourForTileTemperature(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+		// Grab temperature and normalise to [0, 1]
+		double temperature=tile->getTemperature();
+		double temperatureNormalised=(temperature-map->minTemperature)/(map->maxTemperature-map->minTemperature);
+
+		// Scale temperature up to [0, 1023]
+		unsigned temperatureScaled=floor(temperatureNormalised*(4*256-1));
+		if (temperatureScaled<256) {
+			// 0x0000FF -> 0x00FFFF
+			*r=0;
+			*g=temperatureScaled;
+			*b=255;
+		} else if (temperatureScaled<512) {
+			// 0x00FFFF -> 0x00FF00
+			temperatureScaled-=256;
+			*r=0;
+			*g=255;
+			*b=255-temperatureScaled;
+		} else if (temperatureScaled<768) {
+			// 0x00FF00 -> 0xFFFF00
+			temperatureScaled-=512;
+			*r=temperatureScaled;
+			*g=255;
+			*b=0;
+		} else {
+			// 0xFFFF00 -> 0xFF0000
+			temperatureScaled-=768;
+			*r=255;
+			*g=255-temperatureScaled;
+			*b=0;
 		}
 	}
 

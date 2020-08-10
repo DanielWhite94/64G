@@ -14,6 +14,17 @@ namespace Engine {
 			static const unsigned pixelsPerTileAtMaxZoom=1; // TODO: consider retiring this - we probably always want 1:1 ratio between pixels and tiles at the most zoomed level
 			static const unsigned maxZoom=9; // zoom in range [0,maxZoom-1], equal to 1+log2((Map::regionsSize*MapRegion::tilesSize)/imageSize)
 
+			typedef unsigned ImageLayer;
+			static const ImageLayer	ImageLayerBase=0;
+			static const ImageLayer	ImageLayerTemperature=1;
+			static const ImageLayer	ImageLayerNB=2;
+
+			typedef unsigned ImageLayerSet;
+			static const ImageLayerSet ImageLayerSetNone=0;
+			static const ImageLayerSet ImageLayerSetBase=(1u<<ImageLayerBase);
+			static const ImageLayerSet ImageLayerSetTemperature=(1u<<ImageLayerTemperature);
+			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature;
+
 			MapTiled();
 			~MapTiled();
 
@@ -27,11 +38,11 @@ namespace Engine {
 			// Finally we recurse to generate children, before stitching together as described above.
 			// If genOnce is true then in the case of recursing to generate children,
 			// we will stop after generating a single image with MapPngLib, and return false.
-			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned minZoomToGen, bool genOnce, bool *haveGen);
+			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned minZoomToGen, ImageLayerSet imageLayerSet, bool genOnce, bool *haveGen);
 
 			static void getZoomPath(const class Map *map, unsigned zoom, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]); // TODO: improve hardcoded size
-			static void getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, char path[1024]); // TODO: improve hardcoded size
+			static void getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayer layer, char path[1024]); // TODO: improve hardcoded size
 			static void getBlankImagePath(const class Map *map, char path[1024]); // TODO: improve hardcoded size
 
 		private:

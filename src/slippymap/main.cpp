@@ -50,7 +50,8 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "	zoomSnap: 0,\n");
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
-	fprintf(slippymapJs, "L.tileLayer('maptiled/{z}/{x}/{y}.png', {\n");
+
+	fprintf(slippymapJs, "var layerBase=L.tileLayer('maptiled/{z}/{x}/{y}-0.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
 	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
@@ -59,14 +60,38 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
 	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
-	fprintf(slippymapJs, "}).addTo(map);\n");
+	fprintf(slippymapJs, "});\n");
+	fprintf(slippymapJs, "layerBase.addTo(map);\n");
 	fprintf(slippymapJs, "\n");
+
+	fprintf(slippymapJs, "var layerTemperature=L.tileLayer('maptiled/{z}/{x}/{y}-1.png', {\n");
+	fprintf(slippymapJs, "	attribution: 'me',\n");
+	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
+	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
+	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
+	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
+	fprintf(slippymapJs, "	noWrap: true,\n");
+	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
+	fprintf(slippymapJs, "});\n");
+	fprintf(slippymapJs, "\n");
+
+	fprintf(slippymapJs, "var baseLayers={\n");
+	fprintf(slippymapJs, "	\"Base\": layerBase,\n");
+	fprintf(slippymapJs, "	\"Temperature\": layerTemperature,\n");
+	fprintf(slippymapJs, "};\n");
+	fprintf(slippymapJs, "var overlays={\n");
+	fprintf(slippymapJs, "};\n");
+	fprintf(slippymapJs, "L.control.layers(baseLayers, overlays).addTo(map);\n");
+	fprintf(slippymapJs, "\n");
+
 	fprintf(slippymapJs, "map.fitWorld();\n");
+	fprintf(slippymapJs, "\n");
 
 	fclose(slippymapJs);
 
 	// Generate all needed images
-	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom-1, false, NULL)) {
+	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom-1, MapTiled::ImageLayerSetAll,  false, NULL)) {
 		printf("Could not generate all images\n");
 		return EXIT_FAILURE;
 	}

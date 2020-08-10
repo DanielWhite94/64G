@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 	}
 
 	// Use lib to do most of the work
-	MapPngLib::generatePng(map, imagePath, mapTileX, mapTileY, mapTileWidth, mapTileHeight, imageWidth, imageHeight, quiet);
+	MapPngLib::generatePng(map, imagePath, mapTileX, mapTileY, mapTileWidth, mapTileHeight, imageWidth, imageHeight, MapTiled::ImageLayerSetBase, quiet);
 
 	// Tidy up.
 	delete map;

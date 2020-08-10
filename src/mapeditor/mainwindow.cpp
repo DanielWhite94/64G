@@ -163,7 +163,7 @@ namespace MapEditor {
 			if (!mapTilesToGen.empty()) {
 				// Take most recently marked 'maptile' and generate it, then remove it from the queue.
 				const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
-				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 9, true, NULL))
+				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 9, MapTiled::ImageLayerSetAll, true, NULL))
 					mapTilesToGen.pop_back();
 
 				// Force redraw to show new image
@@ -321,7 +321,7 @@ namespace MapEditor {
 
 						// Attempt to load png image as a cairo surfaace
 						char mapTileFilename[1024];
-						MapTiled::getZoomXYPath(map, mapTileZl, mapTileX, mapTileY, mapTileFilename);
+						MapTiled::getZoomXYPath(map, mapTileZl, mapTileX, mapTileY, MapTiled::ImageLayerBase, mapTileFilename);
 						cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
 						if (cairo_surface_status(mapTileSurface)!=CAIRO_STATUS_SUCCESS) {
 							// No image avaiable - use standard blank one until it has been generated
