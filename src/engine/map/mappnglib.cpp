@@ -145,6 +145,12 @@ namespace Engine {
 			case MapTiled::ImageLayerTemperature:
 				return MapPngLib::getColourForTileTemperature(map, tile, r, g, b);
 			break;
+			case MapTiled::ImageLayerHeight:
+				return MapPngLib::getColourForTileHeight(map, tile, r, g, b);
+			break;
+			case MapTiled::ImageLayerMoisture:
+				return MapPngLib::getColourForTileMoisture(map, tile, r, g, b);
+			break;
 		}
 
 		assert(false);
@@ -334,6 +340,67 @@ namespace Engine {
 			*g=255-temperatureScaled;
 			*b=0;
 		}
+	}
+
+	void MapPngLib::getColourForTileHeight(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+		// Grab height and check for ocean tile as special case
+		double height=tile->getHeight();
+		if (height<=map->seaLevel) {
+			*r=0;
+			*g=0;
+			*b=255;
+			return;
+		}
+
+		// Normalise height (above sea level) to [0, 1]
+		double heightNormalised=(height-map->seaLevel)/(map->maxHeight-map->seaLevel);
+
+		// Scale height up to [0, 511]
+		unsigned heightScaled=floor(heightNormalised*(2*256-1));
+		if (heightScaled<128) {
+			// 0x008800 -> 0x888800
+			*r=heightScaled;
+			*g=127;
+			*b=0;
+		} else if (heightScaled<256) {
+			// 0x888800 -> 0x880000
+			heightScaled-=128;
+			*r=127;
+			*g=127-heightScaled;
+			*b=0;
+		} else if (heightScaled<384) {
+			// 0x880000 -> 0x888888
+			heightScaled-=256;
+			*r=127;
+			*g=heightScaled;
+			*b=heightScaled;
+		} else {
+			// 0x888888 -> 0xFFFFFF
+			heightScaled-=384;
+			*r=128+heightScaled;
+			*g=128+heightScaled;
+			*b=128+heightScaled;
+		}
+	}
+
+	void MapPngLib::getColourForTileMoisture(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+		// Special case for ocean tiles
+		if (tile->getHeight()<=map->seaLevel) {
+			*r=0;
+			*g=0;
+			*b=255;
+			return;
+		}
+
+		// Grab moisture and normalise to [0, 1]
+		double moisture=tile->getMoisture();
+		double moistureNormalised=(moisture-map->minMoisture)/(map->maxMoisture-map->minMoisture);
+
+		// Choose colour (low moisture as white, high moisture as dark blue)
+		unsigned moistureScaled=floor(moistureNormalised*255);
+		*r=255-moistureScaled;
+		*g=255-moistureScaled;
+		*b=255;
 	}
 
 };

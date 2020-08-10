@@ -17,13 +17,17 @@ namespace Engine {
 			typedef unsigned ImageLayer;
 			static const ImageLayer	ImageLayerBase=0;
 			static const ImageLayer	ImageLayerTemperature=1;
-			static const ImageLayer	ImageLayerNB=2;
+			static const ImageLayer	ImageLayerHeight=2;
+			static const ImageLayer	ImageLayerMoisture=3;
+			static const ImageLayer	ImageLayerNB=4;
 
 			typedef unsigned ImageLayerSet;
 			static const ImageLayerSet ImageLayerSetNone=0;
 			static const ImageLayerSet ImageLayerSetBase=(1u<<ImageLayerBase);
 			static const ImageLayerSet ImageLayerSetTemperature=(1u<<ImageLayerTemperature);
-			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature;
+			static const ImageLayerSet ImageLayerSetHeight=(1u<<ImageLayerHeight);
+			static const ImageLayerSet ImageLayerSetMoisture=(1u<<ImageLayerMoisture);
+			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture;
 
 			MapTiled();
 			~MapTiled();

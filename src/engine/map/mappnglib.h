@@ -25,6 +25,8 @@ namespace Engine {
 			static void getColourForTile(const class Map *map, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b);
 			static void getColourForTileBase(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
 			static void getColourForTileTemperature(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
+			static void getColourForTileHeight(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
+			static void getColourForTileMoisture(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b);
 		};
 	};
 };
