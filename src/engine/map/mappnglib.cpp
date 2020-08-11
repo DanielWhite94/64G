@@ -151,6 +151,9 @@ namespace Engine {
 			case MapTiled::ImageLayerMoisture:
 				return MapPngLib::getColourForTileMoisture(map, tile, r, g, b);
 			break;
+			case MapTiled::ImageLayerHeightGreyscale:
+				return MapPngLib::getColourForTileHeightGreyscale(map, tile, r, g, b);
+			break;
 		}
 
 		assert(false);
@@ -401,6 +404,26 @@ namespace Engine {
 		*r=255-moistureScaled;
 		*g=255-moistureScaled;
 		*b=255;
+	}
+
+	void MapPngLib::getColourForTileHeightGreyscale(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+		// Special case for ocean tiles
+		if (tile->getHeight()<=map->seaLevel) {
+			*r=0;
+			*g=0;
+			*b=0;
+			return;
+		}
+
+		// Grab height and normalise to [0, 1]
+		double height=tile->getHeight();
+		double heightNormalised=(height-map->seaLevel)/(map->maxHeight-map->seaLevel);
+
+		// Choose colour
+		unsigned heightScaled=floor(heightNormalised*255);
+		*r=heightScaled;
+		*g=heightScaled;
+		*b=heightScaled;
 	}
 
 };
