@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 	const char *mapPath=argv[1];
 
 	// Load map
-	printf("Loading map at '%s'.\n", mapPath);
+	printf("Loading map at '%s'...\n", mapPath);
 	class Map *map=new class Map(mapPath);
 	if (map==NULL || !map->initialized) {
 		printf("Could not load map.\n");
@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Calculate size of this map
+	printf("Calculate map size...\n", mapPath);
 	unsigned regionsWide, regionsHigh;
 	if (!map->calculateRegionWidthHeight(&regionsWide, &regionsHigh)) {
 		printf("Could not get map size\n");
@@ -35,9 +36,14 @@ int main(int argc, char *argv[]) {
 	unsigned slippyZoomOffset=MapTiled::maxZoom-1-std::ceil(std::log2(mapSize/MapTiled::imageSize));
 	unsigned slippyMaxNativeZoom=MapTiled::maxZoom-1-slippyZoomOffset;
 
+	printf("Map is %u regions wide and %u regions high, giving size %u with zoom offset %u.\n", regionsWide, regionsHigh, mapSize, slippyZoomOffset);
+
 	// Generate slippymap.js file to pass on map-speicifc parameters such as min/max zoom
 	char slippymapJsPath[1024]; // TODO: better
 	sprintf(slippymapJsPath, "%s/slippymap.js", map->getBaseDir());
+
+	printf("Creating slippymap.js file at '%s'...\n", slippymapJsPath);
+
 	FILE *slippymapJs=fopen(slippymapJsPath, "w");
 	if (slippymapJs==NULL) {
 		printf("Could not create custom slippymap.js file at '%s'\n", slippymapJsPath);
@@ -117,8 +123,10 @@ int main(int argc, char *argv[]) {
 	fclose(slippymapJs);
 
 	// Generate all needed images
+	printf("Generating slippymap images...\n", slippymapJsPath);
 	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom-1, MapTiled::ImageLayerSetAll,  false, NULL)) {
 		printf("Could not generate all images\n");
+		delete map;
 		return EXIT_FAILURE;
 	}
 
