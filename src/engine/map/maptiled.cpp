@@ -243,14 +243,14 @@ namespace Engine {
 
 			// Join each contour image together to make final output
 			char subCommand[1024];
-			sprintf(command, "convert -size %ux%u xc:white", MapTiled::imageSize, MapTiled::imageSize);
+			sprintf(command, "convert -size %ux%u xc:transparent", MapTiled::imageSize, MapTiled::imageSize);
 
 			for(unsigned i=contourStep; i<100; i+=contourStep) {
-				sprintf(subCommand, " -page +0+0 %s/edge%u.png", tmpDirPath, i);
+				sprintf(subCommand, " %s/edge%u.png -composite", tmpDirPath, i);
 				strcat(command, subCommand);
 			}
 
-			sprintf(subCommand, " -layers flatten %s", output);
+			sprintf(subCommand, " %s", output);
 			strcat(command, subCommand);
 
 			system(command);
