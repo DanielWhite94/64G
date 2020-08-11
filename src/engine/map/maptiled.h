@@ -19,7 +19,8 @@ namespace Engine {
 			static const ImageLayer	ImageLayerTemperature=1;
 			static const ImageLayer	ImageLayerHeight=2;
 			static const ImageLayer	ImageLayerMoisture=3;
-			static const ImageLayer	ImageLayerNB=4;
+			static const ImageLayer	ImageLayerHeightGreyscale=4;
+			static const ImageLayer	ImageLayerNB=5;
 
 			typedef unsigned ImageLayerSet;
 			static const ImageLayerSet ImageLayerSetNone=0;
@@ -27,7 +28,8 @@ namespace Engine {
 			static const ImageLayerSet ImageLayerSetTemperature=(1u<<ImageLayerTemperature);
 			static const ImageLayerSet ImageLayerSetHeight=(1u<<ImageLayerHeight);
 			static const ImageLayerSet ImageLayerSetMoisture=(1u<<ImageLayerMoisture);
-			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture;
+			static const ImageLayerSet ImageLayerSetHeightGreyscale=(1u<<ImageLayerHeightGreyscale);
+			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightGreyscale;
 
 			MapTiled();
 			~MapTiled();
@@ -50,6 +52,7 @@ namespace Engine {
 			static void getBlankImagePath(const class Map *map, char path[1024]); // TODO: improve hardcoded size
 
 		private:
+			static bool generateContourImage(const char *input, double contourStep, const char *output); // input should point to a greyscale image where white=highest height and black=lowest, contourStep is delta between each contour line, where min height is 0, max height is 1
 		};
 	};
 };

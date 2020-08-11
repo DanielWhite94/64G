@@ -109,6 +109,29 @@ bool Util::unlinkFile(const char *path) {
 	return (unlink(path)==0);
 }
 
+bool Util::isImageWhite(const char *path) {
+	assert(path!=NULL);
+
+	// Create command to calculate mean value of pixels
+	char command[1024]; // TODO: better
+	sprintf(command, "convert %s -format \"%%[fx:(mean==1)]\" info:", path);
+
+	// Run command, capturing output
+	FILE *fp=popen(command, "r");
+	if (fp==NULL)
+		return false;
+
+	char outputBuf[32]; // TODO: better
+	if (fgets(outputBuf, sizeof(outputBuf), fp)==NULL) {
+		pclose(fp);
+		return false;
+	}
+
+	pclose(fp);
+
+	return (outputBuf[0]=='1');
+}
+
 Util::TimeMs Util::getTimeMs(void) {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

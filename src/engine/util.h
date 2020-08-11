@@ -21,6 +21,8 @@ namespace Engine {
 		static bool makeDir(const char *path);
 		static bool unlinkFile(const char *path);
 
+		static bool isImageWhite(const char *path); // returns true if given path represents an image with all pixels white
+
 		typedef long long int TimeMs;
 		static TimeMs getTimeMs(void);
 	};
