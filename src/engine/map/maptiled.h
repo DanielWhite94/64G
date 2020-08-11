@@ -52,7 +52,7 @@ namespace Engine {
 			static void getBlankImagePath(const class Map *map, char path[1024]); // TODO: improve hardcoded size
 
 		private:
-			static bool generateContourImage(const char *input, const char *output); // input should point to a greyscale image where white=highest height and black=lowest
+			static bool generateContourImage(const char *input, double contourStep, const char *output); // input should point to a greyscale image where white=highest height and black=lowest, contourStep is delta between each contour line, where min height is 0, max height is 1
 		};
 	};
 };
