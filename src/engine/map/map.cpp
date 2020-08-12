@@ -46,8 +46,6 @@ namespace Engine {
 			for(i=0; i<MapTexture::IdMax; ++i)
 				textures[i]=NULL;
 
-			initialized=false; // Needed as initclean sets this to true.
-
 			// Create directory strings.
 			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 			baseDir=(char *)malloc(mapBaseDirPathLen+1); // TODO: Check return.
@@ -70,20 +68,15 @@ namespace Engine {
 
 			// Do we need to create the base directory?
 			// Note: we do this here instead of with the other directories in createMetadata because otherwise we would not be able to create the lock file below.
-			if (!Util::isDir(mapBaseDirPath)) {
-				if (!Util::makeDir(mapBaseDirPath)) {
-					perror(NULL);
-					fprintf(stderr, "error: could not create map base dir at '%s'\n", mapBaseDirPath);
-					return;
-				}
-			}
+			if (!Util::isDir(mapBaseDirPath) && !Util::makeDir(mapBaseDirPath))
+				throw std::runtime_error("could not create map base dir");
 
 			// Attempt to obtain the lock file
 			char lockPath[1024]; // TODO: better
 			sprintf(lockPath, "%s/lock", mapBaseDirPath);
 			lockFd=open(lockPath, O_RDWR|O_CREAT|O_EXCL, S_IWUSR);
 			if (lockFd==-1)
-				return; // Already open
+				throw std::runtime_error("locked");
 
 			// Load metadata file if exists.
 			char metadataFilePath[1024]; // TODO: Prevent overflows.
@@ -108,7 +101,7 @@ namespace Engine {
 			// Load textures
 			dirFd=opendir(getTexturesDir());
 			if (dirFd==NULL) {
-				fprintf(stderr, "Can't open map texture dir at '%s'.\n", getTexturesDir());
+				throw std::runtime_error("could not open map texture dir");
 			} else {
 				while((dirEntry=readdir(dirFd))!=NULL) {
 					char dirEntryFileName[1024]; // TODO: this better
@@ -148,8 +141,6 @@ namespace Engine {
 			}
 
 			// Note: Regions are loaded on demand.
-
-			initialized=true;
 		}
 
 		Map::~Map() {
@@ -181,9 +172,6 @@ namespace Engine {
 			regionsDir=NULL;
 			free(mapTiledDir);
 			mapTiledDir=NULL;
-
-			// Clear initialized flag to be safe.
-			initialized=false;
 		}
 
 		bool Map::save(void) {

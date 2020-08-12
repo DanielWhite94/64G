@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
+#include <new>
 #include <png.h>
 
 #include "../engine/map/map.h"
@@ -65,11 +67,14 @@ int main(int argc, char **argv) {
 
 	// Load map.
 	if (!quiet)
-		printf("Loading map at '%s'.\n", mapPath);
-	class Map *map=new class Map(mapPath);
-	if (map==NULL || !map->initialized) {
-		if (!quiet)
-			printf("Could not load map.\n");
+		printf("Loading map at '%s'...\n", mapPath);
+
+	class Map *map;
+	try {
+		map=new class Map(mapPath);
+	} catch (std::exception& e) {
+		if (quiet)
+			std::cout << "Could not load map: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 

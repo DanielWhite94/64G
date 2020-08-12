@@ -2,6 +2,8 @@
 #include <cstdbool>
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
+#include <new>
 
 #include <SDL2/SDL.h>
 
@@ -42,10 +44,13 @@ int main(int argc, char **argv) {
 	bool playerRunning=false;
 
 	// Load map.
-	printf("Loading map at '%s'.\n", path);
-	class Map *map=new class Map(path);
-	if (map==NULL || !map->initialized) {
-		printf("Could not load map.\n");
+	printf("Loading map at '%s'...\n", path);
+
+	class Map *map;
+	try {
+		map=new class Map(path);
+	} catch (std::exception& e) {
+		std::cout << "Could not load map: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 

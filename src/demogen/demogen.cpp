@@ -4,6 +4,8 @@
 #include <cstdbool>
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
+#include <new>
 
 #include "../engine/noisearray.h"
 #include "../engine/map/map.h"
@@ -408,11 +410,11 @@ int main(int argc, char **argv) {
 
 	// Create Map.
 	printf("Creating map...\n");
-	mapData.map=new class Map(outputPath);
-	if (mapData.map==NULL || !mapData.map->initialized) {
-		printf("Could not create map.\n");
-		if (mapData.map!=NULL)
-			delete mapData.map;
+
+	try {
+		mapData.map=new class Map(outputPath);
+	} catch (std::exception& e) {
+		std::cout << "Could not create/load map: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 

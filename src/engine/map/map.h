@@ -29,8 +29,6 @@ namespace Engine {
 
 			static const unsigned regionsSize=256; // numbers of regions per side, with total number of regions equal to regionsSize squared
 
-			bool initialized;
-
 			Map(const char *mapBaseDirPath);
 			~Map();
 

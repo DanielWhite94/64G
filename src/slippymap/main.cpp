@@ -1,6 +1,8 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
+#include <new>
 
 #include "../engine/map/map.h"
 #include "../engine/map/maptiled.h"
@@ -15,9 +17,12 @@ int main(int argc, char *argv[]) {
 
 	// Load map
 	printf("Loading map at '%s'...\n", mapPath);
-	class Map *map=new class Map(mapPath);
-	if (map==NULL || !map->initialized) {
-		printf("Could not load map.\n");
+
+	class Map *map;
+	try {
+		map=new class Map(mapPath);
+	} catch (std::exception& e) {
+		std::cout << "Could not load map: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 

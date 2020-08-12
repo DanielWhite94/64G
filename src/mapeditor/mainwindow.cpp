@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <exception>
 #include <iostream>
+#include <new>
 
 #include "mainwindow.h"
 
@@ -542,9 +543,9 @@ namespace MapEditor {
 		gtk_widget_destroy(dialog);
 
 		// Attempt to load map
-		map=new class Map(filename);
-		if (map==NULL || !map->initialized) {
-			delete map;
+		try {
+			map=new class Map(filename);
+		} catch (std::exception& e) {
 			map=NULL;
 			return false;
 		}
@@ -586,12 +587,13 @@ namespace MapEditor {
 		gtk_widget_destroy(dialog);
 
 		// Attempt to load map
-		map=new class Map(filename);
-		if (map==NULL || !map->initialized) {
-			delete map;
+		class Map *map;
+		try {
+			map=new class Map(filename);
+		} catch (std::exception& e) {
 			map=NULL;
 
-			sprintf(statusLabelStr, "Could not open map at: %s", filename);
+			sprintf(statusLabelStr, "Could not open map at '%s': %s", filename, e.what());
 			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 
 			return false;
