@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Calculate size of this map
-	printf("Calculate map size...\n", mapPath);
+	printf("Calculating map size...\n");
 	unsigned regionsWide, regionsHigh;
 	if (!map->calculateRegionWidthHeight(&regionsWide, &regionsHigh)) {
 		printf("Could not get map size\n");
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
 	fclose(slippymapJs);
 
 	// Generate all needed images
-	printf("Generating slippymap images...\n", slippymapJsPath);
+	printf("Generating slippymap images...\n");
 	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom-1, MapTiled::ImageLayerSetAll,  false, NULL)) {
 		printf("Could not generate all images\n");
 		delete map;
