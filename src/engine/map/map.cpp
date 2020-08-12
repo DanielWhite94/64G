@@ -18,7 +18,7 @@ using namespace Engine::Graphics;
 
 namespace Engine {
 	namespace Map {
-		Map::Map(const char *mapBaseDirPath) {
+		Map::Map(const char *mapBaseDirPath, InitFlags flags) {
 			assert(mapBaseDirPath!=NULL);
 
 			DIR *dirFd;
@@ -68,8 +68,14 @@ namespace Engine {
 
 			// Do we need to create the base directory?
 			// Note: we do this here instead of with the other directories in createMetadata because otherwise we would not be able to create the lock file below.
-			if (!Util::isDir(mapBaseDirPath) && !Util::makeDir(mapBaseDirPath))
-				throw std::runtime_error("could not create map base dir");
+			if (!Util::isDir(mapBaseDirPath)) {
+				if (!(flags & Map::InitFlagsCreate))
+					throw std::runtime_error("no such map");
+				if (!Util::makeDir(mapBaseDirPath))
+					throw std::runtime_error("could not create map base dir");
+			} else if (flags & Map::InitFlagsNoLoad)
+				throw std::runtime_error("map already exists");
+
 
 			// Attempt to obtain the lock file
 			char lockPath[1024]; // TODO: better

@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 
 	class Map *map;
 	try {
-		map=new class Map(mapPath);
+		map=new class Map(mapPath, Engine::Map::Map::InitFlagsNone);
 	} catch (std::exception& e) {
 		std::cout << "Could not load map: " << e.what() << '\n';
 		return EXIT_FAILURE;

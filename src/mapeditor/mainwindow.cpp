@@ -544,7 +544,7 @@ namespace MapEditor {
 
 		// Attempt to load map
 		try {
-			map=new class Map(filename);
+			map=new class Map(filename, (Engine::Map::Map::InitFlags)(Engine::Map::Map::InitFlagsCreate|Engine::Map::Map::InitFlagsNoLoad));
 		} catch (std::exception& e) {
 			map=NULL;
 			return false;
@@ -589,7 +589,7 @@ namespace MapEditor {
 		// Attempt to load map
 		class Map *map;
 		try {
-			map=new class Map(filename);
+			map=new class Map(filename, Engine::Map::Map::InitFlagsNone);
 		} catch (std::exception& e) {
 			map=NULL;
 

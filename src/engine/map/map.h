@@ -27,9 +27,15 @@ namespace Engine {
 				CreateDirty=3,
 			};
 
+			enum InitFlags {
+				InitFlagsNone=0,
+				InitFlagsCreate=1, // if map does not exist, creates it (by default would fail to load with an exception thrown)
+				InitFlagsNoLoad=2, // ensure that we are not loading a map (so are creating a new one)
+			};
+
 			static const unsigned regionsSize=256; // numbers of regions per side, with total number of regions equal to regionsSize squared
 
-			Map(const char *mapBaseDirPath);
+			Map(const char *mapBaseDirPath, InitFlags flags);
 			~Map();
 
 			bool save(void); // Saves everything recursively.
