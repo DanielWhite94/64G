@@ -164,7 +164,10 @@ namespace MapEditor {
 			if (!mapTilesToGen.empty()) {
 				// Take most recently marked 'maptile' and generate it, then remove it from the queue.
 				const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
-				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 9, MapTiled::ImageLayerSetAll, true, NULL))
+				// TODO: fix this call - previously have genOnce=true so that only a single image would be generated before returning
+				// However, we retired this functionality from generateImage as it was inefficient and complex.
+				// Will need an alternative to use here
+				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, MapTiled::ImageLayerSetAll))
 					mapTilesToGen.pop_back();
 
 				// Force redraw to show new image

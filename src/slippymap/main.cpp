@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
 
 	// Generate all needed images
 	printf("Generating slippymap images...\n");
-	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::maxZoom-1, MapTiled::ImageLayerSetAll,  false, NULL)) {
+	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::ImageLayerSetAll)) {
 		printf("Could not generate all images\n");
 		delete map;
 		return EXIT_FAILURE;

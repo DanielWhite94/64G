@@ -39,12 +39,9 @@ namespace Engine {
 			// The conditions following are considered in the order listed.
 			// If the image already exists, nothing is done.
 			// If the zoom level is the max then we generate the image directly with MapPngLib.
-			// If all four children exist, we scale and stitch them to create the desired image.
-			// If zoom>=minZoomToGen then we generate the image directly with MapPngLib.
-			// Finally we recurse to generate children, before stitching together as described above.
-			// If genOnce is true then in the case of recursing to generate children,
-			// we will stop after generating a single image with MapPngLib, and return false.
-			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, unsigned minZoomToGen, ImageLayerSet imageLayerSet, bool genOnce, bool *haveGen);
+			// In any of the four child images are missing, we recurse to generate them.
+			// If/once all four children exist, we scale and stitch them to create the desired image.
+			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet);
 
 			static void getZoomPath(const class Map *map, unsigned zoom, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]); // TODO: improve hardcoded size
