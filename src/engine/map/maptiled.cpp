@@ -16,6 +16,36 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
+		void mapTiledGenerateImageProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(progress>=0.0 && progress<=1.0);
+			assert(userData!=NULL);
+
+			const char *string=(const char *)userData;
+
+			// Clear old line.
+			Util::clearConsoleLine();
+
+			// Print start of new line, including users message and the percentage complete.
+			printf("%s%.3f%% ", string, progress*100.0);
+
+			// Append time elapsed so far.
+			mapGenPrintTime(elapsedTimeMs);
+
+			// Attempt to compute estimated total time.
+			if (progress>=0.0001 && progress<=0.9999) {
+				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
+				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
+					printf(" (~");
+					mapGenPrintTime(estRemainingTimeMs);
+					printf(" remaining)");
+				}
+			}
+
+			// Flush output manually (as we are not printing a newline).
+			fflush(stdout);
+		}
+
 		MapTiled::MapTiled() {
 		}
 
@@ -73,7 +103,31 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet) {
+		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData) {
+			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, progressFunctor, progressUserData, 0.0, 1.0, Util::getTimeMs());
+		}
+
+		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
+			sprintf(path, "%s/%u", map->getMapTiledDir(), zoom);
+		}
+
+		void MapTiled::getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]) {
+			sprintf(path, "%s/%u/%u", map->getMapTiledDir(), zoom, x);
+		}
+
+		void MapTiled::getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayer layer, char path[1024]) {
+			sprintf(path, "%s/%u/%u/%u-%u.png", map->getMapTiledDir(), zoom, x, y, layer);
+		}
+
+		void MapTiled::getBlankImagePath(const class Map *map, char path[1024]) {
+			sprintf(path, "%s/blank.png", map->getMapTiledDir());
+		}
+
+		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData, double progressMin, double progressTotal, Util::TimeMs startTimeMs) {
+			// Invoke progress update if needed
+			if (progressFunctor!=NULL)
+				progressFunctor(map, progressMin, Util::getTimeMs()-startTimeMs, progressUserData);
+
 			// Bad zoom value?
 			if (zoom>=maxZoom)
 				return false;
@@ -123,13 +177,17 @@ namespace Engine {
 					}
 
 				// Recurse to generate children and then stitch them together
+				double childProgressMin=progressMin+(layer*progressTotal)/ImageLayerNB;
+				double childProgressTotal=(progressTotal/ImageLayerNB)/4.0;
 				for(unsigned tx=0; tx<2; ++tx)
 					for(unsigned ty=0; ty<2; ++ty) {
 						unsigned childX=childBaseX+tx;
 						unsigned childY=childBaseY+ty;
 
-						if (!generateImage(map, childZoom, childX, childY, imageLayerSet))
+						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, progressFunctor, progressUserData, childProgressMin, childProgressTotal, startTimeMs))
 							return false;
+
+						childProgressMin+=childProgressTotal;
 					}
 
 				char stitchCommand[4096]; // TODO: better
@@ -166,23 +224,12 @@ namespace Engine {
 				MapTiled::generateContourImage(contourInput, contourStep, contourOutput); // TODO: check return?
 			}
 
+			// Invoke progress update if needed
+			// Note: min call is due to floating point inaccuracies potentially causing a value larger than 1 (e.g. 1.0000000000000002)
+			if (progressFunctor!=NULL)
+				progressFunctor(map, std::min(progressMin+progressTotal,1.0), Util::getTimeMs()-startTimeMs, progressUserData);
+
 			return true;
-		}
-
-		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
-			sprintf(path, "%s/%u", map->getMapTiledDir(), zoom);
-		}
-
-		void MapTiled::getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]) {
-			sprintf(path, "%s/%u/%u", map->getMapTiledDir(), zoom, x);
-		}
-
-		void MapTiled::getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayer layer, char path[1024]) {
-			sprintf(path, "%s/%u/%u/%u-%u.png", map->getMapTiledDir(), zoom, x, y, layer);
-		}
-
-		void MapTiled::getBlankImagePath(const class Map *map, char path[1024]) {
-			sprintf(path, "%s/blank.png", map->getMapTiledDir());
 		}
 
 		bool MapTiled::generateContourImage(const char *input, double contourStep, const char *output) {

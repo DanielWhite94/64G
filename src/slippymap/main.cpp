@@ -141,12 +141,12 @@ int main(int argc, char *argv[]) {
 	fclose(slippymapJs);
 
 	// Generate all needed images
-	printf("Generating slippymap images...\n");
-	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::ImageLayerSetAll)) {
-		printf("Could not generate all images\n");
+	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, MapTiled::ImageLayerSetAll, &mapTiledGenerateImageProgressString, (void *)"Generating slippymap images... ")) { // ..... improve string
+		printf("\nCould not generate all images\n");
 		delete map;
 		return EXIT_FAILURE;
 	}
+	printf("\n");
 
 	// Tidy up.
 	delete map;
