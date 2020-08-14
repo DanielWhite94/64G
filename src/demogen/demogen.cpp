@@ -66,7 +66,8 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 		return;
 
 	// Calculate height and temperature.
-	const double height=mapData->heightNoise->eval(x,y)*6000.0;
+	double normalisedHeight=mapData->heightNoise->eval(x,y); // [-1,1.0]
+	const double height=normalisedHeight*6000.0; // [-6000,6000]
 
 	const double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
 
@@ -79,9 +80,9 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 	double adjustedPoleDistance=2*poleDistance-1; // -1..1
 	assert(adjustedPoleDistance>=-1.0 && adjustedPoleDistance<=1.0);
 
-	double adjustedHeight=0.0; // TODO: This
+	double adjustedHeight=1.0-std::max(0.0, normalisedHeight); // [0,1], roughly assuming sea level will be about height=0
 
-	double temperature=(4*adjustedPoleDistance+2*adjustedHeight+2*temperatureRandomOffset)/8;
+	double temperature=(3*adjustedPoleDistance+6*adjustedHeight+1*temperatureRandomOffset)/7;
 
 	// Update tile.
 	tile->setHeight(height);
