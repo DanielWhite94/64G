@@ -167,7 +167,8 @@ namespace MapEditor {
 				// TODO: fix this call - previously have genOnce=true so that only a single image would be generated before returning
 				// However, we retired this functionality from generateImage as it was inefficient and complex.
 				// Will need an alternative to use here
-				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, MapTiled::ImageLayerSetAll, NULL, NULL))
+				// Also the mapMinZoom field needs calculating properly
+				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, 0, MapTiled::ImageLayerSetAll, NULL, NULL))
 					mapTilesToGen.pop_back();
 
 				// Force redraw to show new image

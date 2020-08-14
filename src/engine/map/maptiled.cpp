@@ -103,8 +103,8 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData) {
-			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, progressFunctor, progressUserData, 0.0, 1.0, Util::getTimeMs());
+		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned mapMinZoom, GenerateImageProgress *progressFunctor, void *progressUserData) {
+			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, mapMinZoom, progressFunctor, progressUserData, 0.0, 1.0, Util::getTimeMs());
 		}
 
 		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
@@ -123,7 +123,7 @@ namespace Engine {
 			sprintf(path, "%s/blank.png", map->getMapTiledDir());
 		}
 
-		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData, double progressMin, double progressTotal, Util::TimeMs startTimeMs) {
+		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned mapMinZoom, GenerateImageProgress *progressFunctor, void *progressUserData, double progressMin, double progressTotal, Util::TimeMs startTimeMs) {
 			// Invoke progress update if needed
 			if (progressFunctor!=NULL)
 				progressFunctor(map, progressMin, Util::getTimeMs()-startTimeMs, progressUserData);
@@ -184,7 +184,7 @@ namespace Engine {
 						unsigned childX=childBaseX+tx;
 						unsigned childY=childBaseY+ty;
 
-						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, progressFunctor, progressUserData, childProgressMin, childProgressTotal, startTimeMs))
+						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, mapMinZoom, progressFunctor, progressUserData, childProgressMin, childProgressTotal, startTimeMs))
 							return false;
 
 						childProgressMin+=childProgressTotal;
@@ -208,19 +208,9 @@ namespace Engine {
 				char contourOutput[1024];
 				sprintf(contourOutput, "%s/%u-contour.png", dirPath, y);
 
-				double contourStep=0.1;
-				switch(zoom) {
-					// TODO: do this better (avoid assuming max zoom is 8)
-					case 0: contourStep=0.46;
-					case 1: contourStep=0.46;
-					case 2: contourStep=0.46;
-					case 3: contourStep=0.34;
-					case 4: contourStep=0.24;
-					case 5: contourStep=0.16;
-					case 6: contourStep=0.10;
-					case 7: contourStep=0.06;
-					case 8: contourStep=0.04;
-				}
+				double contourStep=0.1*pow(0.5, (zoom-mapMinZoom)/2.0);
+				if (contourStep<0.025)
+					contourStep=0.025; // ideally we would not limit here for more consistent contours, but simply slows down the slippymap generation way too much
 				MapTiled::generateContourImage(contourInput, contourStep, contourOutput); // TODO: check return?
 			}
 
