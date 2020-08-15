@@ -311,52 +311,65 @@ namespace Engine {
 
 			// The following is an implementation of the Square Tracing method.
 
-			// Loop over all tiles as start points
-			int startX, startY;
-			for(startY=0; startY<mapHeight; ++startY) {
-				for(startX=0; startX<mapWidth; ++startX) {
-					// We require an 'inside' tile to start tracing.
-					if (!sampleFunctor(map, startX, startY, functorUserData))
-						continue;
+			// Loop over regions
+			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
+			for(unsigned rY=0; rY<rYEnd; ++rY) {
+				unsigned rXEnd=mapWidth/MapRegion::tilesSize;
+				for(unsigned rX=0; rX<rXEnd; ++rX) {
+					// Calculate region tile boundaries
+					unsigned tileX0=rX*MapRegion::tilesSize;
+					unsigned tileY0=rY*MapRegion::tilesSize;
+					unsigned tileX1=std::min(mapWidth, (rX+1)*MapRegion::tilesSize);
+					unsigned tileY1=std::min(mapHeight, (rY+1)*MapRegion::tilesSize);
 
-					// Setup variables
-					int currX=startX;
-					int currY=startY;
-					int velX=1;
-					int velY=0;
+					// Loop over all tiles in this region, looking for starting points to trace from
+					int startX, startY;
+					for(startY=tileY0; startY<tileY1; ++startY) {
+						for(startX=tileX0; startX<tileX1; ++startX) {
+							// We require an 'inside' tile to start tracing.
+							if (!sampleFunctor(map, startX, startY, functorUserData))
+								continue;
 
-					// First tile is always 'inside', so turn left
-					turnLeft(&velX, &velY);
+							// Setup variables
+							int currX=startX;
+							int currY=startY;
+							int velX=1;
+							int velY=0;
 
-					currX+=velX;
-					currY+=velY;
+							// First tile is always 'inside', so turn left
+							turnLeft(&velX, &velY);
 
-					// Walk the edge between 'inside' and 'outside' tiles
-					// Note: we use Jacob's stopping criterion where we also ensure we return to the start tile with the same velocity as we started
-					bool foundOutside=false;
-					while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
-						// Determine if current tile is 'inside' or 'outside'
-						if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, functorUserData)) {
-							// 'inside' tile
+							currX+=velX;
+							currY+=velY;
+
+							// Walk the edge between 'inside' and 'outside' tiles
+							// Note: we use Jacob's stopping criterion where we also ensure we return to the start tile with the same velocity as we started
+							bool foundOutside=false;
+							while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
+								// Determine if current tile is 'inside' or 'outside'
+								if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, functorUserData)) {
+									// 'inside' tile
+									if (edgeFunctor!=NULL && foundOutside)
+										edgeFunctor(map, currX, currY, functorUserData);
+
+									turnLeft(&velX, &velY);
+								} else {
+									// 'outside' tile
+									foundOutside=true;
+
+									turnRight(&velX, &velY);
+								}
+
+								// Move to next tile
+								currX+=velX;
+								currY+=velY;
+							}
+
+							// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
 							if (edgeFunctor!=NULL && foundOutside)
 								edgeFunctor(map, currX, currY, functorUserData);
-
-							turnLeft(&velX, &velY);
-						} else {
-							// 'outside' tile
-							foundOutside=true;
-
-							turnRight(&velX, &velY);
 						}
-
-						// Move to next tile
-						currX+=velX;
-						currY+=velY;
 					}
-
-					// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
-					if (edgeFunctor!=NULL && foundOutside)
-						edgeFunctor(map, currX, currY, functorUserData);
 				}
 			}
 		}
