@@ -1448,5 +1448,25 @@ namespace Engine {
 			return tile->getMoisture();
 		}
 
+		bool mapGenEdgeDetectHeightThresholdSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			double height=*(const double *)userData;
+
+			// Grab tile
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
+			if (tile==NULL)
+				return false; // declare non-existing tiles as 'outside' of the edge
+
+			// Check tile's height against passed threshold
+			return (tile->getHeight()>height);
+		}
+
+		bool mapGenEdgeDetectLandSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			// Use common height-threshold sample functor with sea level as the threshold to determine between land/ocean
+			return mapGenEdgeDetectHeightThresholdSampleFunctor(map, x, y, &map->seaLevel);
+		}
 	};
 };
