@@ -466,7 +466,6 @@ int main(int argc, char **argv) {
 	MapGen::ParticleFlow glacierGen(mapData.map, 7, false);
 	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, &mapGenModifyTilesProgressString, (void *)progressStringGlaciers);
 	printf("\n");
-	*/
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats2="Collecting global statistics (2/3) ";
@@ -481,6 +480,7 @@ int main(int argc, char **argv) {
 	printf("Searching for sea level (with desired land coverage %.2f%%) (2/3)...\n", desiredLandFraction*100.0);
 	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
+	*/
 
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
