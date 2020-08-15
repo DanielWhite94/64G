@@ -306,7 +306,7 @@ namespace Engine {
 			tile->setHeight(tile->getHeight()+delta);
 		}
 
-		void MapGen::EdgeDetect::trace(EdgeDetect::SampleFunctor *sampleFunctor, EdgeDetect::EdgeFunctor *edgeFunctor, void *functorUserData) {
+		void MapGen::EdgeDetect::trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData) {
 			assert(sampleFunctor!=NULL);
 
 			// The following is an implementation of the Square Tracing method.
@@ -327,7 +327,7 @@ namespace Engine {
 					for(startY=tileY0; startY<tileY1; ++startY) {
 						for(startX=tileX0; startX<tileX1; ++startX) {
 							// We require an 'inside' tile to start tracing.
-							if (!sampleFunctor(map, startX, startY, functorUserData))
+							if (!sampleFunctor(map, startX, startY, sampleUserData))
 								continue;
 
 							// Setup variables
@@ -347,10 +347,10 @@ namespace Engine {
 							bool foundOutside=false;
 							while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
 								// Determine if current tile is 'inside' or 'outside'
-								if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, functorUserData)) {
+								if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, sampleUserData)) {
 									// 'inside' tile
 									if (edgeFunctor!=NULL && foundOutside)
-										edgeFunctor(map, currX, currY, functorUserData);
+										edgeFunctor(map, currX, currY, edgeUserData);
 
 									turnLeft(&velX, &velY);
 								} else {
@@ -367,7 +367,7 @@ namespace Engine {
 
 							// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
 							if (edgeFunctor!=NULL && foundOutside)
-								edgeFunctor(map, currX, currY, functorUserData);
+								edgeFunctor(map, currX, currY, edgeUserData);
 						}
 					}
 				}
