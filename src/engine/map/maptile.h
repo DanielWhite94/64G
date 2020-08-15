@@ -20,6 +20,7 @@ namespace Engine {
 			struct FileData {
 				Layer layers[layersMax];
 				double height, moisture, temperature;
+				uint64_t bitset;
 			};
 
 			MapTile();
@@ -35,6 +36,8 @@ namespace Engine {
 			double getHeight(void) const;
 			double getMoisture(void) const;
 			double getTemperature(void) const;
+			uint64_t getBitset(void) const;
+			bool getBitsetN(unsigned n) const;
 
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
@@ -42,6 +45,8 @@ namespace Engine {
 			void setHeight(double height);
 			void setMoisture(double moisture);
 			void setTemperature(double temperature);
+			void setBitset(uint64_t bitset);
+			void setBitsetN(unsigned n, bool value);
 
 			bool addObject(MapObject *object);
 			void removeObject(MapObject *object);
