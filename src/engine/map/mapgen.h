@@ -24,36 +24,6 @@ namespace Engine {
 		bool mapGenEdgeDetectHeightThresholdSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns true for tiles which exceed height threshold passed in via a pointer to a double in userData.
 		bool mapGenEdgeDetectLandSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns true for land tiles (those whose height exceeds sea level).
 		void mapGenEdgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
-		.....
-		void mapGenEdgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-			assert(map!=NULL);
-			assert(progress>=0.0 && progress<=1.0);
-			assert(userData!=NULL);
-
-			const char *string=(const char *)userData;
-
-			// Clear old line.
-			Util::clearConsoleLine();
-
-			// Print start of new line, including users message and the percentage complete.
-			printf("%s%.3f%% ", string, progress*100.0);
-
-			// Append time elapsed so far.
-			mapGenPrintTime(elapsedTimeMs);
-
-			// Attempt to compute estimated total time.
-			if (progress>=0.0001 && progress<=0.9999) {
-				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
-				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
-					printf(" (~");
-					mapGenPrintTime(estRemainingTimeMs);
-					printf(" remaining)");
-				}
-			}
-
-			// Flush output manually (as we are not printing a newline).
-			fflush(stdout);
-		}
 
 		struct MapGenRoad {
 			int x0, y0, x1, y1;
@@ -249,10 +219,12 @@ namespace Engine {
 				// This is called for each tile which is determined to be part of the edge ('inside' tiles only).
 				typedef void (EdgeFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 
+				typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
 				EdgeDetect(Map *map, unsigned mapWidth, unsigned mapHeight): map(map), mapWidth(mapWidth), mapHeight(mapHeight) {};
 				~EdgeDetect() {};
 
-				void trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData);
+				void trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
 
 			private:
 				Map *map;

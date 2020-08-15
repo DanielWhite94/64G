@@ -306,10 +306,18 @@ namespace Engine {
 			tile->setHeight(tile->getHeight()+delta);
 		}
 
-		void MapGen::EdgeDetect::trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData) {
+		void MapGen::EdgeDetect::trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(sampleFunctor!=NULL);
 
 			// The following is an implementation of the Square Tracing method.
+
+			Util::TimeMs startTimeMs=Util::getTimeMs();
+			unsigned long long progressMax=mapWidth*mapHeight;
+			unsigned long long progress=0;
+
+			// Give a progress update
+			if (progressFunctor!=NULL)
+				progressFunctor(map, 0.0, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			// Loop over regions
 			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
@@ -326,6 +334,11 @@ namespace Engine {
 					int startX, startY;
 					for(startY=tileY0; startY<tileY1; ++startY) {
 						for(startX=tileX0; startX<tileX1; ++startX) {
+							// Give a progress update
+							if (progressFunctor!=NULL && progress%64==0)
+								progressFunctor(map, ((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+							++progress;
+
 							// We require an 'inside' tile to start tracing.
 							if (!sampleFunctor(map, startX, startY, sampleUserData))
 								continue;
@@ -372,6 +385,10 @@ namespace Engine {
 					}
 				}
 			}
+
+			// Give a progress update
+			if (progressFunctor!=NULL)
+				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
 		}
 
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -1481,6 +1498,36 @@ namespace Engine {
 
 			// Use common height-threshold sample functor with sea level as the threshold to determine between land/ocean
 			return mapGenEdgeDetectHeightThresholdSampleFunctor(map, x, y, &map->seaLevel);
+		}
+
+		void mapGenEdgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(progress>=0.0 && progress<=1.0);
+			assert(userData!=NULL);
+
+			const char *string=(const char *)userData;
+
+			// Clear old line.
+			Util::clearConsoleLine();
+
+			// Print start of new line, including users message and the percentage complete.
+			printf("%s%.3f%% ", string, progress*100.0);
+
+			// Append time elapsed so far.
+			mapGenPrintTime(elapsedTimeMs);
+
+			// Attempt to compute estimated total time.
+			if (progress>=0.0001 && progress<=0.9999) {
+				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
+				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
+					printf(" (~");
+					mapGenPrintTime(estRemainingTimeMs);
+					printf(" remaining)");
+				}
+			}
+
+			// Flush output manually (as we are not printing a newline).
+			fflush(stdout);
 		}
 	};
 };
