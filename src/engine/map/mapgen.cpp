@@ -332,8 +332,9 @@ namespace Engine {
 					currY+=velY;
 
 					// Walk the edge between 'inside' and 'outside' tiles
+					// Note: we use Jacob's stopping criterion where we also ensure we return to the start tile with the same velocity as we started
 					bool foundOutside=false;
-					while(currX!=startX || currY!=startY) {
+					while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
 						// Determine if current tile is 'inside' or 'outside'
 						if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, functorUserData)) {
 							// 'inside' tile
