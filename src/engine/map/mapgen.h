@@ -202,6 +202,41 @@ namespace Engine {
 				void depositAt(int x, int y, double w, double ds); // Adjusts the height of a tile at the given (x,y). Does nothing if the tile is out of bounds or could not be loaded.
 			};
 
+			class EdgeDetect {
+			public:
+				// This class provides algorithms to trace an edge around a group of tiles,
+				// based on a boolean function applied to each tile to determine if it
+				// should be 'inside' or 'outside' the edge.
+
+				// This should return true if tile is considered to be 'inside', and false for 'outside'
+				// (e.g. if looking for continents then land tiles should return true and ocean tiles false).
+				typedef bool (SampleFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
+
+				// This is called for each tile which is determined to be part of the edge ('inside' tiles only).
+				typedef void (EdgeFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
+
+				EdgeDetect(Map *map, unsigned mapWidth, unsigned mapHeight): map(map), mapWidth(mapWidth), mapHeight(mapHeight) {};
+				~EdgeDetect() {};
+
+				void trace(SampleFunctor *sampleFunctor, EdgeFunctor *edgeFunctor, void *functorUserData);
+
+			private:
+				Map *map;
+				unsigned mapWidth, mapHeight;
+
+				void turnLeft(int *dx, int *dy) {
+					int temp=*dx;
+					*dx=*dy;
+					*dy=-temp;
+				}
+
+				void turnRight(int *dx, int *dy) {
+					int temp=*dx;
+					*dx=-*dy;
+					*dy=temp;
+				}
+			};
+
 			MapGen(unsigned width, unsigned height);
 			~MapGen();
 

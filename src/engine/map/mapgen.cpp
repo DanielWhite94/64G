@@ -306,6 +306,60 @@ namespace Engine {
 			tile->setHeight(tile->getHeight()+delta);
 		}
 
+		void MapGen::EdgeDetect::trace(EdgeDetect::SampleFunctor *sampleFunctor, EdgeDetect::EdgeFunctor *edgeFunctor, void *functorUserData) {
+			assert(sampleFunctor!=NULL);
+
+			// The following is an implementation of the Square Tracing method.
+
+			// Loop over all tiles as start points
+			int startX, startY;
+			for(startY=0; startY<mapHeight; ++startY) {
+				for(startX=0; startX<mapWidth; ++startX) {
+					// We require an 'inside' tile to start tracing.
+					if (!sampleFunctor(map, startX, startY, functorUserData))
+						continue;
+
+					// Setup variables
+					int currX=startX;
+					int currY=startY;
+					int velX=1;
+					int velY=0;
+
+					// First tile is always 'inside', so turn left
+					turnLeft(&velX, &velY);
+
+					currX+=velX;
+					currY+=velY;
+
+					// Walk the edge between 'inside' and 'outside' tiles
+					bool foundOutside=false;
+					while(currX!=startX || currY!=startY) {
+						// Determine if current tile is 'inside' or 'outside'
+						if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, functorUserData)) {
+							// 'inside' tile
+							if (edgeFunctor!=NULL && foundOutside)
+								edgeFunctor(map, currX, currY, functorUserData);
+
+							turnLeft(&velX, &velY);
+						} else {
+							// 'outside' tile
+							foundOutside=true;
+
+							turnRight(&velX, &velY);
+						}
+
+						// Move to next tile
+						currX+=velX;
+						currY+=velY;
+					}
+
+					// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
+					if (edgeFunctor!=NULL && foundOutside)
+						edgeFunctor(map, currX, currY, functorUserData);
+				}
+			}
+		}
+
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);
