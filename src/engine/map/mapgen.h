@@ -229,6 +229,8 @@ namespace Engine {
 				~EdgeDetect() {};
 
 				void trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
+
+				void traceHeightContours(int contourCount, ProgressFunctor *progressFunctor, void *progressUserData); // Uses tile height and bitset fields, setting bit TileBitsetIndexContour for each tile which is part of a height contour
 			private:
 				Map *map;
 				unsigned mapWidth, mapHeight;

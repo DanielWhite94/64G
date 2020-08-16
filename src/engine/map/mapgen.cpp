@@ -14,6 +14,18 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
+		struct MapGenEdgeDetectTraceHeightContoursData {
+			unsigned contourIndex, contourCount;
+			double heightThreshold;
+
+			MapGen::EdgeDetect::ProgressFunctor *functor;
+			void *userData;
+
+			Util::TimeMs startTimeMs;
+		};
+
+		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
 		void MapGen::ParticleFlow::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
@@ -389,6 +401,26 @@ namespace Engine {
 			// Give a progress update
 			if (progressFunctor!=NULL)
 				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
+		}
+
+		void MapGen::EdgeDetect::traceHeightContours(int contourCount, MapGen::EdgeDetect::ProgressFunctor *progressFunctor, void *progressUserData) {
+			// Check for bad contourCount
+			if (contourCount<1)
+				return;
+
+			// Create our own wrapper userData for progress functor
+			MapGenEdgeDetectTraceHeightContoursData functorData;
+			functorData.contourIndex=0;
+			functorData.contourCount=contourCount;
+			functorData.functor=progressFunctor;
+			functorData.userData=progressUserData;
+			functorData.startTimeMs=Util::getTimeMs();
+
+			// Run edge detection at various height thresholds to trace all contour lines
+			for(functorData.contourIndex=0; functorData.contourIndex<contourCount; ++functorData.contourIndex) {
+				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
+				trace(&mapGenEdgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &mapGenEdgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexContour, (progressFunctor!=NULL ? &mapGenEdgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
+			}
 		}
 
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -1556,6 +1588,21 @@ namespace Engine {
 
 			// Flush output manually (as we are not printing a newline).
 			fflush(stdout);
+		}
+
+		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			const MapGenEdgeDetectTraceHeightContoursData *functorData=(const MapGenEdgeDetectTraceHeightContoursData *)userData;
+
+			// Calculate true progress and elapsed time (for the entire height contour operation, rather than this individual trace sub-operation)
+			double trueProgress=(functorData->contourIndex+progress)/functorData->contourCount;
+
+			Util::TimeMs trueElapsedTimeMs=Util::getTimeMs()-functorData->startTimeMs;
+
+			// Call user progress functor (which cannot be NULL as we would not be executing this progress functor in the first place)
+			functorData->functor(map, trueProgress, trueElapsedTimeMs, functorData->userData);
 		}
 	};
 };
