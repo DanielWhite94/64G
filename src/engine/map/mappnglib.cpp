@@ -23,13 +23,13 @@ namespace Engine {
 		png_init_io(pngPtr, file);
 
 		png_infop infoPtr=png_create_info_struct(pngPtr);
-		png_set_IHDR(pngPtr, infoPtr, imageWidth, imageHeight, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+		png_set_IHDR(pngPtr, infoPtr, imageWidth, imageHeight, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 		png_write_info(pngPtr, infoPtr);
 
 		png_set_compression_level(pngPtr, 3);
 
 		// Create rows, looping one region at a time to avoid unnecessary unloading and reloading.
-		png_bytep pngRows=(png_bytep)malloc(imageHeight*imageWidth*3*sizeof(png_byte));
+		png_bytep pngRows=(png_bytep)malloc(imageHeight*imageWidth*4*sizeof(png_byte));
 
 		double xScale=((double)mapTileWidth)/((double)imageWidth);
 		double yScale=((double)mapTileHeight)/((double)imageHeight);
@@ -76,14 +76,15 @@ namespace Engine {
 						}
 
 						// Choose colour (based on topmost layer with a texture set).
-						uint8_t r=0, g=0, b=0;
+						uint8_t r=0, g=0, b=0, a=0;
 						if (tile!=NULL)
-							getColourForTile(map, tile, layer, &r, &g, &b);
+							getColourForTile(map, tile, layer, &r, &g, &b, &a);
 
 						// Write pixel.
-						pngRows[(imageY*imageWidth+imageX)*3+0]=r;
-						pngRows[(imageY*imageWidth+imageX)*3+1]=g;
-						pngRows[(imageY*imageWidth+imageX)*3+2]=b;
+						pngRows[(imageY*imageWidth+imageX)*4+0]=r;
+						pngRows[(imageY*imageWidth+imageX)*4+1]=g;
+						pngRows[(imageY*imageWidth+imageX)*4+2]=b;
+						pngRows[(imageY*imageWidth+imageX)*4+3]=a;
 					}
 
 					// Update progress.
@@ -105,7 +106,7 @@ namespace Engine {
 		// Write pixels.
 		int pngY;
 		for(pngY=0; pngY<imageHeight; ++pngY) {
-			png_write_row(pngPtr, &pngRows[(pngY*imageWidth+0)*3*sizeof(png_byte)]);
+			png_write_row(pngPtr, &pngRows[(pngY*imageWidth+0)*4*sizeof(png_byte)]);
 
 			if (!quiet) {
 				Util::clearConsoleLine();
@@ -131,7 +132,7 @@ namespace Engine {
 		return true;
 	}
 
-	void MapPngLib::getColourForTile(const class Map *map, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b) {
+	void MapPngLib::getColourForTile(const class Map *map, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		assert(map!=NULL);
 		assert(tile!=NULL);
 		assert(r!=NULL);
@@ -140,27 +141,29 @@ namespace Engine {
 
 		switch(layer) {
 			case MapTiled::ImageLayerBase:
-				return MapPngLib::getColourForTileBase(map, tile, r, g, b);
+				return MapPngLib::getColourForTileBase(map, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerTemperature:
-				return MapPngLib::getColourForTileTemperature(map, tile, r, g, b);
+				return MapPngLib::getColourForTileTemperature(map, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerHeight:
-				return MapPngLib::getColourForTileHeight(map, tile, r, g, b);
+				return MapPngLib::getColourForTileHeight(map, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerMoisture:
-				return MapPngLib::getColourForTileMoisture(map, tile, r, g, b);
+				return MapPngLib::getColourForTileMoisture(map, tile, r, g, b, a);
 			break;
-			case MapTiled::ImageLayerHeightGreyscale:
-				return MapPngLib::getColourForTileHeightGreyscale(map, tile, r, g, b);
+			case MapTiled::ImageLayerHeightContour:
+				return MapPngLib::getColourForTileHeightContour(map, tile, r, g, b, a);
 			break;
 		}
 
 		assert(false);
-		*r=*g=*b=0;
+		*r=*g=*b=*a=0;
 	}
 
-	void MapPngLib::getColourForTileBase(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+	void MapPngLib::getColourForTileBase(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		*a=255;
+
 		// Loop over layers from top to bottom looking for one with a texture set
 		for(int z=MapTile::layersMax-1; z>=0; --z) {
 			const MapTile::Layer *layer=tile->getLayer(z);
@@ -312,7 +315,9 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileTemperature(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+	void MapPngLib::getColourForTileTemperature(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		*a=255;
+
 		// Grab temperature and normalise to [0, 1]
 		double temperature=tile->getTemperature();
 		double temperatureNormalised=(temperature-map->minTemperature)/(map->maxTemperature-map->minTemperature);
@@ -345,7 +350,9 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileHeight(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+	void MapPngLib::getColourForTileHeight(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		*a=255;
+
 		// Grab height and check for ocean tile as special case
 		double height=tile->getHeight();
 		if (height<=map->seaLevel) {
@@ -386,7 +393,9 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileMoisture(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
+	void MapPngLib::getColourForTileMoisture(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		*a=255;
+
 		// Special case for ocean tiles
 		if (tile->getHeight()<=map->seaLevel) {
 			*r=0;
@@ -406,24 +415,13 @@ namespace Engine {
 		*b=255;
 	}
 
-	void MapPngLib::getColourForTileHeightGreyscale(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b) {
-		// Special case for ocean tiles
-		if (tile->getHeight()<=map->seaLevel) {
-			*r=0;
-			*g=0;
-			*b=0;
-			return;
-		}
-
-		// Grab height and normalise to [0, 1]
-		double height=tile->getHeight();
-		double heightNormalised=(height-map->seaLevel)/(map->maxHeight-map->seaLevel);
-
-		// Choose colour
-		unsigned heightScaled=floor(heightNormalised*255);
-		*r=heightScaled;
-		*g=heightScaled;
-		*b=heightScaled;
+	void MapPngLib::getColourForTileHeightContour(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		// Use black pixels for the contour lines themselves, transparent for everything else
+		if (tile->getBitsetN(MapGen::TileBitsetIndexContour)) {
+			*r=*g=*b=0;
+			*a=255;
+		} else
+			*a=0;
 	}
 
 };
