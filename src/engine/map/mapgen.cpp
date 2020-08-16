@@ -1500,6 +1500,34 @@ namespace Engine {
 			return mapGenEdgeDetectHeightThresholdSampleFunctor(map, x, y, &map->seaLevel);
 		}
 
+		void mapGenEdgeDetectBitsetNEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			unsigned bitsetIndex=(unsigned)(uintptr_t)userData;
+
+			// Grab tile.
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+			if (tile==NULL)
+				return; // shouldn't really happen but just to be safe
+
+			// Mark this tile as part of the boundary
+			tile->setBitsetN(bitsetIndex, true);
+		}
+
+		void mapGenEdgeDetectBitsetFullEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			uint64_t bitset=(uint64_t)(uintptr_t)userData;
+
+			// Grab tile.
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+			if (tile==NULL)
+				return; // shouldn't really happen but just to be safe
+
+			// Mark this tile as part of the boundary
+			tile->setBitset(tile->getBitset()|bitset);
+		}
+
 		void mapGenEdgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(map!=NULL);
 			assert(progress>=0.0 && progress<=1.0);
