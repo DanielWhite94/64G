@@ -10,13 +10,12 @@
 
 int main(int argc, char *argv[]) {
 	// Grab arguments.
-	if (argc!=2 && argc!=3) {
-		printf("Usage: %s mappath [--contours]\n", argv[0]);
+	if (argc!=2) {
+		printf("Usage: %s mappath\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	const char *mapPath=argv[1];
-	bool includeContours=(argc>2 && strcmp(argv[2], "--contours")==0);
 
 	// Load map
 	printf("Loading map at '%s'...\n", mapPath);
@@ -114,19 +113,17 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
-	if (includeContours) {
-		fprintf(slippymapJs, "var layerContour=L.tileLayer('maptiled/{z}/{x}/{y}-contour.png', {\n");
-		fprintf(slippymapJs, "	attribution: 'me',\n");
-		fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
-		fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
-		fprintf(slippymapJs, "	minNativeZoom: 0,\n");
-		fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
-		fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
-		fprintf(slippymapJs, "	noWrap: true,\n");
-		fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
-		fprintf(slippymapJs, "});\n");
-		fprintf(slippymapJs, "\n");
-	}
+	fprintf(slippymapJs, "var layerContour=L.tileLayer('maptiled/{z}/{x}/{y}-4.png', {\n");
+	fprintf(slippymapJs, "	attribution: 'me',\n");
+	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
+	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
+	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
+	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
+	fprintf(slippymapJs, "	noWrap: true,\n");
+	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
+	fprintf(slippymapJs, "});\n");
+	fprintf(slippymapJs, "\n");
 
 	fprintf(slippymapJs, "var baseLayers={\n");
 	fprintf(slippymapJs, "	\"Base\": layerBase,\n");
@@ -135,8 +132,7 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "	\"Humidity\": layerHumidity,\n");
 	fprintf(slippymapJs, "};\n");
 	fprintf(slippymapJs, "var overlays={\n");
-	if (includeContours)
-		fprintf(slippymapJs, "	\"Contours\": layerContour,\n");
+	fprintf(slippymapJs, "	\"Contours\": layerContour,\n");
 	fprintf(slippymapJs, "};\n");
 	fprintf(slippymapJs, "L.control.layers(baseLayers, overlays).addTo(map);\n");
 	fprintf(slippymapJs, "\n");
@@ -148,8 +144,6 @@ int main(int argc, char *argv[]) {
 
 	// Generate all needed images
 	MapTiled::ImageLayerSet imageLayerSet=MapTiled::ImageLayerSetAll;
-	if (!includeContours)
-		imageLayerSet^=MapTiled::ImageLayerSetHeightGreyscale;
 	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, imageLayerSet, slippyZoomOffset, &mapTiledGenerateImageProgressString, (void *)"Generating slippymap images... ")) { // ..... improve string
 		printf("\nCould not generate all images\n");
 		delete map;

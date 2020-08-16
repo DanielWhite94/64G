@@ -21,7 +21,7 @@ namespace Engine {
 			static const ImageLayer	ImageLayerTemperature=1;
 			static const ImageLayer	ImageLayerHeight=2;
 			static const ImageLayer	ImageLayerMoisture=3;
-			static const ImageLayer	ImageLayerHeightGreyscale=4;
+			static const ImageLayer	ImageLayerHeightContour=4;
 			static const ImageLayer	ImageLayerNB=5;
 
 			typedef unsigned ImageLayerSet;
@@ -30,8 +30,8 @@ namespace Engine {
 			static const ImageLayerSet ImageLayerSetTemperature=(1u<<ImageLayerTemperature);
 			static const ImageLayerSet ImageLayerSetHeight=(1u<<ImageLayerHeight);
 			static const ImageLayerSet ImageLayerSetMoisture=(1u<<ImageLayerMoisture);
-			static const ImageLayerSet ImageLayerSetHeightGreyscale=(1u<<ImageLayerHeightGreyscale);
-			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightGreyscale;
+			static const ImageLayerSet ImageLayerSetHeightContour=(1u<<ImageLayerHeightContour);
+			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour;
 
 			typedef void (GenerateImageProgress)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
@@ -55,8 +55,6 @@ namespace Engine {
 
 		private:
 			static bool generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned mapMinZoom, GenerateImageProgress *progressFunctor, void *progressUserData, double progressMin, double progressTotal, Util::TimeMs startTimeMs);
-
-			static bool generateContourImage(const char *input, double contourStep, const char *output); // input should point to a greyscale image where white=highest height and black=lowest, contourStep is delta between each contour line, where min height is 0, max height is 1
 		};
 	};
 };

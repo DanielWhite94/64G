@@ -107,6 +107,8 @@ namespace Engine {
 			static const MapTexture::Id TextureIdHeatMapMax=TextureIdHeatMapMin+TextureIdHeatMapRange;
 			static const MapTexture::Id TextureIdNB=TextureIdHeatMapMax;
 
+			static const unsigned TileBitsetIndexContour=0;
+
 			enum class BuiltinObject {
 				OldBeardMan,
 				Tree1,
@@ -227,7 +229,6 @@ namespace Engine {
 				~EdgeDetect() {};
 
 				void trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
-
 			private:
 				Map *map;
 				unsigned mapWidth, mapHeight;
