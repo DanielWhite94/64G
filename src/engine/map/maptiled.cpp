@@ -191,7 +191,7 @@ namespace Engine {
 					}
 
 				char stitchCommand[4096]; // TODO: better
-				sprintf(stitchCommand, "montage %s %s %s %s -geometry 50%%x50%% -mode concatenate -tile 2x2 %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
+				sprintf(stitchCommand, "montage %s %s %s %s -background none -geometry 50%%x50%% -mode concatenate -tile 2x2 PNG32:%s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
 				system(stitchCommand);
 
 			}
