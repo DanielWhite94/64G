@@ -24,7 +24,15 @@ namespace Engine {
 			Util::TimeMs startTimeMs;
 		};
 
+		struct MapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressData {
+			MapGen::EdgeDetect::ProgressFunctor *functor;
+			void *userData;
+
+			double progressRatio;
+		};
+
 		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+		void mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		void MapGen::ParticleFlow::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
@@ -323,17 +331,24 @@ namespace Engine {
 
 			// The following is an implementation of the Square Tracing method.
 
+			const double preModifyTilesProgressRatio=0.1; // assume roughly 10% of the time is spent in scratch bit clearing modify tiles call
+
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 			unsigned long long progressMax=mapWidth*mapHeight;
-			unsigned long long progress=0;
+			unsigned long long progress=0.0;
 
 			// Give a progress update
 			if (progressFunctor!=NULL)
 				progressFunctor(map, 0.0, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			// Clear scratch bits (these are used to indicate from which directions we have previously entered a tile on, to avoid retracing similar edges)
+			MapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressData modifyTileFunctorData;
+			modifyTileFunctorData.functor=progressFunctor;
+			modifyTileFunctorData.userData=progressUserData;
+			modifyTileFunctorData.progressRatio=preModifyTilesProgressRatio;
+
 			uint64_t scratchBitMask=(((uint64_t)1)<<scratchBits[0])|(((uint64_t)1)<<scratchBits[1])|(((uint64_t)1)<<scratchBits[2])|(((uint64_t)1)<<scratchBits[3]);
-			modifyTiles(map, 0, 0, mapWidth, mapHeight, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, NULL, NULL);
+			modifyTiles(map, 0, 0, mapWidth, mapHeight, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
 
 			// Loop over regions
 			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
@@ -352,7 +367,7 @@ namespace Engine {
 						for(startX=tileX0; startX<tileX1; ++startX) {
 							// Give a progress update
 							if (progressFunctor!=NULL && progress%256==0)
-								progressFunctor(map, ((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+								progressFunctor(map, preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
 							++progress;
 
 							// We require an 'inside' tile to start tracing.
@@ -1661,6 +1676,19 @@ namespace Engine {
 
 			// Call user progress functor (which cannot be NULL as we would not be executing this progress functor in the first place)
 			functorData->functor(map, trueProgress, trueElapsedTimeMs, functorData->userData);
+		}
+
+		void mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			const MapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressData *functorData=(const MapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressData *)userData;
+
+			// Calculate true progress (for the entire trace operation, rather than this individual modify tiles sub-operation)
+			double trueProgress=functorData->progressRatio*progress;
+
+			// Invoke user's progress functor
+			functorData->functor(map, trueProgress, elapsedTimeMs, functorData->userData);
 		}
 	};
 };
