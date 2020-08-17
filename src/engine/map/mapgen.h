@@ -15,6 +15,8 @@ namespace Engine {
 		void mapGenPrintTime(Util::TimeMs timeMs);
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+		void mapGenBitsetUnionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to OR with each tile's existing bitset.
+		void mapGenBitsetIntersectionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to AND with each tile's existing bitset.
 
 		void mapGenNArySearchModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 		double mapGenNarySearchGetFunctorHeight(class Map *map, unsigned x, unsigned y, void *userData);

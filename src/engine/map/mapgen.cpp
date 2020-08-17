@@ -438,6 +438,26 @@ namespace Engine {
 				tile->setLayer(data->tileLayer, height>=data->threshold ? data->highLayer : data->lowLayer);
 		}
 
+		void mapGenBitsetUnionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			uint64_t bitset=(uint64_t)(uintptr_t)userData;
+
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+			if (tile!=NULL)
+				tile->setBitset(tile->getBitset()|bitset);
+		}
+
+		void mapGenBitsetIntersectionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			uint64_t bitset=(uint64_t)(uintptr_t)userData;
+
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+			if (tile!=NULL)
+				tile->setBitset(tile->getBitset()&bitset);
+		}
+
 		void mapGenPrintTime(Util::TimeMs timeMs) {
 			const Util::TimeMs minuteFactor=60;
 			const Util::TimeMs hourFactor=minuteFactor*60;
