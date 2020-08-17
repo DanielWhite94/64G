@@ -571,6 +571,11 @@ int main(int argc, char **argv) {
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, npcModifyTilesArrayCount, npcModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
+	// Run contour line detection logic
+	MapGen::EdgeDetect edgeDetect(mapData.map, mapData.width, mapData.height);
+	edgeDetect.traceHeightContours(19/*.....9*/, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
+	printf("\n");
+
 	// Save map.
 	if (!mapData.map->save()) {
 		printf("Could not save map to '%s'.\n", outputPath);

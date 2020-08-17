@@ -191,27 +191,9 @@ namespace Engine {
 					}
 
 				char stitchCommand[4096]; // TODO: better
-				sprintf(stitchCommand, "montage %s %s %s %s -geometry 50%%x50%% -mode concatenate -tile 2x2 %s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
+				sprintf(stitchCommand, "montage %s %s %s %s -background none -geometry 50%%x50%% -mode concatenate -tile 2x2 PNG32:%s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
 				system(stitchCommand);
 
-			}
-
-			// Height contour map generation
-			if (imageLayerSet & ImageLayerSetHeightGreyscale) {
-				// TODO: improve these fixed sized buffers
-
-				char contourInput[1024];
-				getZoomXYPath(map, zoom, x, y, ImageLayerHeightGreyscale, contourInput);
-
-				char dirPath[1024];
-				getZoomXPath(map, zoom, x, dirPath);
-				char contourOutput[1024];
-				sprintf(contourOutput, "%s/%u-contour.png", dirPath, y);
-
-				double contourStep=0.1*pow(0.5, (zoom-mapMinZoom)/2.0);
-				if (contourStep<0.025)
-					contourStep=0.025; // ideally we would not limit here for more consistent contours, but simply slows down the slippymap generation way too much
-				MapTiled::generateContourImage(contourInput, contourStep, contourOutput); // TODO: check return?
 			}
 
 			// Invoke progress update if needed
@@ -222,63 +204,5 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapTiled::generateContourImage(const char *input, double contourStep, const char *output) {
-			assert(input!=NULL);
-			assert(output!=NULL);
-
-			const char *tmpDirPath="/tmp"; // TODO: can probably improve this
-
-			// Check contour step is not too close to zero (this causes an explosion in the number of intermediate images needed)
-			if (contourStep<0.005)
-				contourStep=0.005;
-
-			// Create temporary edge-detected images for each contour level
-			char command[2048]; // TODO: improve this
-			unsigned contourNum;
-			double contourHeight;
-			for(contourNum=0,contourHeight=contourStep; contourHeight<1.0; contourNum++,contourHeight+=contourStep) {
-				char edgePath[512];
-				sprintf(edgePath, "%s/edge%u.png", tmpDirPath, contourNum);
-
-				// Extract black and white image for this height threshold,
-				// then apply edge detection to find this particular contour.
-				// The contour will be white with a black background
-				sprintf(command, "convert %s -threshold %f%% -canny 0x1+10%%+30%% %s", input, contourHeight*100.0, edgePath);
-				system(command);
-
-				// Special case: check for fully white image implying no edges found
-				if (Util::isImageWhite(edgePath)) {
-					// Make all black to indicate 'no edges'
-					sprintf(command, "convert %s -negate %s", edgePath, edgePath);
-					system(command);
-				}
-
-				// Tidy up the image to produce a black edge on a transparent background
-				sprintf(command, "convert %s -transparent black -alpha extract -threshold 0 -negate -transparent white %s", edgePath, edgePath);
-				system(command);
-			}
-
-			// Join each contour image together to make final output
-			char subCommand[1024];
-			sprintf(command, "convert -size %ux%u xc:transparent", MapTiled::imageSize, MapTiled::imageSize);
-
-			for(contourNum=0,contourHeight=contourStep; contourHeight<1.0; contourNum++,contourHeight+=contourStep) {
-				sprintf(subCommand, " %s/edge%u.png -composite", tmpDirPath, contourNum);
-				strcat(command, subCommand);
-			}
-
-			sprintf(subCommand, " %s", output);
-			strcat(command, subCommand);
-
-			system(command);
-
-			// Remove temporary images
-			for(contourNum=0,contourHeight=contourStep; contourHeight<1.0; contourNum++,contourHeight+=contourStep) {
-				sprintf(command, "rm %s/edge%u.png", tmpDirPath, contourNum);
-				system(command);
-			}
-
-			return true;
-		}
 	};
 };

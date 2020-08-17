@@ -14,6 +14,18 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
+		struct MapGenEdgeDetectTraceHeightContoursData {
+			unsigned contourIndex, contourCount;
+			double heightThreshold;
+
+			MapGen::EdgeDetect::ProgressFunctor *functor;
+			void *userData;
+
+			Util::TimeMs startTimeMs;
+		};
+
+		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
 		void MapGen::ParticleFlow::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
@@ -304,6 +316,111 @@ namespace Engine {
 			// Adjust height.
 			double delta=ds*w;
 			tile->setHeight(tile->getHeight()+delta);
+		}
+
+		void MapGen::EdgeDetect::trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
+			assert(sampleFunctor!=NULL);
+
+			// The following is an implementation of the Square Tracing method.
+
+			Util::TimeMs startTimeMs=Util::getTimeMs();
+			unsigned long long progressMax=mapWidth*mapHeight;
+			unsigned long long progress=0;
+
+			// Give a progress update
+			if (progressFunctor!=NULL)
+				progressFunctor(map, 0.0, Util::getTimeMs()-startTimeMs, progressUserData);
+
+			// Loop over regions
+			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
+			for(unsigned rY=0; rY<rYEnd; ++rY) {
+				unsigned rXEnd=mapWidth/MapRegion::tilesSize;
+				for(unsigned rX=0; rX<rXEnd; ++rX) {
+					// Calculate region tile boundaries
+					unsigned tileX0=rX*MapRegion::tilesSize;
+					unsigned tileY0=rY*MapRegion::tilesSize;
+					unsigned tileX1=std::min(mapWidth, (rX+1)*MapRegion::tilesSize);
+					unsigned tileY1=std::min(mapHeight, (rY+1)*MapRegion::tilesSize);
+
+					// Loop over all tiles in this region, looking for starting points to trace from
+					int startX, startY;
+					for(startY=tileY0; startY<tileY1; ++startY) {
+						for(startX=tileX0; startX<tileX1; ++startX) {
+							// Give a progress update
+							if (progressFunctor!=NULL && progress%64==0)
+								progressFunctor(map, ((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+							++progress;
+
+							// We require an 'inside' tile to start tracing.
+							if (!sampleFunctor(map, startX, startY, sampleUserData))
+								continue;
+
+							// Setup variables
+							int currX=startX;
+							int currY=startY;
+							int velX=1;
+							int velY=0;
+
+							// First tile is always 'inside', so turn left
+							turnLeft(&velX, &velY);
+
+							currX+=velX;
+							currY+=velY;
+
+							// Walk the edge between 'inside' and 'outside' tiles
+							// Note: we use Jacob's stopping criterion where we also ensure we return to the start tile with the same velocity as we started
+							bool foundOutside=false;
+							while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
+								// Determine if current tile is 'inside' or 'outside'
+								if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, sampleUserData)) {
+									// 'inside' tile
+									if (edgeFunctor!=NULL && foundOutside)
+										edgeFunctor(map, currX, currY, edgeUserData);
+
+									turnLeft(&velX, &velY);
+								} else {
+									// 'outside' tile
+									foundOutside=true;
+
+									turnRight(&velX, &velY);
+								}
+
+								// Move to next tile
+								currX+=velX;
+								currY+=velY;
+							}
+
+							// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
+							if (edgeFunctor!=NULL && foundOutside)
+								edgeFunctor(map, currX, currY, edgeUserData);
+						}
+					}
+				}
+			}
+
+			// Give a progress update
+			if (progressFunctor!=NULL)
+				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
+		}
+
+		void MapGen::EdgeDetect::traceHeightContours(int contourCount, MapGen::EdgeDetect::ProgressFunctor *progressFunctor, void *progressUserData) {
+			// Check for bad contourCount
+			if (contourCount<1)
+				return;
+
+			// Create our own wrapper userData for progress functor
+			MapGenEdgeDetectTraceHeightContoursData functorData;
+			functorData.contourIndex=0;
+			functorData.contourCount=contourCount;
+			functorData.functor=progressFunctor;
+			functorData.userData=progressUserData;
+			functorData.startTimeMs=Util::getTimeMs();
+
+			// Run edge detection at various height thresholds to trace all contour lines
+			for(functorData.contourIndex=0; functorData.contourIndex<contourCount; ++functorData.contourIndex) {
+				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
+				trace(&mapGenEdgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &mapGenEdgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexContour, (progressFunctor!=NULL ? &mapGenEdgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
+			}
 		}
 
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -1394,5 +1511,98 @@ namespace Engine {
 			return tile->getMoisture();
 		}
 
+		bool mapGenEdgeDetectHeightThresholdSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			double height=*(const double *)userData;
+
+			// Grab tile
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
+			if (tile==NULL)
+				return false; // declare non-existing tiles as 'outside' of the edge
+
+			// Check tile's height against passed threshold
+			return (tile->getHeight()>height);
+		}
+
+		bool mapGenEdgeDetectLandSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			// Use common height-threshold sample functor with sea level as the threshold to determine between land/ocean
+			return mapGenEdgeDetectHeightThresholdSampleFunctor(map, x, y, &map->seaLevel);
+		}
+
+		void mapGenEdgeDetectBitsetNEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			unsigned bitsetIndex=(unsigned)(uintptr_t)userData;
+
+			// Grab tile.
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+			if (tile==NULL)
+				return; // shouldn't really happen but just to be safe
+
+			// Mark this tile as part of the boundary
+			tile->setBitsetN(bitsetIndex, true);
+		}
+
+		void mapGenEdgeDetectBitsetFullEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			uint64_t bitset=(uint64_t)(uintptr_t)userData;
+
+			// Grab tile.
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+			if (tile==NULL)
+				return; // shouldn't really happen but just to be safe
+
+			// Mark this tile as part of the boundary
+			tile->setBitset(tile->getBitset()|bitset);
+		}
+
+		void mapGenEdgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(progress>=0.0 && progress<=1.0);
+			assert(userData!=NULL);
+
+			const char *string=(const char *)userData;
+
+			// Clear old line.
+			Util::clearConsoleLine();
+
+			// Print start of new line, including users message and the percentage complete.
+			printf("%s%.3f%% ", string, progress*100.0);
+
+			// Append time elapsed so far.
+			mapGenPrintTime(elapsedTimeMs);
+
+			// Attempt to compute estimated total time.
+			if (progress>=0.0001 && progress<=0.9999) {
+				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
+				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
+					printf(" (~");
+					mapGenPrintTime(estRemainingTimeMs);
+					printf(" remaining)");
+				}
+			}
+
+			// Flush output manually (as we are not printing a newline).
+			fflush(stdout);
+		}
+
+		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			const MapGenEdgeDetectTraceHeightContoursData *functorData=(const MapGenEdgeDetectTraceHeightContoursData *)userData;
+
+			// Calculate true progress and elapsed time (for the entire height contour operation, rather than this individual trace sub-operation)
+			double trueProgress=(functorData->contourIndex+progress)/functorData->contourCount;
+
+			Util::TimeMs trueElapsedTimeMs=Util::getTimeMs()-functorData->startTimeMs;
+
+			// Call user progress functor (which cannot be NULL as we would not be executing this progress functor in the first place)
+			functorData->functor(map, trueProgress, trueElapsedTimeMs, functorData->userData);
+		}
 	};
 };

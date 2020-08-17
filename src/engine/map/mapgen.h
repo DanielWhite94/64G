@@ -21,6 +21,12 @@ namespace Engine {
 		double mapGenNarySearchGetFunctorTemperature(class Map *map, unsigned x, unsigned y, void *userData);
 		double mapGenNarySearchGetFunctorMoisture(class Map *map, unsigned x, unsigned y, void *userData);
 
+		bool mapGenEdgeDetectHeightThresholdSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns true for tiles which exceed height threshold passed in via a pointer to a double in userData.
+		bool mapGenEdgeDetectLandSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns true for land tiles (those whose height exceeds sea level).
+		void mapGenEdgeDetectBitsetNEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Sets a bit true in the bitset associated with each boundary tile. The bit set is determined by the userData argument (cast to unsigned via uintptr_t).
+		void mapGenEdgeDetectBitsetFullEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Similar to mapGenEdgeDetectBitsetNEdgeFunctor except the userData is interpreted as a full 64 bit bitset to OR into to each tile's existing bitset.
+		void mapGenEdgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
 		struct MapGenRoad {
 			int x0, y0, x1, y1;
 			int trueX1, trueY1;
@@ -100,6 +106,8 @@ namespace Engine {
 			static const MapTexture::Id TextureIdHeatMapRange=256;
 			static const MapTexture::Id TextureIdHeatMapMax=TextureIdHeatMapMin+TextureIdHeatMapRange;
 			static const MapTexture::Id TextureIdNB=TextureIdHeatMapMax;
+
+			static const unsigned TileBitsetIndexContour=0;
 
 			enum class BuiltinObject {
 				OldBeardMan,
@@ -200,6 +208,44 @@ namespace Engine {
 
 				double hMap(int x, int y, double unknownValue); // Returns height of tile at (x,y), returning unknownValue if tile is out of bounds or could not be loaded.
 				void depositAt(int x, int y, double w, double ds); // Adjusts the height of a tile at the given (x,y). Does nothing if the tile is out of bounds or could not be loaded.
+			};
+
+			class EdgeDetect {
+			public:
+				// This class provides algorithms to trace an edge around a group of tiles,
+				// based on a boolean function applied to each tile to determine if it
+				// should be 'inside' or 'outside' the edge.
+
+				// This should return true if tile is considered to be 'inside', and false for 'outside'
+				// (e.g. if looking for continents then land tiles should return true and ocean tiles false).
+				typedef bool (SampleFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
+
+				// This is called for each tile which is determined to be part of the edge ('inside' tiles only).
+				typedef void (EdgeFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
+
+				typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
+				EdgeDetect(Map *map, unsigned mapWidth, unsigned mapHeight): map(map), mapWidth(mapWidth), mapHeight(mapHeight) {};
+				~EdgeDetect() {};
+
+				void trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
+
+				void traceHeightContours(int contourCount, ProgressFunctor *progressFunctor, void *progressUserData); // Uses tile height and bitset fields, setting bit TileBitsetIndexContour for each tile which is part of a height contour
+			private:
+				Map *map;
+				unsigned mapWidth, mapHeight;
+
+				void turnLeft(int *dx, int *dy) {
+					int temp=*dx;
+					*dx=*dy;
+					*dy=-temp;
+				}
+
+				void turnRight(int *dx, int *dy) {
+					int temp=*dx;
+					*dx=-*dy;
+					*dy=temp;
+				}
 			};
 
 			MapGen(unsigned width, unsigned height);

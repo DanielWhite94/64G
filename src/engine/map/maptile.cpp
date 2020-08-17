@@ -66,6 +66,15 @@ namespace Engine {
 			return fileData->temperature;
 		}
 
+		uint64_t MapTile::getBitset(void) const {
+			return fileData->bitset;
+		}
+
+		bool MapTile::getBitsetN(unsigned n) const {
+			assert(n<64);
+			return (fileData->bitset>>n)&1;
+		}
+
 		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
 			HitMask hitMask;
 
@@ -98,6 +107,19 @@ namespace Engine {
 
 		void MapTile::setTemperature(double temperature) {
 			fileData->temperature=temperature;
+		}
+
+		void MapTile::setBitset(uint64_t bitset) {
+			fileData->bitset=bitset;
+		}
+
+		void MapTile::setBitsetN(unsigned n, bool value) {
+			assert(n<64);
+
+			if (value)
+				fileData->bitset|=(((uint64_t)1)<<n);
+			else
+				fileData->bitset&=~(((uint64_t)1)<<n);
 		}
 
 		bool MapTile::addObject(MapObject *object) {
