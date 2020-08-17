@@ -351,7 +351,7 @@ namespace Engine {
 					for(startY=tileY0; startY<tileY1; ++startY) {
 						for(startX=tileX0; startX<tileX1; ++startX) {
 							// Give a progress update
-							if (progressFunctor!=NULL && progress%64==0)
+							if (progressFunctor!=NULL && progress%256==0)
 								progressFunctor(map, ((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
 							++progress;
 
