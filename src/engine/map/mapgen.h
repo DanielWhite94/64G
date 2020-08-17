@@ -1,6 +1,7 @@
 #ifndef ENGINE_MAP_MAPGEN_H
 #define ENGINE_MAP_MAPGEN_H
 
+#include <cstring>
 #include <queue>
 #include <iomanip>
 
@@ -218,6 +219,12 @@ namespace Engine {
 				// based on a boolean function applied to each tile to determine if it
 				// should be 'inside' or 'outside' the edge.
 
+				static const unsigned DirectionEast=0;
+				static const unsigned DirectionNorth=1;
+				static const unsigned DirectionWest=2;
+				static const unsigned DirectionSouth=3;
+				static const unsigned DirectionNB=4;
+
 				// This should return true if tile is considered to be 'inside', and false for 'outside'
 				// (e.g. if looking for continents then land tiles should return true and ocean tiles false).
 				typedef bool (SampleFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
@@ -227,7 +234,10 @@ namespace Engine {
 
 				typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
-				EdgeDetect(Map *map, unsigned mapWidth, unsigned mapHeight): map(map), mapWidth(mapWidth), mapHeight(mapHeight) {};
+				// Each scratchBits array entry should contain a unique tile bitset index which can be used freely by the trace algorithm internally.
+				EdgeDetect(Map *map, unsigned mapWidth, unsigned mapHeight, unsigned gScratchBits[4]): map(map), mapWidth(mapWidth), mapHeight(mapHeight) {
+					memcpy(scratchBits, gScratchBits, sizeof(unsigned)*4);
+				};
 				~EdgeDetect() {};
 
 				void trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
@@ -237,16 +247,20 @@ namespace Engine {
 				Map *map;
 				unsigned mapWidth, mapHeight;
 
-				void turnLeft(int *dx, int *dy) {
+				unsigned scratchBits[DirectionNB]; // bitset indexes that can be used freely during tracing to store which directions we have entered each tile from previously (to avoid retracing)
+
+				void turnLeft(int *dx, int *dy, unsigned *dir) {
 					int temp=*dx;
 					*dx=*dy;
 					*dy=-temp;
+					*dir=(*dir+1)%DirectionNB;
 				}
 
-				void turnRight(int *dx, int *dy) {
+				void turnRight(int *dx, int *dy, unsigned *dir) {
 					int temp=*dx;
 					*dx=-*dy;
 					*dy=temp;
+					*dir=(*dir+DirectionNB-1)%DirectionNB;
 				}
 			};
 

@@ -331,6 +331,10 @@ namespace Engine {
 			if (progressFunctor!=NULL)
 				progressFunctor(map, 0.0, Util::getTimeMs()-startTimeMs, progressUserData);
 
+			// Clear scratch bits (these are used to indicate from which directions we have previously entered a tile on, to avoid retracing similar edges)
+			uint64_t scratchBitMask=(((uint64_t)1)<<scratchBits[0])|(((uint64_t)1)<<scratchBits[1])|(((uint64_t)1)<<scratchBits[2])|(((uint64_t)1)<<scratchBits[3]);
+			modifyTiles(map, 0, 0, mapWidth, mapHeight, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, NULL, NULL);
+
 			// Loop over regions
 			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
 			for(unsigned rY=0; rY<rYEnd; ++rY) {
@@ -360,39 +364,73 @@ namespace Engine {
 							int currY=startY;
 							int velX=1;
 							int velY=0;
+							unsigned currDir=DirectionEast;
 
 							// First tile is always 'inside', so turn left
-							turnLeft(&velX, &velY);
+							turnLeft(&velX, &velY, &currDir);
 
 							currX+=velX;
 							currY+=velY;
+							bool currIsWithinMap=(currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight);
 
 							// Walk the edge between 'inside' and 'outside' tiles
 							// Note: we use Jacob's stopping criterion where we also ensure we return to the start tile with the same velocity as we started
 							bool foundOutside=false;
 							while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
-								// Determine if current tile is 'inside' or 'outside'
-								if (currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight && sampleFunctor(map, currX, currY, sampleUserData)) {
-									// 'inside' tile
-									if (edgeFunctor!=NULL && foundOutside)
-										edgeFunctor(map, currX, currY, edgeUserData);
+								// Has this tile already been handled?
+								if (currIsWithinMap) {
+									// Check relevant cache bit based on current direction
+									MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::None);
+									if (tile!=NULL && tile->getBitsetN(scratchBits[currDir])) {
+										// We have already entered this tile in this direction before - no point retracing it again.
+										// So simply quit tracing this particular edge and move onto a new starting tile.
 
-									turnLeft(&velX, &velY);
+										// Reset foundOutside flag as a hack method to avoid calling edge functor for a final (unnecessary) time
+										foundOutside=false;
+
+										break;
+									}
+								}
+
+								// Determine if current tile is 'inside' or 'outside'
+								if (currIsWithinMap && sampleFunctor(map, currX, currY, sampleUserData)) {
+									// 'inside' tile
+									if (edgeFunctor!=NULL && foundOutside) {
+										// Mark relevant cache bit
+										MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::Dirty);
+										if (tile!=NULL)
+											tile->setBitsetN(scratchBits[currDir], true);
+
+										// Call user's edge functor
+										if (edgeFunctor!=NULL)
+											edgeFunctor(map, currX, currY, edgeUserData);
+									}
+
+									turnLeft(&velX, &velY, &currDir);
 								} else {
 									// 'outside' tile
 									foundOutside=true;
 
-									turnRight(&velX, &velY);
+									turnRight(&velX, &velY, &currDir);
 								}
 
 								// Move to next tile
 								currX+=velX;
 								currY+=velY;
+								currIsWithinMap=(currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight);
 							}
 
 							// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
-							if (edgeFunctor!=NULL && foundOutside)
-								edgeFunctor(map, currX, currY, edgeUserData);
+							if (edgeFunctor!=NULL && foundOutside && currIsWithinMap) {
+								// Mark relevant cache bit
+								MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::Dirty);
+								if (tile!=NULL)
+									tile->setBitsetN(scratchBits[currDir], true);
+
+								// Call user's edge functor
+								if (edgeFunctor!=NULL)
+									edgeFunctor(map, currX, currY, edgeUserData);
+							}
 						}
 					}
 				}
