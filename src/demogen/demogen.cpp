@@ -573,7 +573,7 @@ int main(int argc, char **argv) {
 
 	// Run contour line detection logic
 	MapGen::EdgeDetect edgeDetect(mapData.map, mapData.width, mapData.height);
-	edgeDetect.traceHeightContours(9, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
+	edgeDetect.traceHeightContours(19/*.....9*/, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
 	printf("\n");
 
 	// Save map.
