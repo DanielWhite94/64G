@@ -75,6 +75,10 @@ namespace Engine {
 			return (fileData->bitset>>n)&1;
 		}
 
+		uint16_t MapTile::getLandmassId(void) const {
+			return fileData->landmassId;
+		}
+
 		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
 			HitMask hitMask;
 
@@ -120,6 +124,10 @@ namespace Engine {
 				fileData->bitset|=(((uint64_t)1)<<n);
 			else
 				fileData->bitset&=~(((uint64_t)1)<<n);
+		}
+
+		void MapTile::setLandmassId(uint16_t landmassId) {
+			fileData->landmassId=landmassId;
 		}
 
 		bool MapTile::addObject(MapObject *object) {
