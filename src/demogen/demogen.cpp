@@ -578,8 +578,8 @@ int main(int argc, char **argv) {
 	contourCacheBits[MapGen::EdgeDetect::DirectionWest]=62;
 	contourCacheBits[MapGen::EdgeDetect::DirectionSouth]=63;
 
-	MapGen::EdgeDetect edgeDetect(mapData.map, mapData.width, mapData.height, contourCacheBits);
-	edgeDetect.traceHeightContours(19, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
+	MapGen::EdgeDetect heightContourEdgeDetect(mapData.map, mapData.width, mapData.height, contourCacheBits);
+	heightContourEdgeDetect.traceHeightContours(19, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
 	printf("\n");
 
 	// Save map.
