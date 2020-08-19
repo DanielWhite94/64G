@@ -114,6 +114,7 @@ namespace Engine {
 			static const MapTexture::Id TextureIdNB=TextureIdHeatMapMax;
 
 			static const unsigned TileBitsetIndexContour=0;
+			static const unsigned TileBitsetIndexLandmassBorder=1;
 
 			enum class BuiltinObject {
 				OldBeardMan,
