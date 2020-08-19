@@ -31,8 +31,17 @@ namespace Engine {
 			double progressRatio;
 		};
 
+		struct MapGenFloodFillFillClearScratchBitModifyTilesProgressData {
+			MapGen::FloodFill::ProgressFunctor *functor;
+			void *userData;
+
+			double progressRatio;
+		};
+
 		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
+		void mapGenFloodFillFillClearScratchBitModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		void MapGen::ParticleFlow::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
@@ -474,6 +483,184 @@ namespace Engine {
 				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
 				trace(&mapGenEdgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &mapGenEdgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexContour, (progressFunctor!=NULL ? &mapGenEdgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
 			}
+		}
+
+		void MapGen::FloodFill::fill(BoundaryFunctor *boundaryFunctor, void *boundaryUserData, FillFunctor *fillFunctor, void *fillUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
+			assert(boundaryFunctor!=NULL);
+			assert(fillFunctor!=NULL);
+
+			struct Segment {
+				unsigned x0, x1, y;
+
+				Segment(): x0(0), x1(0), y(0) {};
+				Segment(unsigned x0, unsigned x1, unsigned y): x0(x0), x1(x1), y(y) {};
+				~Segment() {};
+			};
+
+			// Initialisation
+			const double preModifyTilesProgressRatio=0.1; // assume roughly 10% of the time is spent in scratch bit clearing modify tiles call
+
+			Util::TimeMs startTimeMs=Util::getTimeMs();
+			unsigned long long progressMax=mapWidth*mapHeight;
+			unsigned long long progress=0.0;
+
+			unsigned groupId=0;
+
+			// Give a progress update
+			if (progressFunctor!=NULL)
+				progressFunctor(map, 0.0, Util::getTimeMs()-startTimeMs, progressUserData);
+
+			// Clear scratch bits (these are used to indicate from which directions we have previously entered a tile on, to avoid retracing similar edges)
+			MapGenFloodFillFillClearScratchBitModifyTilesProgressData modifyTileFunctorData;
+			modifyTileFunctorData.functor=progressFunctor;
+			modifyTileFunctorData.userData=progressUserData;
+			modifyTileFunctorData.progressRatio=preModifyTilesProgressRatio;
+
+			uint64_t scratchBitMask=(((uint64_t)1)<<scratchBit);
+			modifyTiles(map, 0, 0, mapWidth, mapHeight, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &mapGenFloodFillFillClearScratchBitModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
+
+			// Loop over regions
+			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
+			for(unsigned rY=0; rY<rYEnd; ++rY) {
+				unsigned rXEnd=mapWidth/MapRegion::tilesSize;
+				for(unsigned rX=0; rX<rXEnd; ++rX) {
+					// Calculate region tile boundaries
+					unsigned tileX0=rX*MapRegion::tilesSize;
+					unsigned tileY0=rY*MapRegion::tilesSize;
+					unsigned tileX1=std::min(mapWidth, (rX+1)*MapRegion::tilesSize);
+					unsigned tileY1=std::min(mapHeight, (rY+1)*MapRegion::tilesSize);
+
+					// Loop over all tiles in this region, looking for starting points to trace from
+					int startX, startY;
+					for(startY=tileY0; startY<tileY1; ++startY) {
+						for(startX=tileX0; startX<tileX1; ++startX) {
+							// Give a progress update
+							if (progressFunctor!=NULL && progress%256==0)
+								progressFunctor(map, preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+							++progress;
+
+							// Has this tile already been handled?
+							MapTile *tile=map->getTileAtOffset(startX, startY, Map::Map::GetTileFlag::None);
+							if (tile==NULL || tile->getBitsetN(scratchBit))
+								continue;
+
+							// Indicate we have handled this tile
+							tile=map->getTileAtOffset(startX, startY, Map::Map::GetTileFlag::Dirty); // grab again but mark as dirty
+							assert(tile!=NULL);
+							tile->setBitsetN(scratchBit, true);
+
+							// We need a non-boundary tile to start filling - so check now
+							if (boundaryFunctor(map, startX, startY, boundaryUserData))
+								continue;
+
+							// Add start tile as an initial segment to start filling from
+							std::vector<Segment> segments;
+							segments.clear();
+							segments.push_back(Segment(startX, startX+1, startY));
+
+							// Main loop to handle each segment/scanline
+							while(!segments.empty()) {
+								// Grab new segment
+								Segment segment=segments.back();
+								segments.pop_back();
+
+								// Extend segment left until we hit a boundary
+								while(1) {
+									if (segment.x0==0)
+										break;
+
+									if (boundaryFunctor(map, segment.x0-1, segment.y, boundaryUserData))
+										break;
+
+									--segment.x0;
+								}
+
+								// Extend segment right until we hit a boundary
+								while(1) {
+									if (segment.x1==mapWidth)
+										break;
+
+									if (boundaryFunctor(map, segment.x1, segment.y, boundaryUserData))
+										break;
+
+									++segment.x1;
+								}
+
+								// Loop over this segment to handle each tile within, and to find new segments to add to the stack
+								bool aboveActive=false, belowActive=false;
+								Segment aboveSegment, belowSegment;
+								aboveSegment.y=segment.y-1;
+								belowSegment.y=segment.y+1;
+								for(unsigned loopX=segment.x0; loopX<segment.x1; ++loopX) {
+									// Set scratch bit in this tile's bitset to indicate we have handled it
+									MapTile *loopTile=map->getTileAtOffset(loopX, segment.y, Map::Map::GetTileFlag::Dirty);
+									if (loopTile==NULL)
+										continue; // TODO: think about this - shouldn't happen but what happens if it does?
+									loopTile->setBitsetN(scratchBit, true);
+
+									// Call user's fill functor
+									fillFunctor(map, loopX, segment.y, groupId, fillUserData);
+
+									// Check for potential new segment above the current one
+									if (segment.y>0) {
+										bool aboveIsBoundary=boundaryFunctor(map, loopX, aboveSegment.y, boundaryUserData);
+										if (!aboveIsBoundary) {
+											MapTile *aboveTile=map->getTileAtOffset(loopX, aboveSegment.y, Map::Map::GetTileFlag::None);
+											aboveIsBoundary=(aboveTile!=NULL && aboveTile->getBitsetN(scratchBit));
+										}
+
+										if (aboveActive) {
+											if (aboveIsBoundary) {
+												segments.push_back(aboveSegment);
+												aboveActive=false;
+											} else
+												++aboveSegment.x1;
+										} else if (!aboveIsBoundary) {
+											aboveActive=true;
+											aboveSegment.x0=loopX;
+											aboveSegment.x1=loopX+1;
+										}
+									}
+
+									// Check for potential new segment below the current one
+									if (belowSegment.y<mapHeight) {
+										bool belowIsBoundary=boundaryFunctor(map, loopX, belowSegment.y, boundaryUserData);
+										if (!belowIsBoundary) {
+											MapTile *belowTile=map->getTileAtOffset(loopX, belowSegment.y, Map::Map::GetTileFlag::None);
+											belowIsBoundary=(belowTile!=NULL && belowTile->getBitsetN(scratchBit));
+										}
+
+										if (belowActive) {
+											if (belowIsBoundary) {
+												segments.push_back(belowSegment);
+												belowActive=false;
+											} else
+												++belowSegment.x1;
+										} else if (!belowIsBoundary) {
+											belowActive=true;
+											belowSegment.x0=loopX;
+											belowSegment.x1=loopX+1;
+										}
+									}
+								}
+
+								// Handle any remaining new segments (essentially treating any tiles outside of the map as boundary tiles)
+								if (aboveActive)
+									segments.push_back(aboveSegment);
+								if (belowActive)
+									segments.push_back(belowSegment);
+							}
+
+							// Prepare for next group we find
+							++groupId;
+						}
+					}
+				}
+			}
+
+			// Give a progress update
+			if (progressFunctor!=NULL)
+				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
 		}
 
 		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -1683,6 +1870,19 @@ namespace Engine {
 			assert(userData!=NULL);
 
 			const MapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressData *functorData=(const MapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressData *)userData;
+
+			// Calculate true progress (for the entire trace operation, rather than this individual modify tiles sub-operation)
+			double trueProgress=functorData->progressRatio*progress;
+
+			// Invoke user's progress functor
+			functorData->functor(map, trueProgress, elapsedTimeMs, functorData->userData);
+		}
+
+		void mapGenFloodFillFillClearScratchBitModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			const MapGenFloodFillFillClearScratchBitModifyTilesProgressData *functorData=(const MapGenFloodFillFillClearScratchBitModifyTilesProgressData *)userData;
 
 			// Calculate true progress (for the entire trace operation, rather than this individual modify tiles sub-operation)
 			double trueProgress=functorData->progressRatio*progress;
