@@ -534,11 +534,6 @@ namespace Engine {
 					int startX, startY;
 					for(startY=tileY0; startY<tileY1; ++startY) {
 						for(startX=tileX0; startX<tileX1; ++startX) {
-							// Give a progress update
-							if (progressFunctor!=NULL && progress%256==0)
-								progressFunctor(map, preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
-							++progress;
-
 							// Has this tile already been handled?
 							MapTile *tile=map->getTileAtOffset(startX, startY, Map::Map::GetTileFlag::None);
 							if (tile==NULL || tile->getBitsetN(scratchBit))
@@ -548,6 +543,10 @@ namespace Engine {
 							tile=map->getTileAtOffset(startX, startY, Map::Map::GetTileFlag::Dirty); // grab again but mark as dirty
 							assert(tile!=NULL);
 							tile->setBitsetN(scratchBit, true);
+
+							if (progressFunctor!=NULL && progress%256==0)
+								progressFunctor(map, preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+							++progress;
 
 							// We need a non-boundary tile to start filling - so check now
 							if (boundaryFunctor(map, startX, startY, boundaryUserData))
@@ -592,11 +591,20 @@ namespace Engine {
 								aboveSegment.y=segment.y-1;
 								belowSegment.y=segment.y+1;
 								for(unsigned loopX=segment.x0; loopX<segment.x1; ++loopX) {
-									// Set scratch bit in this tile's bitset to indicate we have handled it
+									// Ensure scratch bit is set in this tile's bitset to indicate we have handled it
 									MapTile *loopTile=map->getTileAtOffset(loopX, segment.y, Map::Map::GetTileFlag::Dirty);
 									if (loopTile==NULL)
 										continue; // TODO: think about this - shouldn't happen but what happens if it does?
-									loopTile->setBitsetN(scratchBit, true);
+
+									if (!loopTile->getBitsetN(scratchBit)) {
+										// Invoke progress functor if needed
+										if (progressFunctor!=NULL && progress%256==0)
+											progressFunctor(map, preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+										++progress;
+
+										// Set scratch bit to indicate we have handled this tile
+										loopTile->setBitsetN(scratchBit, true);
+									}
 
 									// Call user's fill functor
 									fillFunctor(map, loopX, segment.y, groupId, fillUserData);
