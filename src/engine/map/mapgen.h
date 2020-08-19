@@ -30,6 +30,9 @@ namespace Engine {
 		void mapGenEdgeDetectBitsetFullEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Similar to mapGenEdgeDetectBitsetNEdgeFunctor except the userData is interpreted as a full 64 bit bitset to OR into to each tile's existing bitset.
 		void mapGenEdgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
+		bool mapGenFloodFillBitsetNBoundaryFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns the value of the nth bit in the tile's bitset, where n is (unsigned)(uintptr_t)userData.
+		void mapGenFloodFillStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
 		struct MapGenRoad {
 			int x0, y0, x1, y1;
 			int trueX1, trueY1;

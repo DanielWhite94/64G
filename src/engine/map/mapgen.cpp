@@ -1850,6 +1850,50 @@ namespace Engine {
 			fflush(stdout);
 		}
 
+		bool mapGenFloodFillBitsetNBoundaryFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+
+			unsigned bitsetIndex=(unsigned)(uintptr_t)userData;
+
+			// Grab tile.
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
+			if (tile==NULL)
+				return false;
+
+			// Return value of relevant bit
+			return tile->getBitsetN(bitsetIndex);
+		}
+
+		void mapGenFloodFillStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(map!=NULL);
+			assert(progress>=0.0 && progress<=1.0);
+			assert(userData!=NULL);
+
+			const char *string=(const char *)userData;
+
+			// Clear old line.
+			Util::clearConsoleLine();
+
+			// Print start of new line, including users message and the percentage complete.
+			printf("%s%.3f%% ", string, progress*100.0);
+
+			// Append time elapsed so far.
+			mapGenPrintTime(elapsedTimeMs);
+
+			// Attempt to compute estimated total time.
+			if (progress>=0.0001 && progress<=0.9999) {
+				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
+				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
+					printf(" (~");
+					mapGenPrintTime(estRemainingTimeMs);
+					printf(" remaining)");
+				}
+			}
+
+			// Flush output manually (as we are not printing a newline).
+			fflush(stdout);
+		}
+
 		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);
