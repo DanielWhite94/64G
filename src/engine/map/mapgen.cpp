@@ -342,6 +342,9 @@ namespace Engine {
 
 			const double preModifyTilesProgressRatio=0.1; // assume roughly 10% of the time is spent in scratch bit clearing modify tiles call
 
+			unsigned mapWidth=map->getWidth();
+			unsigned mapHeight=map->getHeight();
+
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 			unsigned long long progressMax=mapWidth*mapHeight;
 			unsigned long long progress=0.0;
@@ -499,6 +502,9 @@ namespace Engine {
 
 			// Initialisation
 			const double preModifyTilesProgressRatio=0.1; // assume roughly 10% of the time is spent in scratch bit clearing modify tiles call
+
+			unsigned mapWidth=map->getWidth();
+			unsigned mapHeight=map->getHeight();
 
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 			unsigned long long progressMax=mapWidth*mapHeight;
