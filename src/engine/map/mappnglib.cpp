@@ -155,6 +155,9 @@ namespace Engine {
 			case MapTiled::ImageLayerHeightContour:
 				return MapPngLib::getColourForTileHeightContour(map, tile, r, g, b, a);
 			break;
+			case MapTiled::ImageLayerPolitical:
+				return MapPngLib::getColourForTilePolitical(map, tile, r, g, b, a);
+			break;
 		}
 
 		assert(false);
@@ -419,6 +422,91 @@ namespace Engine {
 		// Use black pixels for the contour lines themselves, transparent for everything else
 		*r=*g=*b=0;
 		*a=(tile->getBitsetN(MapGen::TileBitsetIndexContour) ? 255 : 0);
+	}
+
+	void MapPngLib::getColourForTilePolitical(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		static const uint8_t distinctColours[64][3]={
+			{0, 0, 0},
+			{1, 0, 103},
+			{213, 255, 0},
+			{255, 0, 86},
+			{158, 0, 142},
+			{14, 76, 161},
+			{255, 229, 2},
+			{0, 95, 57},
+			{0, 255, 0},
+			{149, 0, 58},
+			{255, 147, 126},
+			{164, 36, 0},
+			{0, 21, 68},
+			{145, 208, 203},
+			{98, 14, 0},
+			{107, 104, 130},
+			{0, 0, 255},
+			{0, 125, 181},
+			{106, 130, 108},
+			{0, 174, 126},
+			{194, 140, 159},
+			{190, 153, 112},
+			{0, 143, 156},
+			{95, 173, 78},
+			{255, 0, 0},
+			{255, 0, 246},
+			{255, 2, 157},
+			{104, 61, 59},
+			{255, 116, 163},
+			{150, 138, 232},
+			{152, 255, 82},
+			{167, 87, 64},
+			{1, 255, 254},
+			{255, 238, 232},
+			{254, 137, 0},
+			{189, 198, 255},
+			{1, 208, 255},
+			{187, 136, 0},
+			{117, 68, 177},
+			{165, 255, 210},
+			{255, 166, 254},
+			{119, 77, 0},
+			{122, 71, 130},
+			{38, 52, 0},
+			{0, 71, 84},
+			{67, 0, 44},
+			{181, 0, 255},
+			{255, 177, 103},
+			{255, 219, 102},
+			{144, 251, 146},
+			{126, 45, 210},
+			{189, 211, 147},
+			{229, 111, 254},
+			{222, 255, 116},
+			{0, 255, 120},
+			{0, 155, 255},
+			{0, 100, 1},
+			{0, 118, 255},
+			{133, 169, 0},
+			{0, 185, 23},
+			{120, 130, 49},
+			{0, 255, 198},
+			{255, 110, 65},
+			{232, 94, 190},
+		};
+
+		// Grab landmass id for this tile
+		uint16_t landmassId=tile->getLandmassId();
+
+		// Special case: id=0 implies border tile, so colour black
+		if (landmassId==0) {
+			*r=*g=*b=0;
+			*a=255;
+			return;
+		}
+
+		// Choose colour from array of distinct colours
+		*r=distinctColours[landmassId%64][0];
+		*g=distinctColours[landmassId%64][1];
+		*b=distinctColours[landmassId%64][2];
+		*a=255;
 	}
 
 };

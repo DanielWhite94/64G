@@ -54,6 +54,8 @@ void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, v
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
+void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
+
 void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
@@ -88,6 +90,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 	tile->setHeight(height);
 	tile->setMoisture(0.0);
 	tile->setTemperature(temperature);
+	tile->setLandmassId(0); // default to 0 to imply part of a border - we will update non-border tiles in a later step
 }
 
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -373,6 +376,20 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 	return true;
 }
 
+void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData) {
+	assert(map!=NULL);
+	assert(userData==NULL);
+
+	// Grab tile.
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::CreateDirty);
+	if (tile==NULL)
+		return;
+
+	// Set tile's landmass id
+	// Note: we do +1 so that id 0 is reserved for 'border' tiles
+	tile->setLandmassId(groupId+1);
+}
+
 int main(int argc, char **argv) {
 	const double desiredLandFraction=0.4;
 	const double desiredAlpineFraction=0.01;
@@ -571,6 +588,21 @@ int main(int argc, char **argv) {
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, npcModifyTilesArrayCount, npcModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
+	// Landmass (contintent/island) identification
+	unsigned landmassCacheBits[MapGen::EdgeDetect::DirectionNB];
+	landmassCacheBits[MapGen::EdgeDetect::DirectionEast]=60;
+	landmassCacheBits[MapGen::EdgeDetect::DirectionNorth]=61;
+	landmassCacheBits[MapGen::EdgeDetect::DirectionWest]=62;
+	landmassCacheBits[MapGen::EdgeDetect::DirectionSouth]=63;
+
+	MapGen::EdgeDetect landmassEdgeDetect(mapData.map, mapData.width, mapData.height, landmassCacheBits);
+	landmassEdgeDetect.trace(&mapGenEdgeDetectLandSampleFunctor, NULL, &mapGenEdgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &mapGenEdgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
+	printf("\n");
+
+	MapGen::FloodFill landmassFloodFill(mapData.map, mapData.width, mapData.height, 63);
+	landmassFloodFill.fill(&mapGenFloodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &mapGenFloodFillStringProgressFunctor, (void *)"Identifying individual landmasses via flood-fill ");
+	printf("\n");
+
 	// Run contour line detection logic
 	unsigned contourCacheBits[MapGen::EdgeDetect::DirectionNB];
 	contourCacheBits[MapGen::EdgeDetect::DirectionEast]=60;
@@ -578,8 +610,8 @@ int main(int argc, char **argv) {
 	contourCacheBits[MapGen::EdgeDetect::DirectionWest]=62;
 	contourCacheBits[MapGen::EdgeDetect::DirectionSouth]=63;
 
-	MapGen::EdgeDetect edgeDetect(mapData.map, mapData.width, mapData.height, contourCacheBits);
-	edgeDetect.traceHeightContours(19, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
+	MapGen::EdgeDetect heightContourEdgeDetect(mapData.map, mapData.width, mapData.height, contourCacheBits);
+	heightContourEdgeDetect.traceHeightContours(19, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
 	printf("\n");
 
 	// Save map.

@@ -21,6 +21,7 @@ namespace Engine {
 				Layer layers[layersMax];
 				double height, moisture, temperature;
 				uint64_t bitset;
+				uint16_t landmassId;
 			};
 
 			MapTile();
@@ -38,6 +39,7 @@ namespace Engine {
 			double getTemperature(void) const;
 			uint64_t getBitset(void) const;
 			bool getBitsetN(unsigned n) const;
+			uint16_t getLandmassId(void) const;
 
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
@@ -47,6 +49,7 @@ namespace Engine {
 			void setTemperature(double temperature);
 			void setBitset(uint64_t bitset);
 			void setBitsetN(unsigned n, bool value);
+			void setLandmassId(uint16_t landmassId);
 
 			bool addObject(MapObject *object);
 			void removeObject(MapObject *object);
