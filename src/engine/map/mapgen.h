@@ -297,7 +297,7 @@ namespace Engine {
 				unsigned scratchBit;
 			};
 
-			MapGen(unsigned width, unsigned height);
+			MapGen();
 			~MapGen();
 
 			static bool addBaseTextures(class Map *map);
@@ -322,7 +322,6 @@ namespace Engine {
 			static void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesProgress *progressFunctor, void *progressUserData); // Updates map's min/maxHeight and other such fields.
 
 		private:
-			unsigned width, height;
 		};
 	};
 };

@@ -772,9 +772,7 @@ namespace Engine {
 			fflush(stdout);
 		}
 
-		MapGen::MapGen(unsigned gWidth, unsigned gHeight) {
-			width=gWidth;
-			height=gHeight;
+		MapGen::MapGen() {
 		}
 
 		MapGen::~MapGen() {
