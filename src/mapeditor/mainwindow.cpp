@@ -548,7 +548,7 @@ namespace MapEditor {
 
 		// Attempt to load map
 		try {
-			map=new class Map(filename, (Engine::Map::Map::InitFlags)(Engine::Map::Map::InitFlagsCreate|Engine::Map::Map::InitFlagsNoLoad));
+			map=new class Map(filename, 2048, 2048); // TODO: sizes are just a hack - needs a way for user to dictate
 		} catch (std::exception& e) {
 			map=NULL;
 			return false;
@@ -593,7 +593,7 @@ namespace MapEditor {
 		// Attempt to load map
 		class Map *map;
 		try {
-			map=new class Map(filename, Engine::Map::Map::InitFlagsNone);
+			map=new class Map(filename);
 		} catch (std::exception& e) {
 			map=NULL;
 

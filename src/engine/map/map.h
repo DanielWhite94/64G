@@ -27,15 +27,10 @@ namespace Engine {
 				CreateDirty=3,
 			};
 
-			enum InitFlags {
-				InitFlagsNone=0,
-				InitFlagsCreate=1, // if map does not exist, creates it (by default would fail to load with an exception thrown)
-				InitFlagsNoLoad=2, // ensure that we are not loading a map (so are creating a new one)
-			};
-
 			static const unsigned regionsSize=256; // numbers of regions per side, with total number of regions equal to regionsSize squared
 
-			Map(const char *mapBaseDirPath, InitFlags flags);
+			Map(const char *mapBaseDirPath, unsigned mapWidth, unsigned mapHeight); // creates a new map, must not exist already
+			Map(const char *mapBaseDirPath); // loads an existing map
 			~Map();
 
 			bool save(void); // Saves everything recursively.
@@ -47,6 +42,9 @@ namespace Engine {
 			bool markRegionDirtyAtTileOffset(unsigned offsetX, unsigned offsetY, bool create);
 
 			void tick(void);
+
+			unsigned getWidth(void) const;
+			unsigned getHeight(void) const;
 
 			MapTile *getTileAtCoordVec(const CoordVec &vec, GetTileFlag flags);
 			MapTile *getTileAtOffset(unsigned offsetX, unsigned offsetY, GetTileFlag flags);
@@ -63,8 +61,6 @@ namespace Engine {
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
 
-			bool calculateRegionWidthHeight(unsigned *regionsWide, unsigned *regionsHigh); // inspects which regions have been touched and finds the greatest x/y values
-
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
 			double minTemperature, maxTemperature;
@@ -76,6 +72,8 @@ namespace Engine {
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 
 			int lockFd;
+
+			unsigned mapWidth, mapHeight;
 
 			char *baseDir;
 			char *texturesDir;
@@ -94,8 +92,6 @@ namespace Engine {
 			RegionData regionsByOffset[regionsSize][regionsSize]; // [y][x]
 
 			MapTexture *textures[MapTexture::IdMax];
-
-			void initclean(void);
 
 			const char *getRegionsDir(void) const;
 			const char *getTexturesDir(void) const;

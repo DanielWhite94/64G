@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
 	class Map *map;
 	try {
-		map=new class Map(mapPath, Engine::Map::Map::InitFlagsNone);
+		map=new class Map(mapPath);
 	} catch (std::exception& e) {
 		if (quiet)
 			std::cout << "Could not load map: " << e.what() << '\n';

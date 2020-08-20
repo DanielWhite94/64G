@@ -22,28 +22,21 @@ int main(int argc, char *argv[]) {
 
 	class Map *map;
 	try {
-		map=new class Map(mapPath, Engine::Map::Map::InitFlagsNone);
+		map=new class Map(mapPath);
 	} catch (std::exception& e) {
 		std::cout << "Could not load map: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 
-	// Calculate size of this map
-	printf("Calculating map size...\n");
-	unsigned regionsWide, regionsHigh;
-	if (!map->calculateRegionWidthHeight(&regionsWide, &regionsHigh)) {
-		printf("Could not get map size\n");
-		delete map;
-		return EXIT_FAILURE;
-	}
-
 	// Work out the various zoom parameters
-	unsigned mapSize=std::max(regionsWide*MapRegion::tilesSize, regionsHigh*MapRegion::tilesSize); // in tile units
+	unsigned mapWidth=map->getWidth();
+	unsigned mapHeight=map->getHeight();
+	unsigned mapSize=std::max(mapWidth, mapHeight);
 
 	unsigned slippyZoomOffset=MapTiled::maxZoom-1-std::ceil(std::log2(mapSize/MapTiled::imageSize));
 	unsigned slippyMaxNativeZoom=MapTiled::maxZoom-1-slippyZoomOffset;
 
-	printf("Map is %u regions wide and %u regions high, giving size %u with zoom offset %u.\n", regionsWide, regionsHigh, mapSize, slippyZoomOffset);
+	printf("Map is %u tiles wide and %u tiles high, giving size %u with zoom offset %u.\n", mapWidth, mapHeight, mapSize, slippyZoomOffset);
 
 	// Generate slippymap.js file to pass on map-speicifc parameters such as min/max zoom
 	char slippymapJsPath[1024]; // TODO: better

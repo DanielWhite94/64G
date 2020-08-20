@@ -430,7 +430,7 @@ int main(int argc, char **argv) {
 	printf("Creating map...\n");
 
 	try {
-		mapData.map=new class Map(outputPath, (Engine::Map::Map::InitFlags)(Engine::Map::Map::InitFlagsCreate|Engine::Map::Map::InitFlagsNoLoad));
+		mapData.map=new class Map(outputPath, mapData.width, mapData.height);
 	} catch (std::exception& e) {
 		std::cout << "Could not create map: " << e.what() << '\n';
 		return EXIT_FAILURE;

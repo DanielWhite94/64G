@@ -18,9 +18,10 @@ using namespace Engine::Graphics;
 
 namespace Engine {
 	namespace Map {
-		Map::Map(const char *mapBaseDirPath, InitFlags flags) {
+		Map::Map(const char *mapBaseDirPath, unsigned mapWidth, unsigned mapHeight): mapWidth(mapWidth), mapHeight(mapHeight) {
 			assert(mapBaseDirPath!=NULL);
 
+			// Create new map
 			DIR *dirFd;
 			struct dirent *dirEntry;
 
@@ -66,16 +67,13 @@ namespace Engine {
 			mapTiledDir=(char *)malloc(mapTiledDirPathLen+1); // TODO: check return
 			sprintf(mapTiledDir, "%s/%s", mapBaseDirPath, mapTiledDirName);
 
-			// Do we need to create the base directory?
+			// Create map
 			// Note: we do this here instead of with the other directories in createMetadata because otherwise we would not be able to create the lock file below.
-			if (!Util::isDir(mapBaseDirPath)) {
-				if (!(flags & Map::InitFlagsCreate))
-					throw std::runtime_error("no such map");
-				if (!Util::makeDir(mapBaseDirPath))
-					throw std::runtime_error("could not create map base dir");
-			} else if (flags & Map::InitFlagsNoLoad)
+			if (Util::isDir(mapBaseDirPath))
 				throw std::runtime_error("map already exists");
 
+			if (!Util::makeDir(mapBaseDirPath))
+				throw std::runtime_error("could not create map base dir");
 
 			// Attempt to obtain the lock file
 			char lockPath[1024]; // TODO: better
@@ -84,11 +82,119 @@ namespace Engine {
 			if (lockFd==-1)
 				throw std::runtime_error("locked");
 
-			// Load metadata file if exists.
+			// Create metadata and region directories etc.
+			saveMetadata();
+
+			// Load textures
+			dirFd=opendir(getTexturesDir());
+			if (dirFd==NULL) {
+				throw std::runtime_error("could not open map texture dir");
+			} else {
+				while((dirEntry=readdir(dirFd))!=NULL) {
+					char dirEntryFileName[1024]; // TODO: this better
+					sprintf(dirEntryFileName , "%s/%s", getTexturesDir(), dirEntry->d_name);
+
+					struct stat stbuf;
+					if (stat(dirEntryFileName,&stbuf)==-1)
+						continue;
+
+					// Skip non-regular files.
+					if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
+						continue;
+
+					// Attempt to decode filename as a texture.
+					char *namePtr=strrchr(dirEntryFileName, '/');
+					if (namePtr!=NULL)
+						namePtr++;
+					else
+						namePtr=dirEntryFileName;
+
+					unsigned textureId=0, textureScale=0;
+					if (sscanf(namePtr, "%us%u.", &textureId, &textureScale)!=2) {
+						// TODO: error msg
+						continue;
+					}
+					if (textureId==0 || textureScale==0) {
+						// TODO: error msg
+						continue;
+					}
+
+					// Add texture.
+					MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale);
+					addTexture(texture); // TODO: Check return.
+				}
+
+				closedir(dirFd);
+			}
+
+			// Note: Regions are loaded on demand.
+		}
+
+		Map::Map(const char *mapBaseDirPath) {
+			// Load map
+			DIR *dirFd;
+			struct dirent *dirEntry;
+
+			// Set Map to clean state.
+			unsigned i, j;
+
+			lockFd=-1;
+
+			baseDir=NULL;
+			texturesDir=NULL;
+			regionsDir=NULL;
+			mapTiledDir=NULL;
+
+			regionsCount=0;
+			for(i=0; i<regionsLoadedMax; ++i)
+				regionsByIndex[i]=NULL;
+			for(i=0; i<regionsLoadedMax; ++i)
+				regionsByAge[i]=NULL;
+			for(i=0; i<regionsSize; ++i)
+				for(j=0; j<regionsSize; ++j)
+					regionsByOffset[i][j].ptr=NULL;
+
+			for(i=0; i<MapTexture::IdMax; ++i)
+				textures[i]=NULL;
+
+			// Create directory strings.
+			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
+			baseDir=(char *)malloc(mapBaseDirPathLen+1); // TODO: Check return.
+			strcpy(baseDir, mapBaseDirPath);
+
+			const char *texturesDirName="textures";
+			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
+			texturesDir=(char *)malloc(texturesDirPathLen+1); // TODO: check return
+			sprintf(texturesDir, "%s/%s", mapBaseDirPath, texturesDirName);
+
+			const char *regionsDirName="regions";
+			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
+			regionsDir=(char *)malloc(regionsDirPathLen+1); // TODO: check return
+			sprintf(regionsDir, "%s/%s", mapBaseDirPath, regionsDirName);
+
+			const char *mapTiledDirName="maptiled";
+			size_t mapTiledDirPathLen=mapBaseDirPathLen+1+strlen(mapTiledDirName); // +1 is for '/'
+			mapTiledDir=(char *)malloc(mapTiledDirPathLen+1); // TODO: check return
+			sprintf(mapTiledDir, "%s/%s", mapBaseDirPath, mapTiledDirName);
+
+			// Check map exists
+			if (!Util::isDir(mapBaseDirPath))
+				throw std::runtime_error("no such map");
+
+			// Attempt to obtain the lock file
+			char lockPath[1024]; // TODO: better
+			sprintf(lockPath, "%s/lock", mapBaseDirPath);
+			lockFd=open(lockPath, O_RDWR|O_CREAT|O_EXCL, S_IWUSR);
+			if (lockFd==-1)
+				throw std::runtime_error("locked");
+
+			// Load metadata file
 			char metadataFilePath[1024]; // TODO: Prevent overflows.
 			sprintf(metadataFilePath, "%s/metadata", baseDir);
 			FILE *metadataFile=fopen(metadataFilePath, "r");
 			if (metadataFile!=NULL) {
+				fread(&mapWidth, sizeof(double), 1, metadataFile);
+				fread(&mapHeight, sizeof(double), 1, metadataFile);
 				fread(&minHeight, sizeof(double), 1, metadataFile);
 				fread(&maxHeight, sizeof(double), 1, metadataFile);
 				fread(&minTemperature, sizeof(double), 1, metadataFile);
@@ -101,7 +207,8 @@ namespace Engine {
 				fclose(metadataFile);
 			}
 
-			// Ensure directories etc exist.
+			// Ensure all directories etc exist.
+			// Note: shouldn't really be needed but no harm either
 			saveMetadata();
 
 			// Load textures
@@ -296,6 +403,8 @@ namespace Engine {
 				return false;
 
 			bool result=true;
+			result&=(fwrite(&mapWidth, sizeof(double), 1, metadataFile)==1);
+			result&=(fwrite(&mapHeight, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&minHeight, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&maxHeight, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&minTemperature, sizeof(double), 1, metadataFile)==1);
@@ -392,6 +501,14 @@ namespace Engine {
 					moveObject(region->objects[i], region->objects[i]->getCoordTopLeft()+delta);
 				}
 			}
+		}
+
+		unsigned Map::getWidth(void) const {
+			return mapWidth;
+		}
+
+		unsigned Map::getHeight(void) const {
+			return mapHeight;
 		}
 
 		MapTile *Map::getTileAtCoordVec(const CoordVec &vec, GetTileFlag flags) {
@@ -623,35 +740,6 @@ namespace Engine {
 
 		const char *Map::getMapTiledDir(void) const {
 			return mapTiledDir;
-		}
-
-		bool Map::calculateRegionWidthHeight(unsigned *regionsWide, unsigned *regionsHigh) {
-			DIR *dir=opendir(getRegionsDir());
-			if (dir==NULL)
-				return false;
-
-			if (regionsWide!=NULL)
-				*regionsWide=0;
-			if (regionsHigh!=NULL)
-				*regionsHigh=0;
-
-			struct dirent *dirEntry;
-			while((dirEntry=readdir(dir))!=NULL) {
-				// Parse x and y for this region
-				unsigned x, y;
-				if (sscanf(dirEntry->d_name, "%u,%u", &x, &y)!=2)
-					continue;
-
-				// Check for new furthest east/south region
-				if (regionsWide!=NULL && x>=*regionsWide)
-					*regionsWide=x+1;
-				if (regionsHigh!=NULL && y>=*regionsHigh)
-					*regionsHigh=y+1;
-			}
-
-			closedir(dir);
-
-			return true;
 		}
 
 		const char *Map::getRegionsDir(void) const {
