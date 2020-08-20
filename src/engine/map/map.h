@@ -29,7 +29,7 @@ namespace Engine {
 
 			static const unsigned regionsSize=256; // numbers of regions per side, with total number of regions equal to regionsSize squared
 
-			Map(const char *mapBaseDirPath, unsigned mapWidth, unsigned mapHeight); // creates a new map, must not exist already
+			Map(const char *mapBaseDirPath, unsigned mapWidth, unsigned mapHeight); // creates a new map, must not exist already. width and height are rounded up to a non-zero multiple of MapRegion::tilesSize
 			Map(const char *mapBaseDirPath); // loads an existing map
 			~Map();
 
@@ -73,7 +73,7 @@ namespace Engine {
 
 			int lockFd;
 
-			unsigned mapWidth, mapHeight;
+			unsigned mapWidth, mapHeight; // these should both be multiples of MapRegion::tilesSize
 
 			char *baseDir;
 			char *texturesDir;
