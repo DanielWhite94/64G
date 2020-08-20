@@ -29,7 +29,7 @@ namespace Engine {
 
 			static const unsigned regionsSize=256; // numbers of regions per side, with total number of regions equal to regionsSize squared
 
-			Map(const char *mapBaseDirPath, unsigned mapWidth, unsigned mapHeight); // creates a new map, must not exist already. width and height are rounded up to a non-zero multiple of MapRegion::tilesSize
+			Map(const char *mapBaseDirPath, unsigned mapWidth, unsigned mapHeight); // creates a new map, must not exist already. width and height are rounded up to a non-zero multiple of MapRegion::tilesSize, and are capped at Map::regionsSize*MapRegion::tilesSize.
 			Map(const char *mapBaseDirPath); // loads an existing map
 			~Map();
 

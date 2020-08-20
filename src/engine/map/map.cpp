@@ -21,9 +21,11 @@ namespace Engine {
 		Map::Map(const char *mapBaseDirPath, unsigned mapWidth, unsigned mapHeight): mapWidth(mapWidth), mapHeight(mapHeight) {
 			assert(mapBaseDirPath!=NULL);
 
-			// Round width and height up to a a multiple of the region tile size
+			// Round width and height up to a a multiple of the region tile size (but do not exceed maximum size allowed)
 			if (mapWidth<1) mapWidth=1;
 			if (mapHeight<1) mapHeight=1;
+			if (mapWidth>Map::regionsSize*MapRegion::tilesSize) mapWidth=Map::regionsSize*MapRegion::tilesSize;
+			if (mapHeight>Map::regionsSize*MapRegion::tilesSize) mapHeight=Map::regionsSize*MapRegion::tilesSize;
 
 			mapWidth=((mapWidth+(MapRegion::tilesSize-1))/MapRegion::tilesSize)*MapRegion::tilesSize;
 			mapHeight=((mapHeight+(MapRegion::tilesSize-1))/MapRegion::tilesSize)*MapRegion::tilesSize;
@@ -561,8 +563,6 @@ namespace Engine {
 
 		MapRegion *Map::getRegionAtOffset(unsigned regionX, unsigned regionY, bool create) {
 			// Out of bounds?
-			if (regionX>=regionsSize || regionY>=regionsSize)
-				return NULL;
 			if (regionX*MapRegion::tilesSize>=mapWidth || regionY*MapRegion::tilesSize>=mapHeight)
 				return NULL;
 
