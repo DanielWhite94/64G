@@ -265,6 +265,18 @@ namespace Engine {
 					*dy=temp;
 					*dir=(*dir+DirectionNB-1)%DirectionNB;
 				}
+
+				void moveForward(int *x, int *y, int dx, int dy) {
+					assert(x!=NULL);
+					assert(*x>=0 && *x<map->getWidth());
+					assert(y!=NULL);
+					assert(*y>=0 && *y<map->getHeight());
+					assert(dx==-1 || dx==0 || dx==1);
+					assert(dy==-1 || dy==0 || dy==1);
+
+					*x=(*x+map->getWidth()+dx)%map->getWidth();
+					*y=(*y+map->getHeight()+dy)%map->getHeight();
+				}
 			};
 
 			class FloodFill {

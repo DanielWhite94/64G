@@ -370,8 +370,8 @@ namespace Engine {
 					// Calculate region tile boundaries
 					unsigned tileX0=rX*MapRegion::tilesSize;
 					unsigned tileY0=rY*MapRegion::tilesSize;
-					unsigned tileX1=std::min(mapWidth, (rX+1)*MapRegion::tilesSize);
-					unsigned tileY1=std::min(mapHeight, (rY+1)*MapRegion::tilesSize);
+					unsigned tileX1=(rX+1)*MapRegion::tilesSize;
+					unsigned tileY1=(rY+1)*MapRegion::tilesSize;
 
 					// Loop over all tiles in this region, looking for starting points to trace from
 					int startX, startY;
@@ -395,32 +395,27 @@ namespace Engine {
 
 							// First tile is always 'inside', so turn left
 							turnLeft(&velX, &velY, &currDir);
-
-							currX+=velX;
-							currY+=velY;
-							bool currIsWithinMap=(currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight);
+							moveForward(&currX, &currY, velX, velY);
 
 							// Walk the edge between 'inside' and 'outside' tiles
 							// Note: we use Jacob's stopping criterion where we also ensure we return to the start tile with the same velocity as we started
 							bool foundOutside=false;
 							while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
 								// Has this tile already been handled?
-								if (currIsWithinMap) {
-									// Check relevant cache bit based on current direction
-									MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::None);
-									if (tile!=NULL && tile->getBitsetN(scratchBits[currDir])) {
-										// We have already entered this tile in this direction before - no point retracing it again.
-										// So simply quit tracing this particular edge and move onto a new starting tile.
+								// Check relevant cache bit based on current direction
+								MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::None);
+								if (tile!=NULL && tile->getBitsetN(scratchBits[currDir])) {
+									// We have already entered this tile in this direction before - no point retracing it again.
+									// So simply quit tracing this particular edge and move onto a new starting tile.
 
-										// Reset foundOutside flag as a hack method to avoid calling edge functor for a final (unnecessary) time
-										foundOutside=false;
+									// Reset foundOutside flag as a hack method to avoid calling edge functor for a final (unnecessary) time
+									foundOutside=false;
 
-										break;
-									}
+									break;
 								}
 
 								// Determine if current tile is 'inside' or 'outside'
-								if (currIsWithinMap && sampleFunctor(map, currX, currY, sampleUserData)) {
+								if (sampleFunctor(map, currX, currY, sampleUserData)) {
 									// 'inside' tile
 									if (edgeFunctor!=NULL && foundOutside) {
 										// Mark relevant cache bit
@@ -442,13 +437,11 @@ namespace Engine {
 								}
 
 								// Move to next tile
-								currX+=velX;
-								currY+=velY;
-								currIsWithinMap=(currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight);
+								moveForward(&currX, &currY, velX, velY);
 							}
 
 							// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
-							if (edgeFunctor!=NULL && foundOutside && currIsWithinMap) {
+							if (edgeFunctor!=NULL && foundOutside) {
 								// Mark relevant cache bit
 								MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::Dirty);
 								if (tile!=NULL)
