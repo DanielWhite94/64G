@@ -164,7 +164,16 @@ namespace Engine {
 			for(int pathLen=0; pathLen<maxPathLen; ++pathLen) {
 				// Increment moisture counter for the current tile.
 				if (incMoisture) {
-					MapTile *tempTile=map->getTileAtOffset(xi, yi, Map::GetTileFlag::None);
+					// Calculate normalised x and y values for the tile
+					int tempX=xi, tempY=yi;
+					tempX=(tempX+map->getWidth())%map->getWidth();
+					tempY=(tempY+map->getHeight())%map->getHeight();
+
+					assert(tempX>=0 && tempX<map->getWidth());
+					assert(tempY>=0 && tempY<map->getHeight());
+
+					// Lookup tile
+					MapTile *tempTile=map->getTileAtOffset(tempX, tempY, Map::GetTileFlag::None);
 					if (tempTile!=NULL)
 						tempTile->setMoisture(tempTile->getMoisture()+w);
 				}
@@ -188,8 +197,11 @@ namespace Engine {
 					dy/=dl;
 				}
 
-				double nxp=xp+dx;
-				double nyp=yp+dy;
+				double nxp=std::fmod(xp+map->getWidth()+dx, map->getWidth());
+				double nyp=std::fmod(yp+map->getHeight()+dy, map->getHeight());
+
+				assert(nxp>=0.0 && nxp<map->getWidth());
+				assert(nyp>=0.0 && nyp<map->getHeight());
 
 				// sample next height
 				int nxi=floor(nxp);
@@ -303,11 +315,12 @@ namespace Engine {
 		}
 
 		double MapGen::ParticleFlow::hMap(int x, int y, double unknownValue) {
-			// Check bounds.
-			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
-				return unknownValue;
-			if (y<0 || y>=Map::regionsSize*MapRegion::tilesSize)
-				return unknownValue;
+			// To simplify calls to this function, allow x and y values in the interval [-mapwidth,mapwidth]
+			x=(x+map->getWidth())%map->getWidth();
+			y=(y+map->getHeight())%map->getHeight();
+
+			assert(x>=0 && x<map->getWidth());
+			assert(y>=0 && y<map->getHeight());
 
 			// Grab tile.
 			const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
@@ -319,11 +332,12 @@ namespace Engine {
 		}
 
 		void MapGen::ParticleFlow::depositAt(int x, int y, double w, double ds) {
-			// Check bounds.
-			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
-				return;
-			if (y<0 || y>=Map::regionsSize*MapRegion::tilesSize)
-				return;
+			// To simplify calls to this function, allow x and y values in the interval [-mapwidth,mapwidth]
+			x=(x+map->getWidth())%map->getWidth();
+			y=(y+map->getHeight())%map->getHeight();
+
+			assert(x>=0 && x<map->getWidth());
+			assert(y>=0 && y<map->getHeight());
 
 			// Grab tile.
 			MapTile *tile=map->getTileAtOffset(x, y, Map::GetTileFlag::Dirty);
