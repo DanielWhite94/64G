@@ -1,8 +1,6 @@
 #ifndef ENGINE_FBNNOISE_H
 #define ENGINE_FBNNOISE_H
 
-#include "opensimplexnoise.h"
-
 namespace Engine {
 	class FbnNoise {
 	public:
@@ -13,9 +11,9 @@ namespace Engine {
 
 		double eval(double x, double y);
 	private:
-		OpenSimplexNoise *baseNoise;
 		unsigned octaves;
-		double inputFactor, outputDivisor;
+
+		double preMultiplyFactor;
 	};
 };
 

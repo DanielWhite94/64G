@@ -68,7 +68,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 		return;
 
 	// Calculate height and temperature.
-	double normalisedHeight=mapData->heightNoise->eval(x,y); // [-1,1.0]
+	double normalisedHeight=mapData->heightNoise->eval(x/((double)mapData->width), y/((double)mapData->height)); // [-1,1.0]
 	const double height=normalisedHeight*6000.0; // [-6000,6000]
 
 	const double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
@@ -430,7 +430,7 @@ int main(int argc, char **argv) {
 	printf("Creating map...\n");
 
 	try {
-		mapData.map=new class Map(outputPath, (Engine::Map::Map::InitFlags)(Engine::Map::Map::InitFlagsCreate|Engine::Map::Map::InitFlagsNoLoad));
+		mapData.map=new class Map(outputPath, mapData.width, mapData.height);
 	} catch (std::exception& e) {
 		std::cout << "Could not create map: " << e.what() << '\n';
 		return EXIT_FAILURE;
@@ -446,8 +446,8 @@ int main(int argc, char **argv) {
 	}
 
 	// Create noise.
-	mapData.heightNoise=new FbnNoise(17, 8, 1.0/(2.0*1024.0));
-	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0/1024.0);
+	mapData.heightNoise=new FbnNoise(17, 8, 4.0);
+	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0);
 
 	// Run init modify tiles function.
 	const char *progressStringInit="Initializing tile parameters ";
@@ -595,11 +595,11 @@ int main(int argc, char **argv) {
 	landmassCacheBits[MapGen::EdgeDetect::DirectionWest]=62;
 	landmassCacheBits[MapGen::EdgeDetect::DirectionSouth]=63;
 
-	MapGen::EdgeDetect landmassEdgeDetect(mapData.map, mapData.width, mapData.height, landmassCacheBits);
+	MapGen::EdgeDetect landmassEdgeDetect(mapData.map, landmassCacheBits);
 	landmassEdgeDetect.trace(&mapGenEdgeDetectLandSampleFunctor, NULL, &mapGenEdgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &mapGenEdgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
 	printf("\n");
 
-	MapGen::FloodFill landmassFloodFill(mapData.map, mapData.width, mapData.height, 63);
+	MapGen::FloodFill landmassFloodFill(mapData.map, 63);
 	landmassFloodFill.fill(&mapGenFloodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &mapGenFloodFillStringProgressFunctor, (void *)"Identifying individual landmasses via flood-fill ");
 	printf("\n");
 
@@ -610,7 +610,7 @@ int main(int argc, char **argv) {
 	contourCacheBits[MapGen::EdgeDetect::DirectionWest]=62;
 	contourCacheBits[MapGen::EdgeDetect::DirectionSouth]=63;
 
-	MapGen::EdgeDetect heightContourEdgeDetect(mapData.map, mapData.width, mapData.height, contourCacheBits);
+	MapGen::EdgeDetect heightContourEdgeDetect(mapData.map, contourCacheBits);
 	heightContourEdgeDetect.traceHeightContours(19, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
 	printf("\n");
 

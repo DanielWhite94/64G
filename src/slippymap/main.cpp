@@ -22,28 +22,21 @@ int main(int argc, char *argv[]) {
 
 	class Map *map;
 	try {
-		map=new class Map(mapPath, Engine::Map::Map::InitFlagsNone);
+		map=new class Map(mapPath);
 	} catch (std::exception& e) {
 		std::cout << "Could not load map: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 
-	// Calculate size of this map
-	printf("Calculating map size...\n");
-	unsigned regionsWide, regionsHigh;
-	if (!map->calculateRegionWidthHeight(&regionsWide, &regionsHigh)) {
-		printf("Could not get map size\n");
-		delete map;
-		return EXIT_FAILURE;
-	}
-
 	// Work out the various zoom parameters
-	unsigned mapSize=std::max(regionsWide*MapRegion::tilesSize, regionsHigh*MapRegion::tilesSize); // in tile units
+	unsigned mapWidth=map->getWidth();
+	unsigned mapHeight=map->getHeight();
+	unsigned mapSize=std::max(mapWidth, mapHeight);
 
 	unsigned slippyZoomOffset=MapTiled::maxZoom-1-std::ceil(std::log2(mapSize/MapTiled::imageSize));
 	unsigned slippyMaxNativeZoom=MapTiled::maxZoom-1-slippyZoomOffset;
 
-	printf("Map is %u regions wide and %u regions high, giving size %u with zoom offset %u.\n", regionsWide, regionsHigh, mapSize, slippyZoomOffset);
+	printf("Map is %u tiles wide and %u tiles high, giving size %u with zoom offset %u.\n", mapWidth, mapHeight, mapSize, slippyZoomOffset);
 
 	// Generate slippymap.js file to pass on map-speicifc parameters such as min/max zoom
 	char slippymapJsPath[1024]; // TODO: better
@@ -66,12 +59,11 @@ int main(int argc, char *argv[]) {
 
 	fprintf(slippymapJs, "var layerBase=L.tileLayer('maptiled/{z}/{x}/{y}-0.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
-	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
 	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
 	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
 	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
-	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "layerBase.addTo(map);\n");
@@ -79,60 +71,55 @@ int main(int argc, char *argv[]) {
 
 	fprintf(slippymapJs, "var layerTemperature=L.tileLayer('maptiled/{z}/{x}/{y}-1.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
-	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
 	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
 	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
 	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
-	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
 	fprintf(slippymapJs, "var layerTerrain=L.tileLayer('maptiled/{z}/{x}/{y}-2.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
-	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
 	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
 	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
 	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
-	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
 	fprintf(slippymapJs, "var layerHumidity=L.tileLayer('maptiled/{z}/{x}/{y}-3.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
-	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
 	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
 	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
 	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
-	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
 	fprintf(slippymapJs, "var layerContour=L.tileLayer('maptiled/{z}/{x}/{y}-4.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
-	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
 	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
 	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
 	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
-	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
 	fprintf(slippymapJs, "var layerPolitical=L.tileLayer('maptiled/{z}/{x}/{y}-5.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
-	fprintf(slippymapJs, "	minZoom: 1,\n"); // z=0 is too zoomed out - the entire map is less than half the screen
+	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
 	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
 	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
 	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
-	fprintf(slippymapJs, "	noWrap: true,\n");
 	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");

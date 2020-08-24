@@ -239,7 +239,7 @@ namespace Engine {
 				typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 				// Each scratchBits array entry should contain a unique tile bitset index which can be used freely by the trace algorithm internally.
-				EdgeDetect(Map *map, unsigned mapWidth, unsigned mapHeight, unsigned gScratchBits[4]): map(map), mapWidth(mapWidth), mapHeight(mapHeight) {
+				EdgeDetect(Map *map, unsigned gScratchBits[4]): map(map) {
 					memcpy(scratchBits, gScratchBits, sizeof(unsigned)*4);
 				};
 				~EdgeDetect() {};
@@ -249,7 +249,6 @@ namespace Engine {
 				void traceHeightContours(int contourCount, ProgressFunctor *progressFunctor, void *progressUserData); // Uses tile height and bitset fields, setting bit TileBitsetIndexContour for each tile which is part of a height contour
 			private:
 				Map *map;
-				unsigned mapWidth, mapHeight;
 
 				unsigned scratchBits[DirectionNB]; // bitset indexes that can be used freely during tracing to store which directions we have entered each tile from previously (to avoid retracing)
 
@@ -265,6 +264,18 @@ namespace Engine {
 					*dx=-*dy;
 					*dy=temp;
 					*dir=(*dir+DirectionNB-1)%DirectionNB;
+				}
+
+				void moveForward(int *x, int *y, int dx, int dy) {
+					assert(x!=NULL);
+					assert(*x>=0 && *x<map->getWidth());
+					assert(y!=NULL);
+					assert(*y>=0 && *y<map->getHeight());
+					assert(dx==-1 || dx==0 || dx==1);
+					assert(dy==-1 || dy==0 || dy==1);
+
+					*x=(*x+map->getWidth()+dx)%map->getWidth();
+					*y=(*y+map->getHeight()+dy)%map->getHeight();
 				}
 			};
 
@@ -285,19 +296,18 @@ namespace Engine {
 				typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 				// scratchBit should contain a unique tile bitset index which can be used freely by the fill algorithm internally
-				FloodFill(Map *map, unsigned mapWidth, unsigned mapHeight, unsigned scratchBit): map(map), mapWidth(mapWidth), mapHeight(mapHeight), scratchBit(scratchBit) {
+				FloodFill(Map *map, unsigned scratchBit): map(map), scratchBit(scratchBit) {
 				};
 				~FloodFill() {};
 
 				void fill(BoundaryFunctor *boundaryFunctor, void *boundaryUserData, FillFunctor *fillFunctor, void *fillUserData, ProgressFunctor *progressFunctor, void *progressUserData);
 			private:
 				Map *map;
-				unsigned mapWidth, mapHeight;
 
 				unsigned scratchBit;
 			};
 
-			MapGen(unsigned width, unsigned height);
+			MapGen();
 			~MapGen();
 
 			static bool addBaseTextures(class Map *map);
@@ -322,7 +332,6 @@ namespace Engine {
 			static void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesProgress *progressFunctor, void *progressUserData); // Updates map's min/maxHeight and other such fields.
 
 		private:
-			unsigned width, height;
 		};
 	};
 };

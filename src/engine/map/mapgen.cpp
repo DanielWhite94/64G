@@ -164,7 +164,16 @@ namespace Engine {
 			for(int pathLen=0; pathLen<maxPathLen; ++pathLen) {
 				// Increment moisture counter for the current tile.
 				if (incMoisture) {
-					MapTile *tempTile=map->getTileAtOffset(xi, yi, Map::GetTileFlag::None);
+					// Calculate normalised x and y values for the tile
+					int tempX=xi, tempY=yi;
+					tempX=(tempX+map->getWidth())%map->getWidth();
+					tempY=(tempY+map->getHeight())%map->getHeight();
+
+					assert(tempX>=0 && tempX<map->getWidth());
+					assert(tempY>=0 && tempY<map->getHeight());
+
+					// Lookup tile
+					MapTile *tempTile=map->getTileAtOffset(tempX, tempY, Map::GetTileFlag::None);
 					if (tempTile!=NULL)
 						tempTile->setMoisture(tempTile->getMoisture()+w);
 				}
@@ -188,8 +197,11 @@ namespace Engine {
 					dy/=dl;
 				}
 
-				double nxp=xp+dx;
-				double nyp=yp+dy;
+				double nxp=std::fmod(xp+map->getWidth()+dx, map->getWidth());
+				double nyp=std::fmod(yp+map->getHeight()+dy, map->getHeight());
+
+				assert(nxp>=0.0 && nxp<map->getWidth());
+				assert(nyp>=0.0 && nyp<map->getHeight());
 
 				// sample next height
 				int nxi=floor(nxp);
@@ -303,11 +315,12 @@ namespace Engine {
 		}
 
 		double MapGen::ParticleFlow::hMap(int x, int y, double unknownValue) {
-			// Check bounds.
-			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
-				return unknownValue;
-			if (y<0 || y>=Map::regionsSize*MapRegion::tilesSize)
-				return unknownValue;
+			// To simplify calls to this function, allow x and y values in the interval [-mapwidth,mapwidth]
+			x=(x+map->getWidth())%map->getWidth();
+			y=(y+map->getHeight())%map->getHeight();
+
+			assert(x>=0 && x<map->getWidth());
+			assert(y>=0 && y<map->getHeight());
 
 			// Grab tile.
 			const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
@@ -319,11 +332,12 @@ namespace Engine {
 		}
 
 		void MapGen::ParticleFlow::depositAt(int x, int y, double w, double ds) {
-			// Check bounds.
-			if (x<0 || x>=Map::regionsSize*MapRegion::tilesSize)
-				return;
-			if (y<0 || y>=Map::regionsSize*MapRegion::tilesSize)
-				return;
+			// To simplify calls to this function, allow x and y values in the interval [-mapwidth,mapwidth]
+			x=(x+map->getWidth())%map->getWidth();
+			y=(y+map->getHeight())%map->getHeight();
+
+			assert(x>=0 && x<map->getWidth());
+			assert(y>=0 && y<map->getHeight());
 
 			// Grab tile.
 			MapTile *tile=map->getTileAtOffset(x, y, Map::GetTileFlag::Dirty);
@@ -341,6 +355,9 @@ namespace Engine {
 			// The following is an implementation of the Square Tracing method.
 
 			const double preModifyTilesProgressRatio=0.1; // assume roughly 10% of the time is spent in scratch bit clearing modify tiles call
+
+			unsigned mapWidth=map->getWidth();
+			unsigned mapHeight=map->getHeight();
 
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 			unsigned long long progressMax=mapWidth*mapHeight;
@@ -367,8 +384,8 @@ namespace Engine {
 					// Calculate region tile boundaries
 					unsigned tileX0=rX*MapRegion::tilesSize;
 					unsigned tileY0=rY*MapRegion::tilesSize;
-					unsigned tileX1=std::min(mapWidth, (rX+1)*MapRegion::tilesSize);
-					unsigned tileY1=std::min(mapHeight, (rY+1)*MapRegion::tilesSize);
+					unsigned tileX1=(rX+1)*MapRegion::tilesSize;
+					unsigned tileY1=(rY+1)*MapRegion::tilesSize;
 
 					// Loop over all tiles in this region, looking for starting points to trace from
 					int startX, startY;
@@ -392,32 +409,27 @@ namespace Engine {
 
 							// First tile is always 'inside', so turn left
 							turnLeft(&velX, &velY, &currDir);
-
-							currX+=velX;
-							currY+=velY;
-							bool currIsWithinMap=(currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight);
+							moveForward(&currX, &currY, velX, velY);
 
 							// Walk the edge between 'inside' and 'outside' tiles
 							// Note: we use Jacob's stopping criterion where we also ensure we return to the start tile with the same velocity as we started
 							bool foundOutside=false;
 							while(currX!=startX || currY!=startY || velX!=1 || velY!=0) {
 								// Has this tile already been handled?
-								if (currIsWithinMap) {
-									// Check relevant cache bit based on current direction
-									MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::None);
-									if (tile!=NULL && tile->getBitsetN(scratchBits[currDir])) {
-										// We have already entered this tile in this direction before - no point retracing it again.
-										// So simply quit tracing this particular edge and move onto a new starting tile.
+								// Check relevant cache bit based on current direction
+								MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::None);
+								if (tile!=NULL && tile->getBitsetN(scratchBits[currDir])) {
+									// We have already entered this tile in this direction before - no point retracing it again.
+									// So simply quit tracing this particular edge and move onto a new starting tile.
 
-										// Reset foundOutside flag as a hack method to avoid calling edge functor for a final (unnecessary) time
-										foundOutside=false;
+									// Reset foundOutside flag as a hack method to avoid calling edge functor for a final (unnecessary) time
+									foundOutside=false;
 
-										break;
-									}
+									break;
 								}
 
 								// Determine if current tile is 'inside' or 'outside'
-								if (currIsWithinMap && sampleFunctor(map, currX, currY, sampleUserData)) {
+								if (sampleFunctor(map, currX, currY, sampleUserData)) {
 									// 'inside' tile
 									if (edgeFunctor!=NULL && foundOutside) {
 										// Mark relevant cache bit
@@ -439,13 +451,11 @@ namespace Engine {
 								}
 
 								// Move to next tile
-								currX+=velX;
-								currY+=velY;
-								currIsWithinMap=(currX>=0 && currY>=0 && currX<mapWidth && currY<mapHeight);
+								moveForward(&currX, &currY, velX, velY);
 							}
 
 							// Ensure start/end tile is considered as part of the boundary (this is done after the trace so we can compute foundOutside)
-							if (edgeFunctor!=NULL && foundOutside && currIsWithinMap) {
+							if (edgeFunctor!=NULL && foundOutside) {
 								// Mark relevant cache bit
 								MapTile *tile=map->getTileAtOffset(currX, currY, Engine::Map::Map::GetTileFlag::Dirty);
 								if (tile!=NULL)
@@ -490,7 +500,7 @@ namespace Engine {
 			assert(fillFunctor!=NULL);
 
 			struct Segment {
-				unsigned x0, x1, y;
+				unsigned x0, x1, y; // note: x1 can be less than or equal to x0 if the segment wraps around the right hand edge of the map
 
 				Segment(): x0(0), x1(0), y(0) {};
 				Segment(unsigned x0, unsigned x1, unsigned y): x0(x0), x1(x1), y(y) {};
@@ -499,6 +509,9 @@ namespace Engine {
 
 			// Initialisation
 			const double preModifyTilesProgressRatio=0.1; // assume roughly 10% of the time is spent in scratch bit clearing modify tiles call
+
+			unsigned mapWidth=map->getWidth();
+			unsigned mapHeight=map->getHeight();
 
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 			unsigned long long progressMax=mapWidth*mapHeight;
@@ -527,8 +540,8 @@ namespace Engine {
 					// Calculate region tile boundaries
 					unsigned tileX0=rX*MapRegion::tilesSize;
 					unsigned tileY0=rY*MapRegion::tilesSize;
-					unsigned tileX1=std::min(mapWidth, (rX+1)*MapRegion::tilesSize);
-					unsigned tileY1=std::min(mapHeight, (rY+1)*MapRegion::tilesSize);
+					unsigned tileX1=(rX+1)*MapRegion::tilesSize;
+					unsigned tileY1=(rY+1)*MapRegion::tilesSize;
 
 					// Loop over all tiles in this region, looking for starting points to trace from
 					int startX, startY;
@@ -564,33 +577,52 @@ namespace Engine {
 								segments.pop_back();
 
 								// Extend segment left until we hit a boundary
+								unsigned extendLoopInitialX=segment.x0;
 								while(1) {
+									// Compute nextX value
+									unsigned nextX;
 									if (segment.x0==0)
+										nextX=mapWidth-1;
+									else
+										nextX=segment.x0-1;
+
+									// Check for boundary
+									if (boundaryFunctor(map, nextX, segment.y, boundaryUserData))
 										break;
 
-									if (boundaryFunctor(map, segment.x0-1, segment.y, boundaryUserData))
+									// Advance segment start x
+									segment.x0=nextX;
+									if (segment.x0==extendLoopInitialX)
 										break;
-
-									--segment.x0;
 								}
 
 								// Extend segment right until we hit a boundary
+								extendLoopInitialX=segment.x1;
 								while(1) {
+									// Compute nextX value
+									unsigned nextX;
 									if (segment.x1==mapWidth)
-										break;
+										nextX=0;
+									else
+										nextX=segment.x1+1;
 
+									// Check for boundary
 									if (boundaryFunctor(map, segment.x1, segment.y, boundaryUserData))
 										break;
 
-									++segment.x1;
+									// Advance segment end x
+									segment.x1=nextX;
+									if (segment.x1==extendLoopInitialX)
+										break;
 								}
 
 								// Loop over this segment to handle each tile within, and to find new segments to add to the stack
 								bool aboveActive=false, belowActive=false;
 								Segment aboveSegment, belowSegment;
-								aboveSegment.y=segment.y-1;
-								belowSegment.y=segment.y+1;
-								for(unsigned loopX=segment.x0; loopX<segment.x1; ++loopX) {
+								aboveSegment.y=(segment.y>0 ? segment.y-1 : mapHeight-1);
+								belowSegment.y=(segment.y+1<mapHeight ? segment.y+1 : 0);
+								unsigned loopX=segment.x0;
+								while(1) {
 									// Ensure scratch bit is set in this tile's bitset to indicate we have handled it
 									MapTile *loopTile=map->getTileAtOffset(loopX, segment.y, Map::Map::GetTileFlag::Dirty);
 									if (loopTile==NULL)
@@ -610,46 +642,47 @@ namespace Engine {
 									fillFunctor(map, loopX, segment.y, groupId, fillUserData);
 
 									// Check for potential new segment above the current one
-									if (segment.y>0) {
-										bool aboveIsBoundary=boundaryFunctor(map, loopX, aboveSegment.y, boundaryUserData);
-										if (!aboveIsBoundary) {
-											MapTile *aboveTile=map->getTileAtOffset(loopX, aboveSegment.y, Map::Map::GetTileFlag::None);
-											aboveIsBoundary=(aboveTile!=NULL && aboveTile->getBitsetN(scratchBit));
-										}
+									bool aboveIsBoundary=boundaryFunctor(map, loopX, aboveSegment.y, boundaryUserData);
+									if (!aboveIsBoundary) {
+										MapTile *aboveTile=map->getTileAtOffset(loopX, aboveSegment.y, Map::Map::GetTileFlag::None);
+										aboveIsBoundary=(aboveTile!=NULL && aboveTile->getBitsetN(scratchBit));
+									}
 
-										if (aboveActive) {
-											if (aboveIsBoundary) {
-												segments.push_back(aboveSegment);
-												aboveActive=false;
-											} else
-												++aboveSegment.x1;
-										} else if (!aboveIsBoundary) {
-											aboveActive=true;
-											aboveSegment.x0=loopX;
-											aboveSegment.x1=loopX+1;
-										}
+									if (aboveActive) {
+										if (aboveIsBoundary) {
+											segments.push_back(aboveSegment);
+											aboveActive=false;
+										} else
+											aboveSegment.x1=(aboveSegment.x1+1)%mapWidth;
+									} else if (!aboveIsBoundary) {
+										aboveActive=true;
+										aboveSegment.x0=loopX;
+										aboveSegment.x1=(loopX+1)%mapWidth;
 									}
 
 									// Check for potential new segment below the current one
-									if (belowSegment.y<mapHeight) {
-										bool belowIsBoundary=boundaryFunctor(map, loopX, belowSegment.y, boundaryUserData);
-										if (!belowIsBoundary) {
-											MapTile *belowTile=map->getTileAtOffset(loopX, belowSegment.y, Map::Map::GetTileFlag::None);
-											belowIsBoundary=(belowTile!=NULL && belowTile->getBitsetN(scratchBit));
-										}
-
-										if (belowActive) {
-											if (belowIsBoundary) {
-												segments.push_back(belowSegment);
-												belowActive=false;
-											} else
-												++belowSegment.x1;
-										} else if (!belowIsBoundary) {
-											belowActive=true;
-											belowSegment.x0=loopX;
-											belowSegment.x1=loopX+1;
-										}
+									bool belowIsBoundary=boundaryFunctor(map, loopX, belowSegment.y, boundaryUserData);
+									if (!belowIsBoundary) {
+										MapTile *belowTile=map->getTileAtOffset(loopX, belowSegment.y, Map::Map::GetTileFlag::None);
+										belowIsBoundary=(belowTile!=NULL && belowTile->getBitsetN(scratchBit));
 									}
+
+									if (belowActive) {
+										if (belowIsBoundary) {
+											segments.push_back(belowSegment);
+											belowActive=false;
+										} else
+											belowSegment.x1=(belowSegment.x1+1)%mapWidth;
+									} else if (!belowIsBoundary) {
+										belowActive=true;
+										belowSegment.x0=loopX;
+										belowSegment.x1=(loopX+1)%mapWidth;
+									}
+
+									// Advance to next tile in this segment
+									loopX=(loopX+1)%mapWidth;
+									if (loopX==segment.x1)
+										break;
 								}
 
 								// Handle any remaining new segments (essentially treating any tiles outside of the map as boundary tiles)
@@ -772,9 +805,7 @@ namespace Engine {
 			fflush(stdout);
 		}
 
-		MapGen::MapGen(unsigned gWidth, unsigned gHeight) {
-			width=gWidth;
-			height=gHeight;
+		MapGen::MapGen() {
 		}
 
 		MapGen::~MapGen() {
