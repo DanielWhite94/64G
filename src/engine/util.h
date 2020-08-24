@@ -1,6 +1,8 @@
 #ifndef ENGINE_UTIL_H
 #define ENGINE_UTIL_H
 
+#include <cstddef>
+
 namespace Engine {
 	class Util {
 	public:
