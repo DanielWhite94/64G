@@ -1655,7 +1655,7 @@ namespace Engine {
 			assert(getFunctor!=NULL);
 
 			// Calculate expected iterMax and use it just in case we cannot narrow down the range for some reason.
-			// This calculation is based on the idea that each iteration reduces the range by #samples+1..
+			// This calculation is based on the idea that each iteration reduces the range by #samples+1.
 			int iterMax=ceil(log((sampleMax-sampleMin)/(2*epsilon))/log(n+1));
 
 			// Initialize data struct.
