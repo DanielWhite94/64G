@@ -1,6 +1,8 @@
 #ifndef ENGINE_FBNNOISE_H
 #define ENGINE_FBNNOISE_H
 
+#include "perlinnoise.h"
+
 namespace Engine {
 	class FbnNoise {
 	public:
@@ -14,6 +16,8 @@ namespace Engine {
 		unsigned octaves;
 
 		double preMultiplyFactor;
+
+		PerlinNoise baseNoise;
 	};
 };
 

@@ -2,10 +2,9 @@
 #include <cmath>
 
 #include "fbnnoise.h"
-#include "perlinnoise.h"
 
 namespace Engine {
-	FbnNoise::FbnNoise(unsigned seed, unsigned octaves, double frequency): octaves(octaves) {
+	FbnNoise::FbnNoise(unsigned seed, unsigned octaves, double frequency): octaves(octaves), baseNoise(seed) {
 		assert(octaves>0);
 
 		preMultiplyFactor=frequency*exp2(octaves-1);
@@ -23,7 +22,7 @@ namespace Engine {
 		double scale=preMultiplyFactor;
 		double result=0;
 		for(unsigned i=0; i<octaves; ++i) {
-			result=result/2+PerlinNoise::pnoise(x, y, scale, scale);
+			result=result/2+baseNoise.pnoise(x, y, scale, scale);
 			x/=2;
 			y/=2;
 			scale/=2;
