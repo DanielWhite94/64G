@@ -704,21 +704,6 @@ namespace Engine {
 				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
 		}
 
-		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
-			assert(map!=NULL);
-			assert(userData!=NULL);
-
-			const MapGen::GenerateBinaryNoiseModifyTilesData *data=(const MapGen::GenerateBinaryNoiseModifyTilesData *)userData;
-
-			// Calculate height.
-			double height=data->noiseArray->eval(x, y);
-
-			// Update tile layer.
-			MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::CreateDirty);
-			if (tile!=NULL)
-				tile->setLayer(data->tileLayer, height>=data->threshold ? data->highLayer : data->lowLayer);
-		}
-
 		void mapGenBitsetUnionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 

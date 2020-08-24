@@ -8,14 +8,12 @@
 #include "map.h"
 #include "maptexture.h"
 #include "maptile.h"
-#include "../noisearray.h"
 #include "../util.h"
 
 namespace Engine {
 	namespace Map {
 		void mapGenPrintTime(Util::TimeMs timeMs);
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
-		void mapGenGenerateBinaryNoiseModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 		void mapGenBitsetUnionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to OR with each tile's existing bitset.
 		void mapGenBitsetIntersectionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to AND with each tile's existing bitset.
 
@@ -124,15 +122,6 @@ namespace Engine {
 				Sheep,
 				Dog,
 				Chest,
-			};
-
-			struct GenerateBinaryNoiseModifyTilesData {
-				const NoiseArray *noiseArray;
-
-				double threshold;
-				MapTile::Layer lowLayer, highLayer;
-
-				unsigned tileLayer;
 			};
 
 			typedef bool (ObjectTestFunctor)(class Map *map, BuiltinObject builtin, const CoordVec &position, void *userData);

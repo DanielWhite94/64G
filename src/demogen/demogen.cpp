@@ -7,10 +7,10 @@
 #include <iostream>
 #include <new>
 
-#include "../engine/noisearray.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
+#include "../engine/fbnnoise.h"
 #include "../engine/util.h"
 
 using namespace Engine;
