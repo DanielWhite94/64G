@@ -1569,6 +1569,8 @@ namespace Engine {
 			assert(functorArrayCount>0);
 			assert(functorArray!=NULL);
 
+			// FIXME: buggy if x/y/width/height do not align to exact regions
+
 			// Record start time.
 			const Util::TimeMs startTime=Util::getTimeMs();
 
