@@ -470,7 +470,7 @@ namespace Engine {
 		}
 
 		bool Map::loadRegion(unsigned regionX, unsigned regionY, const char *regionPath) {
-			assert(regionX<regionsSize && regionY<regionsSize);
+			assert(regionX*MapRegion::tilesSize<mapWidth && regionY*MapRegion::tilesSize<mapHeight);
 			assert(regionPath!=NULL);
 			assert(regionsByOffset[regionY][regionX].ptr==NULL);
 
