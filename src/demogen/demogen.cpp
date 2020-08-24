@@ -446,7 +446,7 @@ int main(int argc, char **argv) {
 	}
 
 	// Create noise.
-	mapData.heightNoise=new FbnNoise(17, 8, 4.0);
+	mapData.heightNoise=new FbnNoise(17, 8, 8.0);
 	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0);
 
 	// Run init modify tiles function.
