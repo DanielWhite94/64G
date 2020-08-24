@@ -409,14 +409,15 @@ int main(int argc, char **argv) {
 	};
 
 	// Grab arguments.
-	if (argc!=4) {
-		printf("Usage: %s width height outputpath\n", argv[0]);
+	if (argc!=4 && argc!=5) {
+		printf("Usage: %s width height outputpath [seed=1]\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	mapData.width=atoi(argv[1]);
 	mapData.height=atoi(argv[2]);
 	const char *outputPath=argv[3];
+	uint64_t seed=(argc==5 ? atoll(argv[4]) : 1);
 
 	if (mapData.width<=0 || mapData.height<=0) {
 		printf("Bad width or height (%i and %i)", mapData.width, mapData.height);
@@ -446,8 +447,8 @@ int main(int argc, char **argv) {
 	}
 
 	// Create noise.
-	mapData.heightNoise=new FbnNoise(17, 8, 8.0);
-	mapData.temperatureNoise=new FbnNoise(19, 8, 1.0);
+	mapData.heightNoise=new FbnNoise(seed+17, 8, 8.0);
+	mapData.temperatureNoise=new FbnNoise(seed+19, 8, 1.0);
 
 	// Run init modify tiles function.
 	const char *progressStringInit="Initializing tile parameters ";
