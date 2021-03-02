@@ -12,9 +12,20 @@ From the root directory, run `make clean` followed by either `make release` or `
 * `mappng` - takes a map file and outputs a png image of a given size, representing a given region in the map.
 * `slippymap` - takes a map and generates a series of images suitable for interactive/slippy maps (these are good for larger maps where mappng can not generate a single image with enough detail). The resulting map can be viewed via the `slippymap.html` file within the map directory.
 
-# Examples #
+# Usage #
 Note: these assume you are in the `bin` directory
 * Create a demo map 'mymap': ```./demogen 2048 2048 ../maps/mymap ```
 * Create a PNG image of the entire map:  ```./mappng ../maps/mymap 0 0 2048 2048 2048 2048 ../maps/mymap.png```
 * Create a set of tiles for an interactive/slippy map: ```./slippymap ../maps/mymap``` (viewed by opening `slippymap.html` in `../maps/mymap`)
 * Run the engine: ```./engine ../maps/mymap 940 472```
+
+# Examples #
+![Contours](https://github.com/DanielWhite94/64G/blob/master/examples/contours.png)
+
+![Map](https://github.com/DanielWhite94/64G/blob/master/examples/map.png)
+
+![Political](https://github.com/DanielWhite94/64G/blob/master/examples/political.png)
+
+![Temperature](https://github.com/DanielWhite94/64G/blob/master/examples/temperature.png)
+
+![Town](https://github.com/DanielWhite94/64G/blob/master/examples/town.png)
