@@ -78,7 +78,7 @@ namespace Engine {
 						// Choose colour (based on topmost layer with a texture set).
 						uint8_t r=0, g=0, b=0, a=0;
 						if (tile!=NULL)
-							getColourForTile(map, tile, layer, &r, &g, &b, &a);
+							getColourForTile(map, imageTileX, imageTileY, tile, layer, &r, &g, &b, &a);
 
 						// Write pixel.
 						pngRows[(imageY*imageWidth+imageX)*4+0]=r;
@@ -132,7 +132,7 @@ namespace Engine {
 		return true;
 	}
 
-	void MapPngLib::getColourForTile(const class Map *map, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTile(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		assert(map!=NULL);
 		assert(tile!=NULL);
 		assert(r!=NULL);
@@ -141,22 +141,25 @@ namespace Engine {
 
 		switch(layer) {
 			case MapTiled::ImageLayerBase:
-				return MapPngLib::getColourForTileBase(map, tile, r, g, b, a);
+				return MapPngLib::getColourForTileBase(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerTemperature:
-				return MapPngLib::getColourForTileTemperature(map, tile, r, g, b, a);
+				return MapPngLib::getColourForTileTemperature(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerHeight:
-				return MapPngLib::getColourForTileHeight(map, tile, r, g, b, a);
+				return MapPngLib::getColourForTileHeight(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerMoisture:
-				return MapPngLib::getColourForTileMoisture(map, tile, r, g, b, a);
+				return MapPngLib::getColourForTileMoisture(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerHeightContour:
-				return MapPngLib::getColourForTileHeightContour(map, tile, r, g, b, a);
+				return MapPngLib::getColourForTileHeightContour(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerPolitical:
-				return MapPngLib::getColourForTilePolitical(map, tile, r, g, b, a);
+				return MapPngLib::getColourForTilePolitical(map, mapTileX, mapTileY, tile, r, g, b, a);
+			break;
+			case MapTiled::ImageLayerRegionGrid:
+				return MapPngLib::getColourForTileRegionGrid(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 		}
 
@@ -164,7 +167,7 @@ namespace Engine {
 		*r=*g=*b=*a=0;
 	}
 
-	void MapPngLib::getColourForTileBase(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileBase(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
 		// Loop over layers from top to bottom looking for one with a texture set
@@ -231,7 +234,13 @@ namespace Engine {
 				} break;
 				case MapGen::TextureIdTree1:
 				case MapGen::TextureIdTree2:
+					*r=0,*g=100,*b=0;
+				break;
 				case MapGen::TextureIdTree3:
+					*r=255;
+					*g=50;
+					*b=0;
+				break;
 				case MapGen::TextureIdRoseBush:
 					*r=0,*g=100,*b=0;
 				break;
@@ -318,7 +327,7 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileTemperature(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileTemperature(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
 		// Grab temperature and normalise to [0, 1]
@@ -353,7 +362,7 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileHeight(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileHeight(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
 		// Grab height and check for ocean tile as special case
@@ -396,7 +405,7 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileMoisture(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileMoisture(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
 		// Special case for ocean tiles
@@ -418,13 +427,13 @@ namespace Engine {
 		*b=255;
 	}
 
-	void MapPngLib::getColourForTileHeightContour(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileHeightContour(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Use black pixels for the contour lines themselves, transparent for everything else
 		*r=*g=*b=0;
 		*a=(tile->getBitsetN(MapGen::TileBitsetIndexContour) ? 255 : 0);
 	}
 
-	void MapPngLib::getColourForTilePolitical(const class Map *map, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTilePolitical(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		static const uint8_t distinctColours[64][3]={
 			{0, 0, 0},
 			{1, 0, 103},
@@ -507,6 +516,12 @@ namespace Engine {
 		*g=distinctColours[landmassId%64][1];
 		*b=distinctColours[landmassId%64][2];
 		*a=255;
+	}
+
+	void MapPngLib::getColourForTileRegionGrid(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		// Use black pixels for the grid lines themselves, transparent for everything else
+		*r=*g=*b=0;
+		*a=((mapTileX%MapRegion::tilesSize<1 || mapTileY%MapRegion::tilesSize<1) ? 255 : 0);
 	}
 
 };
