@@ -424,8 +424,10 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	// Note start time
+	// Init
 	Util::TimeMs startTime=Util::getTimeMs();
+
+	setlocale(LC_NUMERIC, "");
 
 	// Create Map.
 	printf("Creating map...\n");
@@ -568,7 +570,6 @@ int main(int argc, char **argv) {
 	mapData.peoplePerSqKm=150.0;
 	mapData.totalPopulation=mapData.arableSqKm*mapData.peoplePerSqKm;
 
-	setlocale(LC_NUMERIC, "");
 	printf("	Land %'.1fkm^2 (of which %'.1fkm^2 is arable), water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.arableSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
 	printf("	People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
