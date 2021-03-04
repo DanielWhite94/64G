@@ -45,10 +45,8 @@ typedef struct {
 
 void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-/*
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-*/
 void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
@@ -182,11 +180,11 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	const DemogenMapData *mapData=(const DemogenMapData *)userData;
 
 	// Choose parameters.
-	const double temperateThreshold=0.6;
+	const double temperatureThreshold=0.6;
 	const double hotThreshold=0.7;
 
-	assert(0.0<=temperateThreshold);
-	assert(temperateThreshold<=hotThreshold);
+	assert(0.0<=temperatureThreshold);
+	assert(temperatureThreshold<=hotThreshold);
 	assert(hotThreshold<=1.0);
 
 	// Grab tile and temperature.
@@ -197,7 +195,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	const double temperature=tile->getTemperature();
 
 	// Not enough temperature to support anything?
-	if (temperature<temperateThreshold)
+	if (temperature<temperatureThreshold)
 		return;
 
 	// Random chance of a 'tree'.
@@ -233,7 +231,6 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 
 	// We have made a change - mark region dirty.
 	map->markRegionDirtyAtTileOffset(x, y, false);
-	*/
 }
 
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -275,7 +272,6 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 
 	// We have made a change - mark region dirty.
 	map->markRegionDirtyAtTileOffset(x, y, false);
-	*/
 }
 
 void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -546,7 +542,7 @@ int main(int argc, char **argv) {
 	printf("	River moisture threshold %f\n", mapData.riverMoistureThreshold);
 
 	// Run modify tiles for bimomes.
-	size_t biomesModifyTilesArrayCount=2;
+	size_t biomesModifyTilesArrayCount=3;
 	MapGen::ModifyTilesManyEntry biomesModifyTilesArray[biomesModifyTilesArrayCount];
 	biomesModifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
 	biomesModifyTilesArray[0].userData=&mapData;
