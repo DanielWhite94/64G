@@ -30,6 +30,7 @@ typedef struct {
 
 	FbnNoise *heightNoise;
 	FbnNoise *temperatureNoise;
+	FbnNoise *forestNoise;
 
 	// These are not computed immediately, see main.
 	double coldThreshold;
@@ -173,7 +174,6 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 }
 
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
-	/*
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -201,6 +201,10 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	// Random chance of a 'tree'.
 	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	if (randomValue<0.90)
+		return;
+
+	// Check if broad noise indicates a forest should be here
+	if (mapData->forestNoise->eval(x/((double)map->getWidth()), y/((double)map->getHeight()))<map->forestLevel)
 		return;
 
 	// Check layers.
@@ -234,7 +238,6 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 }
 
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
-	/*
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -254,6 +257,10 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	// Random chance of a tree.
 	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	if (randomValue<0.99)
+		return;
+
+	// Check if broad noise indicates a forest should be here
+	if (mapData->forestNoise->eval(x/((double)map->getWidth()), y/((double)map->getHeight()))<map->forestLevel)
 		return;
 
 	// Check layers.
@@ -389,6 +396,7 @@ void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y,
 int main(int argc, char **argv) {
 	const double desiredLandFraction=0.4;
 	const double desiredAlpineFraction=0.01;
+	const double desiredForestFraction=0.4;
 
 	DemogenMapData mapData={
 	    .map=NULL,
@@ -444,16 +452,14 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	// Create noise.
+	// Run init modify tiles function.
 	mapData.heightNoise=new FbnNoise(seed+17, 8, 8.0);
 	mapData.temperatureNoise=new FbnNoise(seed+19, 8, 1.0);
 
-	// Run init modify tiles function.
 	const char *progressStringInit="Initializing tile parameters ";
 	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
 	printf("\n");
 
-	// Tidy up noise.
 	delete mapData.heightNoise;
 	mapData.heightNoise=NULL;
 	delete mapData.temperatureNoise;
@@ -541,7 +547,14 @@ int main(int argc, char **argv) {
 	mapData.riverMoistureThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredRiverCoverage, 0.45, mapData.map->minMoisture, mapData.map->maxMoisture, &mapGenNarySearchGetFunctorMoisture, NULL);
 	printf("	River moisture threshold %f\n", mapData.riverMoistureThreshold);
 
-	// Run modify tiles for bimomes.
+	// Calculate forest threshold.
+	mapData.forestNoise=new FbnNoise(seed+23, 8, 8.0);
+
+	printf("Searching for forest level (with desired land coverage %.2f%%)...\n", desiredForestFraction*100.0);
+	mapData.map->forestLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredForestFraction, 0.005, -1.0, 1.0, &mapGenNarySearchGetFunctorNoise, mapData.forestNoise);
+	printf("	Forest level %f\n", mapData.map->forestLevel);
+
+	// Run modify tiles for forests.
 	size_t biomesModifyTilesArrayCount=3;
 	MapGen::ModifyTilesManyEntry biomesModifyTilesArray[biomesModifyTilesArrayCount];
 	biomesModifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
@@ -554,6 +567,9 @@ int main(int argc, char **argv) {
 	const char *progressStringBiomes="Assigning tile textures for biomes ";
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, biomesModifyTilesArrayCount, biomesModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
 	printf("\n");
+
+	delete mapData.forestNoise;
+	mapData.forestNoise=NULL;
 
 	// Compute more map data.
 	if (mapData.totalCount>0)
