@@ -22,7 +22,7 @@ namespace Engine {
 			static const ImageLayer	ImageLayerHeight=2;
 			static const ImageLayer	ImageLayerMoisture=3;
 			static const ImageLayer	ImageLayerHeightContour=4;
-			static const ImageLayer	ImageLayerPolitical=5;
+			static const ImageLayer	ImageLayerContinental=5;
 			static const ImageLayer	ImageLayerRegionGrid=6;
 			static const ImageLayer	ImageLayerNB=7;
 
@@ -33,9 +33,9 @@ namespace Engine {
 			static const ImageLayerSet ImageLayerSetHeight=(1u<<ImageLayerHeight);
 			static const ImageLayerSet ImageLayerSetMoisture=(1u<<ImageLayerMoisture);
 			static const ImageLayerSet ImageLayerSetHeightContour=(1u<<ImageLayerHeightContour);
-			static const ImageLayerSet ImageLayerSetPolitical=(1u<<ImageLayerPolitical);
+			static const ImageLayerSet ImageLayerSetContinental=(1u<<ImageLayerContinental);
 			static const ImageLayerSet ImageLayerSetRegionGrid=(1u<<ImageLayerRegionGrid);
-			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour|ImageLayerSetPolitical|ImageLayerSetRegionGrid;
+			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour|ImageLayerSetContinental|ImageLayerSetRegionGrid;
 
 			typedef void (GenerateImageProgress)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 

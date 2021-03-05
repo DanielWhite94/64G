@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
-	fprintf(slippymapJs, "var layerPolitical=L.tileLayer('maptiled/{z}/{x}/{y}-5.png', {\n");
+	fprintf(slippymapJs, "var layerContinental=L.tileLayer('maptiled/{z}/{x}/{y}-5.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
 	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "	\"Temperature\": layerTemperature,\n");
 	fprintf(slippymapJs, "	\"Terrain\": layerTerrain,\n");
 	fprintf(slippymapJs, "	\"Humidity\": layerHumidity,\n");
-	fprintf(slippymapJs, "	\"Political\": layerPolitical,\n");
+	fprintf(slippymapJs, "	\"Continental\": layerContinental,\n");
 	fprintf(slippymapJs, "};\n");
 	fprintf(slippymapJs, "var overlays={\n");
 	fprintf(slippymapJs, "	\"Contours\": layerContour,\n");

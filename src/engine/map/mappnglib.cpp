@@ -155,8 +155,8 @@ namespace Engine {
 			case MapTiled::ImageLayerHeightContour:
 				return MapPngLib::getColourForTileHeightContour(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
-			case MapTiled::ImageLayerPolitical:
-				return MapPngLib::getColourForTilePolitical(map, mapTileX, mapTileY, tile, r, g, b, a);
+			case MapTiled::ImageLayerContinental:
+				return MapPngLib::getColourForTileContinental(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerRegionGrid:
 				return MapPngLib::getColourForTileRegionGrid(map, mapTileX, mapTileY, tile, r, g, b, a);
@@ -433,7 +433,7 @@ namespace Engine {
 		*a=(tile->getBitsetN(MapGen::TileBitsetIndexContour) ? 255 : 0);
 	}
 
-	void MapPngLib::getColourForTilePolitical(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileContinental(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		static const uint8_t distinctColours[64][3]={
 			{0, 0, 0},
 			{1, 0, 103},
