@@ -25,23 +25,23 @@ namespace Engine {
 		PerlinNoise(unsigned seed);
 		~PerlinNoise() {}
 
-		double noise(double x);
-		double noise(double x, double y);
-		double noise(double x, double y, double z);
-		double noise(double x, double y, double z, double w);
+		double noise(double x) const;
+		double noise(double x, double y) const;
+		double noise(double x, double y, double z) const;
+		double noise(double x, double y, double z, double w) const;
 
-		double pnoise(double x, int px);
-		double pnoise(double x, double y, int px, int py);
-		double pnoise(double x, double y, double z, int px, int py, int pz);
-		double pnoise(double x, double y, double z, double w, int px, int py, int pz, int pw);
+		double pnoise(double x, int px) const;
+		double pnoise(double x, double y, int px, int py) const;
+		double pnoise(double x, double y, double z, int px, int py, int pz) const;
+		double pnoise(double x, double y, double z, double w, int px, int py, int pz, int pw) const;
 
 	private:
 		unsigned char perm[512]; // Permutation table - this is just a random jumble of all numbers 0-255, repeated twice to avoid wrapping the index at 255 for each lookup
 
-		double grad(int hash, double x);
-		double grad(int hash, double x, double y);
-		double grad(int hash, double x, double y , double z);
-		double grad(int hash, double x, double y, double z, double t);
+		double grad(int hash, double x) const;
+		double grad(int hash, double x, double y) const;
+		double grad(int hash, double x, double y , double z) const;
+		double grad(int hash, double x, double y, double z, double t) const;
 	};
 };
 

@@ -13,7 +13,7 @@ namespace Engine {
 	FbnNoise::~FbnNoise() {
 	}
 
-	double FbnNoise::eval(double x, double y) {
+	double FbnNoise::eval(double x, double y) const {
 		// Adjust x/y based on frequency and octaves to ensure tilable (and so that we can loop in 'reverse' below)
 		x*=preMultiplyFactor;
 		y*=preMultiplyFactor;

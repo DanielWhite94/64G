@@ -11,7 +11,7 @@ namespace Engine {
 		FbnNoise(unsigned seed, unsigned octaves, double frequency);
 		~FbnNoise();
 
-		double eval(double x, double y);
+		double eval(double x, double y) const;
 	private:
 		unsigned octaves;
 

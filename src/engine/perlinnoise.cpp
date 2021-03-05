@@ -60,28 +60,28 @@ PerlinNoise::PerlinNoise(unsigned seed) {
 	memcpy(perm+256, perm, 256);
 }
 
-double PerlinNoise::grad( int hash, double x ) {
+double PerlinNoise::grad( int hash, double x ) const {
 	int h = hash & 15;
 	double grad = 1.0 + (h & 7);  // Gradient value 1.0, 2.0, ..., 8.0
 	if (h&8) grad = -grad;         // and a random sign for the gradient
 	return ( grad * x );           // Multiply the gradient with the distance
 }
 
-double PerlinNoise::grad( int hash, double x, double y ) {
+double PerlinNoise::grad( int hash, double x, double y ) const {
 	int h = hash & 7;      // Convert low 3 bits of hash code
 	double u = h<4 ? x : y;  // into 8 simple gradient directions,
 	double v = h<4 ? y : x;  // and compute the dot product with (x,y).
 	return ((h&1)? -u : u) + ((h&2)? -2.0*v : 2.0*v);
 }
 
-double PerlinNoise::grad( int hash, double x, double y , double z ) {
+double PerlinNoise::grad( int hash, double x, double y , double z ) const {
 	int h = hash & 15;     // Convert low 4 bits of hash code into 12 simple
 	double u = h<8 ? x : y; // gradient directions, and compute dot product.
 	double v = h<4 ? y : h==12||h==14 ? x : z; // Fix repeats at h = 12 to 15
 	return ((h&1)? -u : u) + ((h&2)? -v : v);
 }
 
-double PerlinNoise::grad( int hash, double x, double y, double z, double t ) {
+double PerlinNoise::grad( int hash, double x, double y, double z, double t ) const {
 	int h = hash & 31;      // Convert low 5 bits of hash code into 32 simple
 	double u = h<24 ? x : y; // gradient directions, and compute dot product.
 	double v = h<16 ? y : z;
@@ -89,7 +89,7 @@ double PerlinNoise::grad( int hash, double x, double y, double z, double t ) {
 	return ((h&1)? -u : u) + ((h&2)? -v : v) + ((h&4)? -w : w);
 }
 
-double PerlinNoise::noise( double x ) {
+double PerlinNoise::noise( double x ) const {
 	int ix0, ix1;
 	double fx0, fx1;
 	double s, n0, n1;
@@ -107,7 +107,7 @@ double PerlinNoise::noise( double x ) {
 	return 0.188f * ( LERP( s, n0, n1 ) );
 }
 
-double PerlinNoise::pnoise( double x, int px ) {
+double PerlinNoise::pnoise( double x, int px ) const {
 	int ix0, ix1;
 	double fx0, fx1;
 	double s, n0, n1;
@@ -125,7 +125,7 @@ double PerlinNoise::pnoise( double x, int px ) {
 	return 0.188f * ( LERP( s, n0, n1 ) );
 }
 
-double PerlinNoise::noise( double x, double y ) {
+double PerlinNoise::noise( double x, double y ) const {
 	int ix0, iy0, ix1, iy1;
 	double fx0, fy0, fx1, fy1;
 	double s, t, nx0, nx1, n0, n1;
@@ -155,7 +155,7 @@ double PerlinNoise::noise( double x, double y ) {
 	return 0.507f * ( LERP( s, n0, n1 ) );
 }
 
-double PerlinNoise::pnoise( double x, double y, int px, int py ) {
+double PerlinNoise::pnoise( double x, double y, int px, int py ) const {
 	int ix0, iy0, ix1, iy1;
 	double fx0, fy0, fx1, fy1;
 	double s, t, nx0, nx1, n0, n1;
@@ -185,7 +185,7 @@ double PerlinNoise::pnoise( double x, double y, int px, int py ) {
 	return 0.507f * ( LERP( s, n0, n1 ) );
 }
 
-double PerlinNoise::noise( double x, double y, double z ) {
+double PerlinNoise::noise( double x, double y, double z ) const {
 	int ix0, iy0, ix1, iy1, iz0, iz1;
 	double fx0, fy0, fz0, fx1, fy1, fz1;
 	double s, t, r;
@@ -234,7 +234,7 @@ double PerlinNoise::noise( double x, double y, double z ) {
 	return 0.936f * ( LERP( s, n0, n1 ) );
 }
 
-double PerlinNoise::pnoise( double x, double y, double z, int px, int py, int pz ) {
+double PerlinNoise::pnoise( double x, double y, double z, int px, int py, int pz ) const {
 	int ix0, iy0, ix1, iy1, iz0, iz1;
 	double fx0, fy0, fz0, fx1, fy1, fz1;
 	double s, t, r;
@@ -283,7 +283,7 @@ double PerlinNoise::pnoise( double x, double y, double z, int px, int py, int pz
 	return 0.936f * ( LERP( s, n0, n1 ) );
 }
 
-double PerlinNoise::noise( double x, double y, double z, double w ) {
+double PerlinNoise::noise( double x, double y, double z, double w ) const {
 	int ix0, iy0, iz0, iw0, ix1, iy1, iz1, iw1;
 	double fx0, fy0, fz0, fw0, fx1, fy1, fz1, fw1;
 	double s, t, r, q;
@@ -363,7 +363,7 @@ double PerlinNoise::noise( double x, double y, double z, double w ) {
 }
 
 double PerlinNoise::pnoise( double x, double y, double z, double w,
-                            int px, int py, int pz, int pw ) {
+                            int px, int py, int pz, int pw ) const {
 	int ix0, iy0, iz0, iw0, ix1, iy1, iz1, iw1;
 	double fx0, fy0, fz0, fw0, fx1, fy1, fz1, fw1;
 	double s, t, r, q;

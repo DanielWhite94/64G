@@ -212,6 +212,7 @@ namespace Engine {
 				fread(&maxMoisture, sizeof(double), 1, metadataFile);
 				fread(&seaLevel, sizeof(double), 1, metadataFile);
 				fread(&alpineLevel, sizeof(double), 1, metadataFile);
+				fread(&forestLevel, sizeof(double), 1, metadataFile);
 
 				fclose(metadataFile);
 			}
@@ -422,6 +423,7 @@ namespace Engine {
 			result&=(fwrite(&maxMoisture, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&seaLevel, sizeof(double), 1, metadataFile)==1);
 			result&=(fwrite(&alpineLevel, sizeof(double), 1, metadataFile)==1);
+			result&=(fwrite(&forestLevel, sizeof(double), 1, metadataFile)==1);
 
 			fclose(metadataFile);
 

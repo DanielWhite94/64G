@@ -21,6 +21,7 @@ namespace Engine {
 		double mapGenNarySearchGetFunctorHeight(class Map *map, unsigned x, unsigned y, void *userData);
 		double mapGenNarySearchGetFunctorTemperature(class Map *map, unsigned x, unsigned y, void *userData);
 		double mapGenNarySearchGetFunctorMoisture(class Map *map, unsigned x, unsigned y, void *userData);
+		double mapGenNarySearchGetFunctorNoise(class Map *map, unsigned x, unsigned y, void *userData); // userData should be a pointer to an FbnNoise instance
 
 		bool mapGenEdgeDetectHeightThresholdSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns true for tiles which exceed height threshold passed in via a pointer to a double in userData.
 		bool mapGenEdgeDetectLandSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns true for land tiles (those whose height exceeds sea level).

@@ -9,6 +9,7 @@
 #include "mapgen.h"
 #include "../physics/coord.h"
 #include "../util.h"
+#include "../fbnnoise.h"
 
 using namespace Engine;
 
@@ -1795,6 +1796,15 @@ namespace Engine {
 
 			// Return height.
 			return tile->getMoisture();
+		}
+
+		double mapGenNarySearchGetFunctorNoise(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			const FbnNoise *noise=(const FbnNoise *)userData;
+
+			return noise->eval(x/((double)map->getWidth()), y/((double)map->getHeight()));
 		}
 
 		bool mapGenEdgeDetectHeightThresholdSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData) {

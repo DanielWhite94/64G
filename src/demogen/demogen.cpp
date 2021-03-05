@@ -30,6 +30,7 @@ typedef struct {
 
 	FbnNoise *heightNoise;
 	FbnNoise *temperatureNoise;
+	FbnNoise *forestNoise;
 
 	// These are not computed immediately, see main.
 	double coldThreshold;
@@ -45,10 +46,8 @@ typedef struct {
 
 void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-/*
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-*/
 void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
@@ -175,18 +174,17 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 }
 
 void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
-	/*
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
 	const DemogenMapData *mapData=(const DemogenMapData *)userData;
 
 	// Choose parameters.
-	const double temperateThreshold=0.6;
+	const double temperatureThreshold=0.6;
 	const double hotThreshold=0.7;
 
-	assert(0.0<=temperateThreshold);
-	assert(temperateThreshold<=hotThreshold);
+	assert(0.0<=temperatureThreshold);
+	assert(temperatureThreshold<=hotThreshold);
 	assert(hotThreshold<=1.0);
 
 	// Grab tile and temperature.
@@ -197,12 +195,16 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	const double temperature=tile->getTemperature();
 
 	// Not enough temperature to support anything?
-	if (temperature<temperateThreshold)
+	if (temperature<temperatureThreshold)
 		return;
 
 	// Random chance of a 'tree'.
 	double randomValue=Util::randFloatInInterval(0.0, 1.0);
 	if (randomValue<0.90)
+		return;
+
+	// Check if broad noise indicates a forest should be here
+	if (mapData->forestNoise->eval(x/((double)map->getWidth()), y/((double)map->getHeight()))<map->forestLevel)
 		return;
 
 	// Check layers.
@@ -233,11 +235,9 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 
 	// We have made a change - mark region dirty.
 	map->markRegionDirtyAtTileOffset(x, y, false);
-	*/
 }
 
 void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
-	/*
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -259,6 +259,10 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	if (randomValue<0.99)
 		return;
 
+	// Check if broad noise indicates a forest should be here
+	if (mapData->forestNoise->eval(x/((double)map->getWidth()), y/((double)map->getHeight()))<map->forestLevel)
+		return;
+
 	// Check layers.
 	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdSand && tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdHotSand)
 		return;
@@ -275,7 +279,6 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 
 	// We have made a change - mark region dirty.
 	map->markRegionDirtyAtTileOffset(x, y, false);
-	*/
 }
 
 void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -393,6 +396,7 @@ void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y,
 int main(int argc, char **argv) {
 	const double desiredLandFraction=0.4;
 	const double desiredAlpineFraction=0.01;
+	const double desiredForestFraction=0.4;
 
 	DemogenMapData mapData={
 	    .map=NULL,
@@ -424,8 +428,10 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	// Note start time
+	// Init
 	Util::TimeMs startTime=Util::getTimeMs();
+
+	setlocale(LC_NUMERIC, "");
 
 	// Create Map.
 	printf("Creating map...\n");
@@ -446,16 +452,14 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	// Create noise.
+	// Run init modify tiles function.
 	mapData.heightNoise=new FbnNoise(seed+17, 8, 8.0);
 	mapData.temperatureNoise=new FbnNoise(seed+19, 8, 1.0);
 
-	// Run init modify tiles function.
 	const char *progressStringInit="Initializing tile parameters ";
 	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
 	printf("\n");
 
-	// Tidy up noise.
 	delete mapData.heightNoise;
 	mapData.heightNoise=NULL;
 	delete mapData.temperatureNoise;
@@ -543,8 +547,15 @@ int main(int argc, char **argv) {
 	mapData.riverMoistureThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredRiverCoverage, 0.45, mapData.map->minMoisture, mapData.map->maxMoisture, &mapGenNarySearchGetFunctorMoisture, NULL);
 	printf("	River moisture threshold %f\n", mapData.riverMoistureThreshold);
 
-	// Run modify tiles for bimomes.
-	size_t biomesModifyTilesArrayCount=2;
+	// Calculate forest threshold.
+	mapData.forestNoise=new FbnNoise(seed+23, 8, 8.0);
+
+	printf("Searching for forest level (with desired land coverage %.2f%%)...\n", desiredForestFraction*100.0);
+	mapData.map->forestLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, 63, desiredForestFraction, 0.005, -1.0, 1.0, &mapGenNarySearchGetFunctorNoise, mapData.forestNoise);
+	printf("	Forest level %f\n", mapData.map->forestLevel);
+
+	// Run modify tiles for forests.
+	size_t biomesModifyTilesArrayCount=3;
 	MapGen::ModifyTilesManyEntry biomesModifyTilesArray[biomesModifyTilesArrayCount];
 	biomesModifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
 	biomesModifyTilesArray[0].userData=&mapData;
@@ -557,6 +568,9 @@ int main(int argc, char **argv) {
 	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, biomesModifyTilesArrayCount, biomesModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
 	printf("\n");
 
+	delete mapData.forestNoise;
+	mapData.forestNoise=NULL;
+
 	// Compute more map data.
 	if (mapData.totalCount>0)
 		mapData.landFraction=((double)mapData.landCount)/mapData.totalCount;
@@ -568,7 +582,6 @@ int main(int argc, char **argv) {
 	mapData.peoplePerSqKm=150.0;
 	mapData.totalPopulation=mapData.arableSqKm*mapData.peoplePerSqKm;
 
-	setlocale(LC_NUMERIC, "");
 	printf("	Land %'.1fkm^2 (of which %'.1fkm^2 is arable), water %'.1fkm^2, land fraction %.2f%%\n", mapData.landSqKm, mapData.arableSqKm, mapData.waterCount/(1000.0*1000.0), mapData.landFraction*100.0);
 	printf("	People per km^2 %.0f, total pop %.0f\n", mapData.peoplePerSqKm, mapData.totalPopulation);
 
