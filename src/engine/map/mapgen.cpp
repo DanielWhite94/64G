@@ -1800,7 +1800,7 @@ namespace Engine {
 
 		double mapGenNarySearchGetFunctorNoise(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
-			assert(userData==NULL);
+			assert(userData!=NULL);
 
 			const FbnNoise *noise=(const FbnNoise *)userData;
 
