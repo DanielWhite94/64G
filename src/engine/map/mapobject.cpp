@@ -97,7 +97,7 @@ namespace Engine {
 			result&=(fwrite(&isInventory, sizeof(isInventory), 1, file)==1);
 			result&=(fwrite(&inventoryData, sizeof(inventoryData), 1, file)==1);
 
-			return true;
+			return result;
 		}
 
 		CoordVec MapObject::tick(void) {
