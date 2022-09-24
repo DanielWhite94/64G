@@ -413,15 +413,16 @@ int main(int argc, char **argv) {
 	};
 
 	// Grab arguments.
-	if (argc!=4 && argc!=5) {
-		printf("Usage: %s width height outputpath [seed=1]\n", argv[0]);
+	if (argc<4 || argc>6) {
+		printf("Usage: %s width height outputpath [seed=1 [threadcount=1]]\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	mapData.width=atoi(argv[1]);
 	mapData.height=atoi(argv[2]);
 	const char *outputPath=argv[3];
-	uint64_t seed=(argc==5 ? atoll(argv[4]) : 1);
+	uint64_t seed=(argc>4 ? atoll(argv[4]) : 1);
+	unsigned threadCount=(argc>5 ? atoi(argv[5]) : 1);
 
 	if (mapData.width<=0 || mapData.height<=0) {
 		printf("Bad width or height (%i and %i)", mapData.width, mapData.height);
