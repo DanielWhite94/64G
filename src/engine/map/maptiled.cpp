@@ -160,8 +160,7 @@ namespace Engine {
 					continue;
 				}
 
-				// If not a leaf node then need to compose from 4 children. First generate their paths and check if they exist.
-				bool allchildrenExist=true;
+				// If not a leaf node then need to compose from 4 children so generate their paths.
 				char childPaths[2][2][1024]; // TODO: Improve this.
 				unsigned childZoom=zoom+1;
 				unsigned childBaseX=x*2;
@@ -171,9 +170,6 @@ namespace Engine {
 						unsigned childX=childBaseX+tx;
 						unsigned childY=childBaseY+ty;
 						getZoomXYPath(map, childZoom, childX, childY, layer, childPaths[tx][ty]);
-
-						if (!Util::isFile(childPaths[tx][ty]))
-							allchildrenExist=false;
 					}
 
 				// Recurse to generate children and then stitch them together
