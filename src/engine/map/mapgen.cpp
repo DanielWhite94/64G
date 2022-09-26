@@ -39,6 +39,12 @@ namespace Engine {
 			unsigned threadId;
 		};
 
+		struct MapGenRecalculateStatsThreadData {
+			double minHeight, maxHeight;
+			double minTemperature, maxTemperature;
+			double minMoisture, maxMoisture;
+		};
+
 		struct MapGenEdgeDetectTraceHeightContoursData {
 			unsigned contourIndex, contourCount;
 			double heightThreshold;
@@ -64,6 +70,8 @@ namespace Engine {
 		};
 
 		void mapGenModifyTilesManyThreadFunctor(MapGenModifyTilesManyThreadData *threadData);
+
+		void mapGenRecalculateStatsModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
 		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
@@ -1703,7 +1711,9 @@ namespace Engine {
 
 		void mapGenRecalculateStatsModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
-			assert(userData==NULL);
+			assert(userData!=NULL);
+
+			MapGenRecalculateStatsThreadData *dataArray=(MapGenRecalculateStatsThreadData *)userData;
 
 			// Grab tile.
 			const MapTile *tile=map->getTileAtOffset(x, y, Map::GetTileFlag::None);
@@ -1711,27 +1721,47 @@ namespace Engine {
 				return;
 
 			// Update statistics.
-			map->minHeight=std::min(map->minHeight, tile->getHeight());
-			map->maxHeight=std::max(map->maxHeight, tile->getHeight());
-			map->minTemperature=std::min(map->minTemperature, tile->getTemperature());
-			map->maxTemperature=std::max(map->maxTemperature, tile->getTemperature());
-			map->minMoisture=std::min(map->minMoisture, tile->getMoisture());
-			map->maxMoisture=std::max(map->maxMoisture, tile->getMoisture());
+			dataArray[threadId].minHeight=std::min(dataArray[threadId].minHeight, tile->getHeight());
+			dataArray[threadId].maxHeight=std::max(dataArray[threadId].maxHeight, tile->getHeight());
+			dataArray[threadId].minTemperature=std::min(dataArray[threadId].minTemperature, tile->getTemperature());
+			dataArray[threadId].maxTemperature=std::max(dataArray[threadId].maxTemperature, tile->getTemperature());
+			dataArray[threadId].minMoisture=std::min(dataArray[threadId].minMoisture, tile->getMoisture());
+			dataArray[threadId].maxMoisture=std::max(dataArray[threadId].maxMoisture, tile->getMoisture());
 		}
 
-		void MapGen::recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void MapGen::recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 
-			// Initialize stats.
-			map->minHeight=DBL_MAX;
-			map->maxHeight=DBL_MIN;
-			map->minTemperature=DBL_MAX;
-			map->maxTemperature=DBL_MIN;
-			map->minMoisture=DBL_MAX;
-			map->maxMoisture=DBL_MIN;
+			// Initialize thread data.
+			MapGenRecalculateStatsThreadData *threadData=(MapGenRecalculateStatsThreadData *)malloc(sizeof(MapGenRecalculateStatsThreadData)*threadCount);
+			for(unsigned i=0; i<threadCount; ++i) {
+				threadData[i].minHeight=DBL_MAX;
+				threadData[i].maxHeight=DBL_MIN;
+				threadData[i].minTemperature=DBL_MAX;
+				threadData[i].maxTemperature=DBL_MIN;
+				threadData[i].minMoisture=DBL_MAX;
+				threadData[i].maxMoisture=DBL_MIN;
+			}
 
 			// Use modifyTiles to loop over tiles and update the above fields
-			modifyTiles(map, x, y, width, height, 1, &mapGenRecalculateStatsModifyTilesFunctor, NULL, progressFunctor, progressUserData);
+			modifyTiles(map, x, y, width, height, threadCount, &mapGenRecalculateStatsModifyTilesFunctor, threadData, progressFunctor, progressUserData);
+
+			// Combine thread data to obtain final values
+			map->minHeight=threadData[0].minHeight;
+			map->maxHeight=threadData[0].maxHeight;
+			map->minTemperature=threadData[0].minTemperature;
+			map->maxTemperature=threadData[0].maxTemperature;
+			map->minMoisture=threadData[0].minMoisture;
+			map->maxMoisture=threadData[0].maxMoisture;
+
+			for(unsigned i=1; i<threadCount; ++i) {
+				map->minHeight=std::min(map->minHeight, threadData[i].minHeight);
+				map->maxHeight=std::max(map->maxHeight, threadData[i].maxHeight);
+				map->minTemperature=std::min(map->minTemperature, threadData[i].minTemperature);
+				map->maxTemperature=std::max(map->maxTemperature, threadData[i].maxTemperature);
+				map->minMoisture=std::min(map->minMoisture, threadData[i].minMoisture);
+				map->maxMoisture=std::max(map->maxMoisture, threadData[i].maxMoisture);
+			}
 		}
 
 		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData) {

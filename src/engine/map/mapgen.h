@@ -319,7 +319,7 @@ namespace Engine {
 			static int narySearchValueToSample(const NArySearchData *data, double value);
 			static double narySearchSampleToValue(const NArySearchData *data, int sample);
 
-			static void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesProgress *progressFunctor, void *progressUserData); // Updates map's min/maxHeight and other such fields.
+			static void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, ModifyTilesProgress *progressFunctor, void *progressUserData); // Updates map's min/maxHeight and other such fields.
 
 		private:
 		};
