@@ -306,12 +306,6 @@ void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	if (sheep==NULL)
 		return;
 	sheep->setMovementModeRandomRadius(pos, 10*CoordsPerTile);
-
-
-	// Mark region dirty.
-	MapRegion *region=map->getRegionAtCoordVec(pos, false);
-	if (region!=NULL)
-		region->setDirty();
 }
 
 void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -342,11 +336,6 @@ void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, v
 	if (object==NULL)
 		return;
 	object->setMovementModeRandomRadius(pos, 10*CoordsPerTile);
-
-	// Mark region dirty.
-	MapRegion *region=map->getRegionAtCoordVec(pos, false);
-	if (region!=NULL)
-		region->setDirty();
 }
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData) {
