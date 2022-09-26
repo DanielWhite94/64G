@@ -476,16 +476,56 @@ namespace Engine {
 		}
 
 		bool Map::loadRegion(unsigned regionX, unsigned regionY, const char *regionPath) {
+			assert(regionX<regionsSize && regionY<regionsSize);
 			assert(regionX*MapRegion::tilesSize<mapWidth && regionY*MapRegion::tilesSize<mapHeight);
 			assert(regionPath!=NULL);
-			assert(regionsByOffset[regionY][regionX].ptr==NULL);
 
-			// Create empty region to add to.
-			if (!createBlankRegion(regionX, regionY))
+			// Grab lock
+			regionsLock.lock();
+
+			// Do we need to evict a region to make space for the new one?
+			assert(regionsCount<=regionsLoadedMax);
+			if (regionsCount==regionsLoadedMax) {
+				// Find the last-recently used region.
+				RegionData *regionData=regionsByAge[regionsCount-1];
+				assert(regionData!=NULL);
+				MapRegion *region=regionData->ptr;
+
+				// If this region is dirty, save it back to disk.
+				if (region->getIsDirty() && !region->save(getRegionsDir(), regionsByIndex[regionData->index]->offsetX, regionsByIndex[regionData->index]->offsetY)) {
+					// Unable to save modified region - abort to avoid losing data
+					regionsLock.unlock();
+					return false;
+				}
+
+				// Unload the region.
+				regionUnload(regionData->index);
+			}
+
+			// Create new blank region.
+			MapRegion *region=new MapRegion(regionX, regionY);
+			if (region==NULL)
 				return false;
 
-			// Attempt to load.
-			MapRegion *region=getRegionAtOffset(regionX, regionY, false);
+			// Add region to map.
+			assert(regionsCount<regionsLoadedMax);
+			assert(regionsByOffset[regionY][regionX].ptr==NULL);
+
+			regionsByOffset[regionY][regionX].ptr=region;
+			regionsByOffset[regionY][regionX].index=regionsCount;
+			regionsByOffset[regionY][regionX].offsetX=regionX;
+			regionsByOffset[regionY][regionX].offsetY=regionY;
+			regionsByIndex[regionsCount]=&(regionsByOffset[regionY][regionX]);
+
+			memmove(regionsByAge+1, regionsByAge, (regionsCount)*sizeof(RegionData *));
+			regionsByAge[0]=regionsByIndex[regionsCount];
+
+			++regionsCount;
+
+			// Release lock
+			regionsLock.unlock();
+
+			// Attempt to load region data from file.
 			return region->load(regionPath);
 		}
 
@@ -772,60 +812,6 @@ namespace Engine {
 			assert(index<regionsCount);
 
 			return regionsByIndex[index]->ptr;
-		}
-
-		bool Map::createBlankRegion(unsigned regionX, unsigned regionY) {
-			assert(regionX<regionsSize && regionY<regionsSize);
-			assert(regionsByOffset[regionY][regionX].ptr==NULL);
-
-			// Do we need to free a region to allocate this one?
-			if (!ensureSpaceForRegion())
-				return false;
-
-			// Create new blank region.
-			MapRegion *region=new MapRegion(regionX, regionY);
-			if (region==NULL)
-				return false;
-
-			// Add region.
-			regionsLock.lock();
-
-			assert(regionsCount<regionsLoadedMax);
-
-			regionsByOffset[regionY][regionX].ptr=region;
-			regionsByOffset[regionY][regionX].index=regionsCount;
-			regionsByOffset[regionY][regionX].offsetX=regionX;
-			regionsByOffset[regionY][regionX].offsetY=regionY;
-			regionsByIndex[regionsCount]=&(regionsByOffset[regionY][regionX]);
-
-			memmove(regionsByAge+1, regionsByAge, (regionsCount)*sizeof(RegionData *));
-			regionsByAge[0]=regionsByIndex[regionsCount];
-
-			++regionsCount;
-
-			regionsLock.unlock();
-
-			return true;
-		}
-
-		bool Map::ensureSpaceForRegion(void) {
-			// Do we need to evict something?
-			assert(regionsCount<=regionsLoadedMax);
-			if (regionsCount==regionsLoadedMax) {
-				// Find the last-recently used region.
-				RegionData *regionData=regionsByAge[regionsCount-1];
-				assert(regionData!=NULL);
-				MapRegion *region=regionData->ptr;
-
-				// If this region is dirty, save it back to disk.
-				if (region->getIsDirty())
-					region->save(getRegionsDir(), regionsByIndex[regionData->index]->offsetX, regionsByIndex[regionData->index]->offsetY); // TODO: Check return - don't want to lose data.
-
-				// Unload the region.
-				regionUnload(regionData->index);
-			}
-
-			return (regionsCount<regionsLoadedMax);
 		}
 
 		void Map::updateRegionAge(const MapRegion *region) {

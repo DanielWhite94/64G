@@ -101,8 +101,6 @@ namespace Engine {
 			MapRegion *getRegionAtIndex(unsigned index);
 			const MapRegion *getRegionAtIndex(unsigned index) const;
 
-			bool createBlankRegion(unsigned regionX, unsigned regionY);
-			bool ensureSpaceForRegion(void); // If our regions array is full, evict something.
 			void updateRegionAge(const MapRegion *region);
 
 			void regionUnload(unsigned index);
