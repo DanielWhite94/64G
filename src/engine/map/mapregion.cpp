@@ -179,7 +179,7 @@ namespace Engine {
 				getTileAtCoordVec(vec)->addObject(object);
 
 		// Mark region dirty.
-		isDirty=true;
+		setDirty();
 
 		return true;
 	}
@@ -193,7 +193,7 @@ namespace Engine {
 		objects.push_back(object);
 
 		// Mark region dirty.
-		isDirty=true;
+		setDirty();
 	}
 
 	void MapRegion::disownObject(MapObject *object) {
@@ -209,6 +209,6 @@ namespace Engine {
 		}
 
 		// Mark region dirty.
-		isDirty=true;
+		setDirty();
 	}
 };
