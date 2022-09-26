@@ -1,6 +1,7 @@
 #ifndef ENGINE_GRAPHICS_MAP_H
 #define ENGINE_GRAPHICS_MAP_H
 
+#include <mutex>
 #include <vector>
 
 #include "mapobject.h"
@@ -90,6 +91,7 @@ namespace Engine {
 			RegionData *regionsByIndex[regionsLoadedMax]; // These are pointers into regionsByOffset array.
 			RegionData *regionsByAge[regionsLoadedMax]; // These are pointers into regionsByOffset array.
 			RegionData regionsByOffset[regionsSize][regionsSize]; // [y][x]
+			std::mutex regionsLock;
 
 			MapTexture *textures[MapTexture::IdMax];
 

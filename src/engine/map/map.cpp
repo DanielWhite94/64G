@@ -456,6 +456,8 @@ namespace Engine {
 			// Save all regions.
 			const char *regionsDirPath=getRegionsDir();
 
+			regionsLock.lock();
+
 			for(unsigned i=0; i<regionsCount; ++i) {
 				// Grab region.
 				MapRegion *region=getRegionAtIndex(i);
@@ -467,6 +469,8 @@ namespace Engine {
 				// Save region.
 				success&=region->save(regionsDirPath, regionsByIndex[i]->offsetX, regionsByIndex[i]->offsetY);
 			}
+
+			regionsLock.unlock();
 
 			return success;
 		}
@@ -825,16 +829,26 @@ namespace Engine {
 		void Map::updateRegionAge(const MapRegion *region) {
 			assert(region!=NULL);
 
+			// See if this region is already the newest (as is common when performing many operations within a single region)
+			if (regionsByAge[0]->ptr==region)
+				return;
+
+			// Update age array
+			regionsLock.lock();
+
 			for(int i=0; i<regionsCount; i++) {
 				if (regionsByAge[i]->ptr==region) {
 					// Found - move to front.
 					RegionData *regionDataPtr=regionsByAge[i];
 					memmove(regionsByAge+1, regionsByAge, i*sizeof(RegionData *));
 					regionsByAge[0]=regionDataPtr;
+					regionsLock.unlock();
 					return;
 				}
 			}
 			assert(false);
+
+			regionsLock.unlock();
 		}
 
 		void Map::regionUnload(unsigned index) {
