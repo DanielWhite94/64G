@@ -458,7 +458,7 @@ int main(int argc, char **argv) {
 	mapData.temperatureNoise=new FbnNoise(seed+19, 8, 1.0);
 
 	const char *progressStringInit="Initializing tile parameters ";
-	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
+	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
 	printf("\n");
 
 	delete mapData.heightNoise;
@@ -566,7 +566,7 @@ int main(int argc, char **argv) {
 	biomesModifyTilesArray[2].userData=&mapData;
 
 	const char *progressStringBiomes="Assigning tile textures for biomes ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, biomesModifyTilesArrayCount, biomesModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, biomesModifyTilesArrayCount, biomesModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
 	printf("\n");
 
 	delete mapData.forestNoise;
@@ -600,7 +600,7 @@ int main(int argc, char **argv) {
 	npcModifyTilesArray[1].userData=&mapData;
 
 	const char *progressStringNpcsAnimals="Adding npcs and animals ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, npcModifyTilesArrayCount, npcModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
+	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, 1, npcModifyTilesArrayCount, npcModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
 	// Landmass (contintent/island) identification

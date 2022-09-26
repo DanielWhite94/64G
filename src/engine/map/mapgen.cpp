@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <random>
+#include <thread>
 
 #include "mapgen.h"
 #include "../physics/coord.h"
@@ -15,6 +16,27 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
+		struct MapGenModifyTilesManyThreadCommonData {
+			class Map *map;
+
+			unsigned functorArrayCount;
+			MapGen::ModifyTilesManyEntry *functorArray;
+
+			unsigned tileXRegionOffset; // this is the first column of the region in global coordinates
+
+			std::atomic<unsigned> threadsDone; // incremented by each worker thread as it finishes
+			std::atomic<bool> threadsRun; // worker threads wait for this to become true before starting
+			std::atomic<bool> threadsQuit; // worker threads check this to decide when to return
+		};
+
+		struct MapGenModifyTilesManyThreadData {
+			MapGenModifyTilesManyThreadCommonData *common;
+
+			std::thread *thread;
+
+			unsigned tileY0, tileY1; // these are global coordinates, so the offset within the region plus the region's offset
+		};
+
 		struct MapGenEdgeDetectTraceHeightContoursData {
 			unsigned contourIndex, contourCount;
 			double heightThreshold;
@@ -38,6 +60,9 @@ namespace Engine {
 
 			double progressRatio;
 		};
+
+		void mapGenModifyTilesManyThreadFunctor(MapGenModifyTilesManyThreadData *threadData);
+		void mapGenModifyTilesManyThreadFunctorIteration(MapGenModifyTilesManyThreadData *threadData);
 
 		void mapGenEdgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
@@ -375,7 +400,7 @@ namespace Engine {
 			modifyTileFunctorData.progressRatio=preModifyTilesProgressRatio;
 
 			uint64_t scratchBitMask=(((uint64_t)1)<<scratchBits[0])|(((uint64_t)1)<<scratchBits[1])|(((uint64_t)1)<<scratchBits[2])|(((uint64_t)1)<<scratchBits[3]);
-			modifyTiles(map, 0, 0, mapWidth, mapHeight, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
+			modifyTiles(map, 0, 0, mapWidth, mapHeight, 1, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &mapGenEdgeDetectTraceClearScratchBitsModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
 
 			// Loop over regions
 			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
@@ -531,7 +556,7 @@ namespace Engine {
 			modifyTileFunctorData.progressRatio=preModifyTilesProgressRatio;
 
 			uint64_t scratchBitMask=(((uint64_t)1)<<scratchBit);
-			modifyTiles(map, 0, 0, mapWidth, mapHeight, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &mapGenFloodFillFillClearScratchBitModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
+			modifyTiles(map, 0, 0, mapWidth, mapHeight, 1, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &mapGenFloodFillFillClearScratchBitModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
 
 			// Loop over regions
 			unsigned rYEnd=mapHeight/MapRegion::tilesSize;
@@ -1554,7 +1579,7 @@ namespace Engine {
 			return true;
 		}
 
-		void MapGen::modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void MapGen::modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functor!=NULL);
 
@@ -1562,10 +1587,38 @@ namespace Engine {
 			functorEntry.functor=functor,
 			functorEntry.userData=functorUserData,
 
-			MapGen::modifyTilesMany(map, x, y, width, height, 1, &functorEntry, progressFunctor, progressUserData);
+			MapGen::modifyTilesMany(map, x, y, width, height, threadCount, 1, &functorEntry, progressFunctor, progressUserData);
 		}
 
-		void MapGen::modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, size_t functorArrayCount, ModifyTilesManyEntry functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void mapGenModifyTilesManyThreadFunctor(MapGenModifyTilesManyThreadData *threadData) {
+			// Work until told to quit
+			while(!threadData->common->threadsQuit) {
+				// Wait to be told to run (so the data we need is set and up to date)
+				while(!threadData->common->threadsRun)
+					;
+
+				// Perform work to handle the slice of the region we've been assigned
+				mapGenModifyTilesManyThreadFunctorIteration(threadData);
+			}
+		}
+
+		void mapGenModifyTilesManyThreadFunctorIteration(MapGenModifyTilesManyThreadData *threadData) {
+			// Loop over all rows in this region which we are assigned to handle
+			unsigned tileX, tileY;
+			for(tileY=threadData->tileY0; tileY<threadData->tileY1; ++tileY) {
+				// Loop over all tiles in this row
+				for(tileX=0; tileX<MapRegion::tilesSize; ++tileX) {
+					// Loop over functors
+					for(size_t functorId=0; functorId<threadData->common->functorArrayCount; ++functorId)
+						threadData->common->functorArray[functorId].functor(threadData->common->map, threadData->common->tileXRegionOffset+tileX, tileY, threadData->common->functorArray[functorId].userData);
+				}
+			}
+
+			// Indicate we have finished
+			++threadData->common->threadsDone;
+		}
+
+		void MapGen::modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, size_t functorArrayCount, ModifyTilesManyEntry functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functorArrayCount>0);
 			assert(functorArray!=NULL);
@@ -1575,6 +1628,39 @@ namespace Engine {
 			// Record start time.
 			const Util::TimeMs startTime=Util::getTimeMs();
 
+			// Initial progress update (if needed).
+			if (progressFunctor!=NULL) {
+				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
+				progressFunctor(map, 0.0, elapsedTimeMs, progressUserData);
+			}
+
+			// Cap thread count to sensible range
+			if (threadCount<1)
+				threadCount=1;
+			if (threadCount>64)
+				threadCount=64;
+
+			// Prepare thread data
+			MapGenModifyTilesManyThreadCommonData threadCommonData;
+			threadCommonData.threadsRun=false;
+			threadCommonData.threadsQuit=false;
+			threadCommonData.map=map;
+			threadCommonData.functorArrayCount=functorArrayCount;
+			threadCommonData.functorArray=functorArray;
+
+			MapGenModifyTilesManyThreadData *threadData=(MapGenModifyTilesManyThreadData *)malloc(sizeof(MapGenModifyTilesManyThreadData)*threadCount); // TODO: check return
+			for(unsigned i=0; i<threadCount; ++i) {
+				threadData[i].common=&threadCommonData;
+				threadData[i].thread=NULL;
+			}
+
+			unsigned threadRowRange=MapRegion::tilesSize/threadCount; // how many rows each thread should handle (except potentially the final one)
+
+			// Create threads
+			// Note: the main thread also acts as a worker and thus we only need to create threadCount-1 new threads
+			for(unsigned i=0; i<threadCount-1; ++i)
+				threadData[i].thread=new std::thread(mapGenModifyTilesManyThreadFunctor, &threadData[i]);
+
 			// Calculate constants.
 			const unsigned regionX0=x/MapRegion::tilesSize;
 			const unsigned regionY0=y/MapRegion::tilesSize;
@@ -1582,29 +1668,32 @@ namespace Engine {
 			const unsigned regionY1=(y+height)/MapRegion::tilesSize;
 			const unsigned regionIMax=(regionX1-regionX0)*(regionY1-regionY0);
 
-			// Initial progress update (if needed).
-			if (progressFunctor!=NULL) {
-				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(map, 0.0, elapsedTimeMs, progressUserData);
-			}
-
 			// Loop over each region
 			unsigned regionX, regionY, regionI=0;
 			for(regionY=regionY0; regionY<regionY1; ++regionY) {
 				const unsigned regionYOffset=regionY*MapRegion::tilesSize;
 				for(regionX=regionX0; regionX<regionX1; ++regionX) {
-					const unsigned regionXOffset=regionX*MapRegion::tilesSize;
+					// Load region now before starting worker threads
+					// This way they can access the map without locking
+					map->getRegionAtOffset(regionX, regionY, true);
 
-					// Loop over all rows in this region.
-					unsigned tileX, tileY;
-					for(tileY=0; tileY<MapRegion::tilesSize; ++tileY) {
-						// Loop over all tiles in this row.
-						for(tileX=0; tileX<MapRegion::tilesSize; ++tileX) {
-							// Loop over functors.
-							for(size_t functorId=0; functorId<functorArrayCount; ++functorId)
-								functorArray[functorId].functor(map, regionXOffset+tileX, regionYOffset+tileY, functorArray[functorId].userData);
-						}
+					// Prepare and start threads
+					// Each thread gets a horizontal slice of the region to deal with.
+					// Each slice is the full width of the region and all but the final one potentially are threadRowRange rows high.
+					threadCommonData.tileXRegionOffset=regionX*MapRegion::tilesSize;
+					for(unsigned i=0; i<threadCount; ++i) {
+						threadData[i].tileY0=regionYOffset+threadRowRange*i;
+						threadData[i].tileY1=regionYOffset+(i<threadCount-1 ? threadRowRange*(i+1) : MapRegion::tilesSize);
 					}
+					threadCommonData.threadsRun=true;
+					threadCommonData.threadsDone=0;
+
+					// Also use this thread as a worker
+					mapGenModifyTilesManyThreadFunctorIteration(&threadData[threadCount-1]);
+
+					// Wait for all threads to finish
+					while(threadCommonData.threadsDone<threadCount)
+						;
 
 					// Update progress (if needed).
 					if (progressFunctor!=NULL) {
@@ -1616,6 +1705,16 @@ namespace Engine {
 					++regionI;
 				}
 			}
+
+			// Wait for threads to finish and tidy them up
+			threadCommonData.threadsQuit=true;
+
+			for(unsigned i=0; i<threadCount-1; ++i) { // threadCount-1 is because the main thread handles the final 'slice'
+				threadData[i].thread->join();
+				delete threadData[i].thread;
+			}
+
+			free(threadData);
 		}
 
 		void mapGenRecalculateStatsModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
@@ -1647,8 +1746,8 @@ namespace Engine {
 			map->minMoisture=DBL_MAX;
 			map->maxMoisture=DBL_MIN;
 
-			// Use modifyTiles with a read-only functor.
-			modifyTiles(map, x, y, width, height, &mapGenRecalculateStatsModifyTilesFunctor, NULL, progressFunctor, progressUserData);
+			// Use modifyTiles to loop over tiles and update the above fields
+			modifyTiles(map, x, y, width, height, 1, &mapGenRecalculateStatsModifyTilesFunctor, NULL, progressFunctor, progressUserData);
 		}
 
 		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData) {
@@ -1688,7 +1787,7 @@ namespace Engine {
 				// Run data collection functor.
 				char progressString[1024];
 				sprintf(progressString, "	%i/%i - interval [%f, %f] (range %f): ", iter+1, iterMax, data.sampleMin, data.sampleMax, data.sampleRange);
-				modifyTiles(data.map, x, y, width, height, &mapGenNArySearchModifyTilesFunctor, &data, &mapGenModifyTilesProgressString, (void *)progressString);
+				modifyTiles(data.map, x, y, width, height, 1, &mapGenNArySearchModifyTilesFunctor, &data, &mapGenModifyTilesProgressString, (void *)progressString);
 				printf("\n");
 
 				// Update min/max based on collected data.
