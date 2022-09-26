@@ -14,10 +14,10 @@ namespace Engine {
 	namespace Map {
 		void mapGenPrintTime(Util::TimeMs timeMs);
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
-		void mapGenBitsetUnionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to OR with each tile's existing bitset.
-		void mapGenBitsetIntersectionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to AND with each tile's existing bitset.
+		void mapGenBitsetUnionModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to OR with each tile's existing bitset.
+		void mapGenBitsetIntersectionModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to AND with each tile's existing bitset.
 
-		void mapGenNArySearchModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+		void mapGenNArySearchModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 		double mapGenNarySearchGetFunctorHeight(class Map *map, unsigned x, unsigned y, void *userData);
 		double mapGenNarySearchGetFunctorTemperature(class Map *map, unsigned x, unsigned y, void *userData);
 		double mapGenNarySearchGetFunctorMoisture(class Map *map, unsigned x, unsigned y, void *userData);
@@ -129,7 +129,7 @@ namespace Engine {
 
 			typedef bool (TileTestFunctor)(class Map *map, int x, int y, int w, int h, void *userData);
 
-			typedef void (ModifyTilesFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
+			typedef void (ModifyTilesFunctor)(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 			typedef void (ModifyTilesProgress)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 			typedef double (NArySearchGetFunctor)(class Map *map, unsigned x, unsigned y, void *userData);

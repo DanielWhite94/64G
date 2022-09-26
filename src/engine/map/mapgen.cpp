@@ -731,7 +731,7 @@ namespace Engine {
 				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
 		}
 
-		void mapGenBitsetUnionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+		void mapGenBitsetUnionModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 
 			uint64_t bitset=(uint64_t)(uintptr_t)userData;
@@ -741,7 +741,7 @@ namespace Engine {
 				tile->setBitset(tile->getBitset()|bitset);
 		}
 
-		void mapGenBitsetIntersectionModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+		void mapGenBitsetIntersectionModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 
 			uint64_t bitset=(uint64_t)(uintptr_t)userData;
@@ -1623,7 +1623,7 @@ namespace Engine {
 					for(unsigned tileX=0; tileX<MapRegion::tilesSize; ++tileX) {
 						// Loop over functors
 						for(size_t functorId=0; functorId<threadData->common->functorArrayCount; ++functorId)
-							threadData->common->functorArray[functorId].functor(threadData->common->map, baseTileX+tileX, baseTileY+tileY, threadData->common->functorArray[functorId].userData);
+							threadData->common->functorArray[functorId].functor(threadData->threadId, threadData->common->map, baseTileX+tileX, baseTileY+tileY, threadData->common->functorArray[functorId].userData);
 					}
 
 				// Update progress (if we are the main thread).
@@ -1701,7 +1701,7 @@ namespace Engine {
 			}
 		}
 
-		void mapGenRecalculateStatsModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+		void mapGenRecalculateStatsModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData==NULL);
 

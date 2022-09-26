@@ -44,18 +44,18 @@ typedef struct {
 	double landSqKm, arableSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
-void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
-void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData);
+void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+void demogenGrassForestModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+void demogenSandForestModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+void demogenGrassSheepModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
 void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
 
-void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -92,7 +92,7 @@ void demogenInitModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void 
 	tile->setLandmassId(0); // default to 0 to imply part of a border - we will update non-border tiles in a later step
 }
 
-void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -173,7 +173,7 @@ void demogenGroundModifyTilesFunctor(class Map *map, unsigned x, unsigned y, voi
 	++mapData->totalCount;
 }
 
-void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenGrassForestModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -237,7 +237,7 @@ void demogenGrassForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y
 	map->markRegionDirtyAtTileOffset(x, y, false);
 }
 
-void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenSandForestModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -281,7 +281,7 @@ void demogenSandForestModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	map->markRegionDirtyAtTileOffset(x, y, false);
 }
 
-void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenGrassSheepModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
@@ -308,7 +308,7 @@ void demogenGrassSheepModifyTilesFunctor(class Map *map, unsigned x, unsigned y,
 	sheep->setMovementModeRandomRadius(pos, 10*CoordsPerTile);
 }
 
-void demogenTownFolkModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
 	assert(userData!=NULL);
 
