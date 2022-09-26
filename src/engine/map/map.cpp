@@ -504,8 +504,10 @@ namespace Engine {
 
 			// Create new blank region.
 			MapRegion *region=new MapRegion(regionX, regionY);
-			if (region==NULL)
+			if (region==NULL) {
+				regionsLock.unlock();
 				return false;
+			}
 
 			// Add region to map.
 			assert(regionsCount<regionsLoadedMax);
