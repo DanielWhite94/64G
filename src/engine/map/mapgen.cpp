@@ -1675,7 +1675,9 @@ namespace Engine {
 				for(regionX=regionX0; regionX<regionX1; ++regionX) {
 					// Load region now before starting worker threads
 					// This way they can access the map without locking
-					map->getRegionAtOffset(regionX, regionY, true);
+					MapRegion *region=map->getRegionAtOffset(regionX, regionY, true);
+					if (region==NULL)
+						continue;
 
 					// Prepare and start threads
 					// Each thread gets a horizontal slice of the region to deal with.
