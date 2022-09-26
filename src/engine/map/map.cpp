@@ -574,23 +574,20 @@ namespace Engine {
 
 			// Region not loaded?
 			if (regionsByOffset[regionY][regionX].ptr==NULL) {
-				// Free a region if we need to.
-				if (ensureSpaceForRegion()) {
-					// Create path.
-					const char *regionsDirPath=getRegionsDir();
-					char regionPath[4096]; // TODO: this better
-					sprintf(regionPath, "%s/%u,%u", regionsDirPath, regionX, regionY); // TODO: Check return.
+				// Create path.
+				const char *regionsDirPath=getRegionsDir();
+				char regionPath[4096]; // TODO: this better
+				sprintf(regionPath, "%s/%u,%u", regionsDirPath, regionX, regionY); // TODO: Check return.
 
-					// Attempt to load region.
-					if (!loadRegion(regionX, regionY, regionPath)) {
-						if (!create) {
-							// Failed - ensure this region is unloaded as it is not correct.
-							for(unsigned r=0; r<regionsCount; ++r)
-								if (regionsByIndex[r]->offsetX==regionX && regionsByIndex[r]->offsetY==regionY) {
-									regionUnload(r);
-									break;
-								}
-						}
+				// Attempt to load region.
+				if (!loadRegion(regionX, regionY, regionPath)) {
+					if (!create) {
+						// Failed - ensure this region is unloaded as it is not correct.
+						for(unsigned r=0; r<regionsCount; ++r)
+							if (regionsByIndex[r]->offsetX==regionX && regionsByIndex[r]->offsetY==regionY) {
+								regionUnload(r);
+								break;
+							}
 					}
 				}
 			} else {
