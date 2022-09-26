@@ -630,9 +630,6 @@ namespace Engine {
 							}
 					}
 				}
-			} else {
-				// Exists already - simply update age.
-				updateRegionAge(regionsByOffset[regionY][regionX].ptr);
 			}
 
 			// Return region (or NULL if we could not load/create).
