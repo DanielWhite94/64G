@@ -791,17 +791,22 @@ namespace Engine {
 				return false;
 
 			// Add region.
+			regionsLock.lock();
+
 			assert(regionsCount<regionsLoadedMax);
+
 			regionsByOffset[regionY][regionX].ptr=region;
 			regionsByOffset[regionY][regionX].index=regionsCount;
 			regionsByOffset[regionY][regionX].offsetX=regionX;
 			regionsByOffset[regionY][regionX].offsetY=regionY;
 			regionsByIndex[regionsCount]=&(regionsByOffset[regionY][regionX]);
-			assert(regionsByAge[regionsCount]==NULL);
-			regionsByAge[regionsCount]=regionsByIndex[regionsCount];
-			regionsCount++;
 
-			updateRegionAge(region);
+			memmove(regionsByAge+1, regionsByAge, (regionsCount)*sizeof(RegionData *));
+			regionsByAge[0]=regionsByIndex[regionsCount];
+
+			++regionsCount;
+
+			regionsLock.unlock();
 
 			return true;
 		}
