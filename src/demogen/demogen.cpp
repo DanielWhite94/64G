@@ -435,7 +435,7 @@ int main(int argc, char **argv) {
 	setlocale(LC_NUMERIC, "");
 
 	// Create Map.
-	printf("Creating map...\n");
+	printf("Creating map (seed %lu, thread count %u)...\n", seed, threadCount);
 
 	try {
 		mapData.map=new class Map(outputPath, mapData.width, mapData.height);
