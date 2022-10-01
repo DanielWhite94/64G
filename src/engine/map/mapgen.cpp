@@ -1811,11 +1811,11 @@ namespace Engine {
 				int sampleIndex;
 				for(sampleIndex=0; sampleIndex<data.sampleCount; ++sampleIndex) {
 					double fraction=data.sampleTally[sampleIndex]/((double)data.sampleTotal);
-					double sampleHeight=narySearchSampleToValue(&data, sampleIndex);
+					double sampleValue=narySearchSampleToValue(&data, sampleIndex);
 					if (fraction>threshold)
-						newSampleMin=std::max(newSampleMin, sampleHeight);
+						newSampleMin=std::max(newSampleMin, sampleValue);
 					if (fraction<threshold)
-						newSampleMax=std::min(newSampleMax, sampleHeight);
+						newSampleMax=std::min(newSampleMax, sampleValue);
 				}
 				data.sampleMin=newSampleMin;
 				data.sampleMax=newSampleMax;
@@ -1832,20 +1832,20 @@ namespace Engine {
 			return (data.sampleMin+data.sampleMax)/2.0;
 		}
 
-		int MapGen::narySearchValueToSample(const NArySearchData *data, double height) {
+		int MapGen::narySearchValueToSample(const NArySearchData *data, double value) {
 			assert(data!=NULL);
 
 			// TODO: We can presumably optimise this to avoid calling narySearchSampleToValue twice.
 
-			// Check height is in range.
-			if (height<narySearchSampleToValue(data, 0))
+			// Check value is in range.
+			if (value<narySearchSampleToValue(data, 0))
 				return -1;
 
-			if (height>=narySearchSampleToValue(data, data->sampleCount-1))
+			if (value>=narySearchSampleToValue(data, data->sampleCount-1))
 				return data->sampleCount-1;
 
-			// Determine which sample bucket this height falls into.
-			int result=floor(((height-data->sampleMin)/data->sampleRange)*(data->sampleCount+1.0)-1.0);
+			// Determine which sample bucket this value falls into.
+			int result=floor(((value-data->sampleMin)/data->sampleRange)*(data->sampleCount+1.0)-1.0);
 			assert(result>=0 && result<data->sampleCount);
 			return result;
 		}
