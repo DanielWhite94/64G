@@ -1857,7 +1857,7 @@ namespace Engine {
 			return data->sampleMin+data->sampleRange*((sample+1.0)/(data->sampleCount+1.0));
 		}
 
-		void mapGenNArySearchModifyTilesFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+		void mapGenNArySearchModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);
 
