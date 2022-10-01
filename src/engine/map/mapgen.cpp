@@ -1789,14 +1789,14 @@ namespace Engine {
 			for(int iter=0; iter<iterMax; ++iter) {
 				assert(data.sampleMax>=data.sampleMin);
 
-				// Update data struct for this iteration.
-				for(int i=0; i<data.sampleCount; ++i)
-					data.sampleTally[i]=0;
-				data.sampleTotal=0;
-
 				// Have we hit desired accuracy?
 				if (data.sampleRange/2.0<=epsilon)
 					break;
+
+				// Clear data struct for this iteration.
+				for(int i=0; i<data.sampleCount; ++i)
+					data.sampleTally[i]=0;
+				data.sampleTotal=0;
 
 				// Run data collection functor.
 				char progressString[1024];
