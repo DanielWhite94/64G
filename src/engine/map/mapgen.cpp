@@ -1830,7 +1830,7 @@ namespace Engine {
 			free(data.sampleTally);
 
 			// Write out final range.
-			printf("	final interval [%f, %f] (range %f, 2*epsilon %f)\n", data.sampleMin, data.sampleMax, data.sampleRange, 2*epsilon);
+			printf("	final interval [%f, %f] (range %f, 2*epsilon %f)\n", data.sampleMin, data.sampleMax, data.sampleMax-data.sampleMin, 2*epsilon);
 
 			// Return midpoint of interval.
 			return (data.sampleMin+data.sampleMax)/2.0;
