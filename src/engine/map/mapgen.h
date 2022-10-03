@@ -183,7 +183,7 @@ namespace Engine {
 
 				double sampleMin, sampleMax, sampleRange;
 				int sampleCount;
-				long long int *sampleTally, sampleTotal;
+				unsigned long long int *sampleTally, sampleTotal;
 			};
 
 			class ParticleFlow {

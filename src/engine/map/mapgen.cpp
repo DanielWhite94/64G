@@ -1780,7 +1780,7 @@ namespace Engine {
 			data.getFunctor=getFunctor;
 			data.getUserData=getUserData;
 			data.sampleCount=n;
-			data.sampleTally=(long long int *)malloc(sizeof(long long int)*data.sampleCount); // TODO: Check return.
+			data.sampleTally=(unsigned long long int *)malloc(sizeof(unsigned long long int)*data.sampleCount); // TODO: Check return.
 			data.sampleMin=sampleMin;
 			data.sampleMax=sampleMax;
 			data.sampleRange=data.sampleMax-data.sampleMin;
@@ -1809,8 +1809,10 @@ namespace Engine {
 				double newSampleMin=data.sampleMin;
 				double newSampleMax=data.sampleMax;
 				int sampleIndex;
-				for(sampleIndex=0; sampleIndex<data.sampleCount; ++sampleIndex) {
-					double fraction=data.sampleTally[sampleIndex]/((double)data.sampleTotal);
+				unsigned long long int sampleCumulative=0;
+				for(sampleIndex=data.sampleCount-1; sampleIndex>=0; --sampleIndex) {
+					sampleCumulative+=data.sampleTally[sampleIndex];
+					double fraction=sampleCumulative/((double)data.sampleTotal);
 					double sampleValue=narySearchSampleToValue(&data, sampleIndex);
 					if (fraction>threshold)
 						newSampleMin=std::max(newSampleMin, sampleValue);
@@ -1869,9 +1871,8 @@ namespace Engine {
 			// Compute sample index.
 			int sample=MapGen::narySearchValueToSample(data, value);
 
-			// Update tally array.
-			for(int i=0; i<=sample; ++i)
-				++data->sampleTally[i];
+			// Update tally array and total.
+			++data->sampleTally[sample];
 			++data->sampleTotal;
 		}
 
