@@ -182,6 +182,7 @@ namespace Engine {
 				void *getUserData;
 
 				double sampleMin, sampleMax, sampleRange;
+				double sampleConversionFactor; // equal to (data->sampleCount+1.0)/data->sampleRange, see MapGen::narySearchValueToSample
 				int sampleCount;
 				unsigned long long int *sampleTally, sampleTotal;
 			};

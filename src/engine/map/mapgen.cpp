@@ -1783,11 +1783,14 @@ namespace Engine {
 			data.sampleTally=(unsigned long long int *)malloc(sizeof(unsigned long long int)*data.sampleCount); // TODO: Check return.
 			data.sampleMin=sampleMin;
 			data.sampleMax=sampleMax;
-			data.sampleRange=data.sampleMax-data.sampleMin;
 
 			// Loop, running iterations up to the maximum.
 			for(int iter=0; iter<iterMax; ++iter) {
 				assert(data.sampleMax>=data.sampleMin);
+
+				// Update cached values
+				data.sampleRange=data.sampleMax-data.sampleMin;
+				data.sampleConversionFactor=(data.sampleCount+1.0)/data.sampleRange;
 
 				// Have we hit desired accuracy?
 				if (data.sampleRange/2.0<=epsilon)
@@ -1821,7 +1824,6 @@ namespace Engine {
 				}
 				data.sampleMin=newSampleMin;
 				data.sampleMax=newSampleMax;
-				data.sampleRange=data.sampleMax-data.sampleMin;
 			}
 
 			// Tidy up.
@@ -1838,7 +1840,7 @@ namespace Engine {
 			assert(data!=NULL);
 
 			// Determine which sample bucket this value falls into.
-			int result=floor(((value-data->sampleMin)/data->sampleRange)*(data->sampleCount+1.0)-1.0);
+			int result=floor((value-data->sampleMin)*data->sampleConversionFactor)-1;
 
 			if (result<0)
 				result=0;
@@ -1852,7 +1854,7 @@ namespace Engine {
 			assert(data!=NULL);
 			assert(sample>=0 && sample<data->sampleCount);
 
-			return data->sampleMin+data->sampleRange*((sample+1.0)/(data->sampleCount+1.0));
+			return data->sampleMin+(sample+1.0)/data->sampleConversionFactor;
 		}
 
 		void mapGenNArySearchModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
