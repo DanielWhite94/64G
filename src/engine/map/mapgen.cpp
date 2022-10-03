@@ -1764,7 +1764,7 @@ namespace Engine {
 			}
 		}
 
-		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, int n, double threshold, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData) {
+		double MapGen::narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, int n, double threshold, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData) {
 			assert(map!=NULL);
 			assert(n>0);
 			assert(0.0<=threshold<=1.0);
@@ -1804,7 +1804,7 @@ namespace Engine {
 				// Run data collection functor.
 				char progressString[1024];
 				sprintf(progressString, "	%i/%i - interval [%f, %f] (range %f): ", iter+1, iterMax, data.sampleMin, data.sampleMax, data.sampleRange);
-				modifyTiles(data.map, x, y, width, height, 1, &mapGenNArySearchModifyTilesFunctor, &data, &mapGenModifyTilesProgressString, (void *)progressString);
+				modifyTiles(data.map, x, y, width, height, threadCount, &mapGenNArySearchModifyTilesFunctor, &data, &mapGenModifyTilesProgressString, (void *)progressString);
 				printf("\n");
 
 				// Update min/max based on collected data.
@@ -1870,6 +1870,7 @@ namespace Engine {
 			int sample=MapGen::narySearchValueToSample(data, value);
 
 			// Update tally array and total.
+			// TODO: Fix this to make the increments thread safe (make the struct members atomic presumably, or otherwise split the counters for each thread and combine at the end)
 			++data->sampleTally[sample];
 			++data->sampleTotal;
 		}
