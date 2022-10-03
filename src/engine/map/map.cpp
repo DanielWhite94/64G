@@ -492,7 +492,7 @@ namespace Engine {
 				MapRegion *region=regionData->ptr;
 
 				// If this region is dirty, save it back to disk.
-				if (region->getIsDirty() && !region->save(getRegionsDir(), regionsByIndex[regionData->index]->offsetX, regionsByIndex[regionData->index]->offsetY)) {
+				if (region->getIsDirty() && !region->save(getRegionsDir(), regionData->offsetX, regionData->offsetY)) {
 					// Unable to save modified region - abort to avoid losing data
 					regionsLock.unlock();
 					return false;
