@@ -1841,7 +1841,7 @@ namespace Engine {
 
 			// Check value is in range.
 			if (value<narySearchSampleToValue(data, 0))
-				return -1;
+				return 0;
 
 			if (value>=narySearchSampleToValue(data, data->sampleCount-1))
 				return data->sampleCount-1;
