@@ -1837,18 +1837,14 @@ namespace Engine {
 		int MapGen::narySearchValueToSample(const NArySearchData *data, double value) {
 			assert(data!=NULL);
 
-			// TODO: We can presumably optimise this to avoid calling narySearchSampleToValue twice.
-
-			// Check value is in range.
-			if (value<narySearchSampleToValue(data, 0))
-				return 0;
-
-			if (value>=narySearchSampleToValue(data, data->sampleCount-1))
-				return data->sampleCount-1;
-
 			// Determine which sample bucket this value falls into.
 			int result=floor(((value-data->sampleMin)/data->sampleRange)*(data->sampleCount+1.0)-1.0);
-			assert(result>=0 && result<data->sampleCount);
+
+			if (result<0)
+				result=0;
+			if (result>=data->sampleCount)
+				result=data->sampleCount-1;
+
 			return result;
 		}
 
