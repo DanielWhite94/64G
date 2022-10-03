@@ -103,8 +103,8 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned mapMinZoom, GenerateImageProgress *progressFunctor, void *progressUserData) {
-			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, mapMinZoom, progressFunctor, progressUserData, 0.0, 1.0, Util::getTimeMs());
+		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData) {
+			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, progressFunctor, progressUserData, 0.0, 1.0, Util::getTimeMs());
 		}
 
 		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
@@ -123,7 +123,7 @@ namespace Engine {
 			sprintf(path, "%s/blank.png", map->getMapTiledDir());
 		}
 
-		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned mapMinZoom, GenerateImageProgress *progressFunctor, void *progressUserData, double progressMin, double progressTotal, Util::TimeMs startTimeMs) {
+		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData, double progressMin, double progressTotal, Util::TimeMs startTimeMs) {
 			// Invoke progress update if needed
 			if (progressFunctor!=NULL)
 				progressFunctor(map, progressMin, Util::getTimeMs()-startTimeMs, progressUserData);
@@ -180,7 +180,7 @@ namespace Engine {
 						unsigned childX=childBaseX+tx;
 						unsigned childY=childBaseY+ty;
 
-						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, mapMinZoom, progressFunctor, progressUserData, childProgressMin, childProgressTotal, startTimeMs))
+						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, progressFunctor, progressUserData, childProgressMin, childProgressTotal, startTimeMs))
 							return false;
 
 						childProgressMin+=childProgressTotal;
