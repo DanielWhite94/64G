@@ -1695,7 +1695,7 @@ namespace Engine {
 			mapGenModifyTilesManyThreadFunctor(&threadData[threadCount-1]);
 
 			// Tidy up
-			for(unsigned i=0; i<threadCount-1; ++i) { // threadCount-1 is because the main thread handles the final 'slice'
+			for(unsigned i=0; i<threadCount-1; ++i) {
 				threadData[i].thread->join();
 				delete threadData[i].thread;
 			}
