@@ -104,7 +104,20 @@ namespace Engine {
 		}
 
 		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData) {
-			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, progressFunctor, progressUserData, 0.0, 1.0, Util::getTimeMs());
+			// Compute total number of images we need to generate worst case
+			unsigned layerCount=0;
+			for(ImageLayer layer=0; layer<ImageLayerNB; ++layer)
+				layerCount+=(imageLayerSet & (1u<<layer))!=0;
+
+			int zoomDelta=maxZoom-zoom;
+			unsigned long long int imagesTotal=0;
+			for(unsigned long long int i=0; i<zoomDelta; ++i)
+				imagesTotal+=std::pow(4llu, i);
+			imagesTotal*=layerCount;
+
+			// Use recursive helper function
+			unsigned long long int imagesDone=0;
+			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, &imagesDone, imagesTotal, progressFunctor, progressUserData, Util::getTimeMs());
 		}
 
 		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
@@ -123,16 +136,17 @@ namespace Engine {
 			sprintf(path, "%s/blank.png", map->getMapTiledDir());
 		}
 
-		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData, double progressMin, double progressTotal, Util::TimeMs startTimeMs) {
+		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs) {
 			// Invoke progress update if needed
+			assert(*imagesDone<=imagesTotal);
 			if (progressFunctor!=NULL)
-				progressFunctor(map, progressMin, Util::getTimeMs()-startTimeMs, progressUserData);
+				progressFunctor(map, ((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			// Bad zoom value?
 			if (zoom>=maxZoom)
 				return false;
 
-			// Loop over image layer set
+			// Check if any needed images at this zoom level already exist
 			for(ImageLayer layer=0; layer<ImageLayerNB; ++layer) {
 				// Check if we even need to generate this layer
 				if (!(imageLayerSet & (1u<<layer)))
@@ -143,11 +157,39 @@ namespace Engine {
 				getZoomXYPath(map, zoom, x, y, layer, path);
 
 				// Does this image already exist?
-				if (Util::isFile(path))
-					continue;
+				if (Util::isFile(path)) {
+					// Remove it from the set of layers to do
+					imageLayerSet&=~(1u<<layer);
 
-				// If we are at the maximum zoom level then this is a 'leaf node' that needs rendering from scratch.
-				if (zoom==maxZoom-1) {
+					// Update imagesDone counter to account for any children we may have skipped
+					for(unsigned long long int i=0; i<maxZoom-zoom; ++i)
+						*imagesDone+=std::pow(4llu, i);
+
+					continue;
+				}
+			}
+
+			if (imageLayerSet==0) {
+				// Invoke progress update if needed
+				assert(*imagesDone<=imagesTotal);
+				if (progressFunctor!=NULL)
+					progressFunctor(map, ((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
+
+				return true;
+			}
+
+			// If we are at the maximum zoom level then this is a 'leaf node' that needs rendering from scratch.
+			if (zoom==maxZoom-1) {
+				// Loop over image layer set
+				for(ImageLayer layer=0; layer<ImageLayerNB; ++layer) {
+					// Check if we even need to generate this layer
+					if (!(imageLayerSet & (1u<<layer)))
+						continue;
+
+					// Get path for this image
+					char path[1024];
+					getZoomXYPath(map, zoom, x, y, layer, path);
+
 					// Compute mappng arguments.
 					unsigned mapSize=imageSize/pixelsPerTileAtMaxZoom;
 					unsigned mapX=x*mapSize;
@@ -157,45 +199,55 @@ namespace Engine {
 					bool res=MapPngLib::generatePng(map, path, mapX, mapY, mapSize, mapSize, imageSize, imageSize, layer, true);
 					if (!res)
 						return false;
+
+					++*imagesDone;
 					continue;
 				}
-
-				// If not a leaf node then need to compose from 4 children so generate their paths.
-				char childPaths[2][2][1024]; // TODO: Improve this.
-				unsigned childZoom=zoom+1;
-				unsigned childBaseX=x*2;
-				unsigned childBaseY=y*2;
+			} else {
+				// Recurse to generate any needed children so we can then stitch them together
+				const unsigned childZoom=zoom+1;
+				const unsigned childBaseX=x*2;
+				const unsigned childBaseY=y*2;
 				for(unsigned tx=0; tx<2; ++tx)
 					for(unsigned ty=0; ty<2; ++ty) {
 						unsigned childX=childBaseX+tx;
 						unsigned childY=childBaseY+ty;
-						getZoomXYPath(map, childZoom, childX, childY, layer, childPaths[tx][ty]);
-					}
-
-				// Recurse to generate children and then stitch them together
-				double childProgressMin=progressMin+(layer*progressTotal)/ImageLayerNB;
-				double childProgressTotal=(progressTotal/ImageLayerNB)/4.0;
-				for(unsigned tx=0; tx<2; ++tx)
-					for(unsigned ty=0; ty<2; ++ty) {
-						unsigned childX=childBaseX+tx;
-						unsigned childY=childBaseY+ty;
-
-						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, progressFunctor, progressUserData, childProgressMin, childProgressTotal, startTimeMs))
+						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, imagesDone, imagesTotal, progressFunctor, progressUserData, startTimeMs))
 							return false;
-
-						childProgressMin+=childProgressTotal;
 					}
 
-				char stitchCommand[4096]; // TODO: better
-				sprintf(stitchCommand, "montage %s %s %s %s -background none -geometry 50%%x50%% -mode concatenate -tile 2x2 PNG32:%s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
-				system(stitchCommand);
+				// Loop over image layer set
+				for(ImageLayer layer=0; layer<ImageLayerNB; ++layer) {
+					// Check if we even need to generate this layer
+					if (!(imageLayerSet & (1u<<layer)))
+						continue;
 
+					// Get path for this image
+					char path[1024];
+					getZoomXYPath(map, zoom, x, y, layer, path);
+
+					// If not a leaf node then need to compose from 4 children so generate their paths.
+					char childPaths[2][2][1024]; // TODO: Improve this.
+					for(unsigned tx=0; tx<2; ++tx)
+						for(unsigned ty=0; ty<2; ++ty) {
+							unsigned childX=childBaseX+tx;
+							unsigned childY=childBaseY+ty;
+							getZoomXYPath(map, childZoom, childX, childY, layer, childPaths[tx][ty]);
+						}
+
+					// Stitch together the four child images
+					char stitchCommand[4096]; // TODO: better
+					sprintf(stitchCommand, "montage %s %s %s %s -background none -geometry 50%%x50%% -mode concatenate -tile 2x2 PNG32:%s", childPaths[0][0], childPaths[1][0], childPaths[0][1], childPaths[1][1], path);
+					system(stitchCommand);
+
+					++*imagesDone;
+				}
 			}
 
 			// Invoke progress update if needed
-			// Note: min call is due to floating point inaccuracies potentially causing a value larger than 1 (e.g. 1.0000000000000002)
+			assert(*imagesDone<=imagesTotal);
 			if (progressFunctor!=NULL)
-				progressFunctor(map, std::min(progressMin+progressTotal,1.0), Util::getTimeMs()-startTimeMs, progressUserData);
+				progressFunctor(map, ((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			return true;
 		}
