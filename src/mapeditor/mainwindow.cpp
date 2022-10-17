@@ -588,7 +588,6 @@ namespace MapEditor {
 		gtk_widget_destroy(dialog);
 
 		// Attempt to load map
-		class Map *map;
 		try {
 			map=new class Map(filename);
 		} catch (std::exception& e) {
