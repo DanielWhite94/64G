@@ -464,19 +464,19 @@ int main(int argc, char **argv) {
 	printf("	Min temperature %f, max temperature %f\n", mapData.map->minTemperature, mapData.map->maxTemperature);
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
+	/*
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (1/3)...\n", desiredLandFraction*100.0);
 	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run glacier calculation.
-	/*
 
 	Note: this is disabled for now as it is quite slow, although it does produce good effects
 
 	const char *progressStringGlaciers="Applying glacial effects ";
 	MapGen::ParticleFlow glacierGen(mapData.map, 7, false);
-	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, &mapGenModifyTilesProgressString, (void *)progressStringGlaciers);
+	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, threadCount, &mapGenModifyTilesProgressString, (void *)progressStringGlaciers);
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for future calls.
@@ -487,17 +487,17 @@ int main(int argc, char **argv) {
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
 	printf("	Min temperature %f, max temperature %f\n", mapData.map->minTemperature, mapData.map->maxTemperature);
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
+	*/
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (2/3)...\n", desiredLandFraction*100.0);
 	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
-	*/
 
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
 	MapGen::ParticleFlow riverGen(mapData.map, 2, true);
-	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
+	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, threadCount, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for future calls.
