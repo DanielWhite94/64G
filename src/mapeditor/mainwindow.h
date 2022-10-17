@@ -74,6 +74,8 @@ namespace MapEditor {
 
 		vector<DrawMapTileEntry> mapTilesToGen;
 	private:
+		static constexpr double userTileSize=32.0;
+
 		bool mapNew(void);
 		bool mapOpen(void); // Returns true if successfully opened, false if user clicks cancel of the choosen folder is not a valid map.
 		bool mapSave(void); // Returns false on failure to save

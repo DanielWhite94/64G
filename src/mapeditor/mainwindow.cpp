@@ -38,7 +38,6 @@ namespace MapEditor {
 		mapTilesToGen.clear();
 		map=NULL;
 		zoomLevel=zoomLevelMin;
-		const double userTileSize=32.0;
 		userCentreX=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize/2.0;
 		userCentreY=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize/2.0;
 		lastTickTimeMs=0;
@@ -250,7 +249,6 @@ namespace MapEditor {
 		}
 
 		// Various parameters
-		const double userTileSize=32.0;
 		const double userRegionSizeX=MapRegion::tilesSize*userTileSize;
 		const double userRegionSizeY=MapRegion::tilesSize*userTileSize;
 		const double userKmSizeX=4.0*userRegionSizeX;
