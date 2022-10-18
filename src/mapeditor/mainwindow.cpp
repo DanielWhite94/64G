@@ -589,7 +589,7 @@ namespace MapEditor {
 
 		// Attempt to load map
 		try {
-			map=new class Map(filename);
+			map=new class Map(filename, false);
 		} catch (std::exception& e) {
 			map=NULL;
 

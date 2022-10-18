@@ -139,7 +139,7 @@ namespace Engine {
 			// Note: Regions are loaded on demand.
 		}
 
-		Map::Map(const char *mapBaseDirPath) {
+		Map::Map(const char *mapBaseDirPath, bool ignoreLock) {
 			// Load map
 			DIR *dirFd;
 			struct dirent *dirEntry;
@@ -193,6 +193,10 @@ namespace Engine {
 			// Attempt to obtain the lock file
 			char lockPath[1024]; // TODO: better
 			sprintf(lockPath, "%s/lock", mapBaseDirPath);
+
+			if (ignoreLock)
+				unlink(lockPath);
+
 			lockFd=open(lockPath, O_RDWR|O_CREAT|O_EXCL, S_IWUSR);
 			if (lockFd==-1)
 				throw std::runtime_error("locked");
