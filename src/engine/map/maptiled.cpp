@@ -191,7 +191,7 @@ namespace Engine {
 					getZoomXYPath(map, zoom, x, y, layer, path);
 
 					// Compute mappng arguments.
-					unsigned mapSize=imageSize/pixelsPerTileAtMaxZoom;
+					unsigned mapSize=imageSize;
 					unsigned mapX=x*mapSize;
 					unsigned mapY=y*mapSize;
 

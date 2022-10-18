@@ -293,8 +293,8 @@ namespace MapEditor {
 		// Draw regions
 		if (1) {
 			// Calculate which set of map tile images to use (i.e. which zoom level)
-			int mapTileZl=lrint(log2(userTileSize/MapTiled::pixelsPerTileAtMaxZoom))+zoomLevel; // as generated map tile images may use a different resolution for the same zoom level, we may need to make an adjustment
 			if (mapTileZl>=0 && mapTileZl<MapTiled::maxZoom) {
+			int mapTileZl=lrint(log2(userTileSize))+zoomLevel; // as generated map tile images may use a different resolution for the same zoom level, we may need to make an adjustment
 				double userDevicePixelSize=pow(2.0, zoomLevelMax-1-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
 				double userMapTileImageSize=userDevicePixelSize*MapTiled::imageSize;
 

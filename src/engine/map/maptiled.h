@@ -13,7 +13,6 @@ namespace Engine {
 		class MapTiled {
 		public:
 			static const unsigned imageSize=256;
-			static const unsigned pixelsPerTileAtMaxZoom=1; // TODO: consider retiring this - we probably always want 1:1 ratio between pixels and tiles at the most zoomed level
 			static const unsigned maxZoom=9; // zoom in range [0,maxZoom-1], equal to 1+log2((Map::regionsSize*MapRegion::tilesSize)/imageSize)
 
 			typedef unsigned ImageLayer;
