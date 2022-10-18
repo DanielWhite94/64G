@@ -268,8 +268,8 @@ namespace MapEditor {
 		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
 		double deviceBottomRightY=gtk_widget_get_allocated_height(drawingArea);
 
-		// Clear screen to pink to make any undrawn portions clear
-		cairo_set_source_rgb(cr, 1.0, 0.2, 0.6);
+		// Clear screen to black
+		cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
 		cairo_paint(cr);
 
 		// Transform cairo for given zoom and panning offset
@@ -278,6 +278,11 @@ namespace MapEditor {
 		cairo_translate(cr, deviceBottomRightX/2, deviceBottomRightY/2);
 		cairo_scale(cr, zoomFactor, zoomFactor);
 		cairo_translate(cr, -userCentreX, -userCentreY);
+
+		// Draw grey box to represent maximum possible map extents
+		cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+		cairo_rectangle(cr, 0, 0, userTileSize*Engine::Map::Map::regionsSize*MapRegion::tilesSize, userTileSize*Engine::Map::Map::regionsSize*MapRegion::tilesSize); // .....
+		cairo_fill(cr);
 
 		// Calculate extents of what is on screen in user space units.
 		double userTopLeftX=deviceTopLeftX, userTopLeftY=deviceTopLeftY;
