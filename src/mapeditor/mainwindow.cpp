@@ -7,6 +7,7 @@
 #include <new>
 
 #include "mainwindow.h"
+#include "util.h"
 
 const char mainWindowXmlFile[]="mainwindow.glade";
 
@@ -591,12 +592,35 @@ namespace MapEditor {
 		try {
 			map=new class Map(filename, false);
 		} catch (std::exception& e) {
+			// Clear (invalid) map handle
 			map=NULL;
 
+			// Update status message
 			sprintf(statusLabelStr, "Could not open map at '%s': %s", filename, e.what());
 			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 
-			return false;
+			// If due to being locked, ask user if should override
+			if (strcmp(e.what(), "locked")==0) {
+				// Prompt user
+				sprintf(statusLabelStr, "Could not open map at '%s': %s.\n\nIgnore lock and try again?", filename, e.what());
+				if (!utilPromptForYesNo("Could not open map", statusLabelStr, window))
+					return false;
+
+				// Try loading again but ignoring the lock file
+				try {
+					map=new class Map(filename, true);
+				} catch (std::exception& e2) {
+					// Clear (invalid) map handle
+					map=NULL;
+
+					// Update status message
+					sprintf(statusLabelStr, "Could not open map at '%s': %s", filename, e2.what());
+					gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
+
+					return false;
+				}
+			} else
+				return false;
 		}
 
 		// Update various things
