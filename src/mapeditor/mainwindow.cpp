@@ -325,7 +325,7 @@ namespace MapEditor {
 					for(int mapTileX=mapTileStartX; mapTileX<=mapTileEndX; ++mapTileX) {
 						double userMapTileTopLeftX=mapTileX*userMapTileImageSize;
 
-						// Attempt to load png image as a cairo surfaace
+						// Attempt to load png image as a cairo surface
 						char mapTileFilename[1024];
 						MapTiled::getZoomXYPath(map, zoomLevel, mapTileX, mapTileY, MapTiled::ImageLayerBase, mapTileFilename);
 						cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
