@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <clocale>
 #include <cmath>
@@ -39,8 +40,8 @@ namespace MapEditor {
 		mapTilesToGen.clear();
 		map=NULL;
 		zoomLevel=zoomLevelMin;
-		userCentreX=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize/2.0;
-		userCentreY=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize/2.0;
+		userCentreX=0;
+		userCentreY=0;
 		lastTickTimeMs=0;
 
 		keyPanningLeft=false;
@@ -250,12 +251,10 @@ namespace MapEditor {
 		}
 
 		// Various parameters
-		const double userRegionSizeX=MapRegion::tilesSize*userTileSize;
-		const double userRegionSizeY=MapRegion::tilesSize*userTileSize;
-		const double userKmSizeX=4.0*userRegionSizeX;
-		const double userKmSizeY=4.0*userRegionSizeY;
-		const double userMapSizeX=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize;
-		const double userMapSizeY=Engine::Map::Map::regionsSize*MapRegion::tilesSize*userTileSize;
+		const double userKmSizeX=4.0*MapRegion::tilesSize;
+		const double userKmSizeY=4.0*MapRegion::tilesSize;
+		const double userMapSizeX=Engine::Map::Map::regionsSize*MapRegion::tilesSize;
+		const double userMapSizeY=Engine::Map::Map::regionsSize*MapRegion::tilesSize;
 
 		//                                              zoom level = {   0    1    2    3    4   5   6   7   8   9  10  11, 12, 13, 14, 15}
 		// TODO: this will need adjusting after changing MapTiled image size parameters
@@ -281,7 +280,7 @@ namespace MapEditor {
 
 		// Draw grey box to represent maximum possible map extents
 		cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-		cairo_rectangle(cr, 0, 0, userTileSize*Engine::Map::Map::regionsSize*MapRegion::tilesSize, userTileSize*Engine::Map::Map::regionsSize*MapRegion::tilesSize); // .....
+		cairo_rectangle(cr, 0, 0, Engine::Map::Map::regionsSize*MapRegion::tilesSize, Engine::Map::Map::regionsSize*MapRegion::tilesSize);
 		cairo_fill(cr);
 
 		// Calculate extents of what is on screen in user space units.
@@ -293,8 +292,7 @@ namespace MapEditor {
 		// Draw regions
 		if (1) {
 			// Calculate which set of map tile images to use (i.e. which zoom level)
-			if (mapTileZl>=0 && mapTileZl<MapTiled::maxZoom) {
-			int mapTileZl=lrint(log2(userTileSize))+zoomLevel; // as generated map tile images may use a different resolution for the same zoom level, we may need to make an adjustment
+			if (1) {
 				double userDevicePixelSize=pow(2.0, zoomLevelMax-1-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
 				double userMapTileImageSize=userDevicePixelSize*MapTiled::imageSize;
 
@@ -302,7 +300,7 @@ namespace MapEditor {
 				int mapTileStartY=floor(userTopLeftY/userMapTileImageSize);
 				int mapTileEndX=ceil(userBottomRightX/userMapTileImageSize);
 				int mapTileEndY=ceil(userBottomRightY/userMapTileImageSize);
-				int mapTileMax=((1u)<<mapTileZl);
+				int mapTileMax=((1u)<<zoomLevel);
 
 				if (mapTileStartX<0)
 					mapTileStartX=0;
@@ -329,7 +327,7 @@ namespace MapEditor {
 
 						// Attempt to load png image as a cairo surfaace
 						char mapTileFilename[1024];
-						MapTiled::getZoomXYPath(map, mapTileZl, mapTileX, mapTileY, MapTiled::ImageLayerBase, mapTileFilename);
+						MapTiled::getZoomXYPath(map, zoomLevel, mapTileX, mapTileY, MapTiled::ImageLayerBase, mapTileFilename);
 						cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
 						if (cairo_surface_status(mapTileSurface)!=CAIRO_STATUS_SUCCESS) {
 							// No image avaiable - use standard blank one until it has been generated
@@ -338,7 +336,7 @@ namespace MapEditor {
 							mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
 
 							// Add to list of map tiles that need generating for the current scene
-							DrawMapTileEntry mapTileEntry={.zoom=mapTileZl, .x=mapTileX, .y=mapTileY};
+							DrawMapTileEntry mapTileEntry={.zoom=zoomLevel, .x=mapTileX, .y=mapTileY};
 							mapTilesToGen.push_back(mapTileEntry);
 						}
 
@@ -364,10 +362,10 @@ namespace MapEditor {
 
 		// Draw tile grid if needed
 		if (menuViewShowTileGridIsActive() && zoomLevel>=8) {
-			double userStartX=(floor(userTopLeftX/userTileSize)-1)*userTileSize;
-			double userStartY=(floor(userTopLeftY/userTileSize)-1)*userTileSize;
-			double userEndX=(ceil(userBottomRightX/userTileSize)+1)*userTileSize;
-			double userEndY=(ceil(userBottomRightY/userTileSize)+1)*userTileSize;
+			double userStartX=floor(userTopLeftX)-1;
+			double userStartY=floor(userTopLeftY)-1;
+			double userEndX=ceil(userBottomRightX)+1;
+			double userEndY=ceil(userBottomRightY)+1;
 
 			if (userStartX<0.0) userStartX=0.0;
 			if (userStartY<0.0) userStartY=0.0;
@@ -379,13 +377,13 @@ namespace MapEditor {
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 			cairo_new_path(cr);
 
-			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=userTileSize) {
+			for(double userCurrY=userStartY; userCurrY<=userEndY; ++userCurrY) {
 				cairo_new_sub_path(cr);
 				cairo_move_to(cr, userStartX, userCurrY);
 				cairo_line_to(cr, userEndX, userCurrY);
 			}
 
-			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=userTileSize) {
+			for(double userCurrX=userStartX; userCurrX<=userEndX; ++userCurrX) {
 				cairo_new_sub_path(cr);
 				cairo_move_to(cr, userCurrX, userStartY);
 				cairo_line_to(cr, userCurrX, userEndY);
@@ -397,10 +395,10 @@ namespace MapEditor {
 
 		// Draw region grid if needed
 		if (menuViewShowRegionGridIsActive() && zoomLevel>=1) {
-			double userStartX=(floor(userTopLeftX/userRegionSizeX)-1)*userRegionSizeX;
-			double userStartY=(floor(userTopLeftY/userRegionSizeY)-1)*userRegionSizeY;
-			double userEndX=(ceil(userBottomRightX/userRegionSizeX)+1)*userRegionSizeX;
-			double userEndY=(ceil(userBottomRightY/userRegionSizeY)+1)*userRegionSizeY;
+			double userStartX=(floor(userTopLeftX/MapRegion::tilesSize)-1)*MapRegion::tilesSize;
+			double userStartY=(floor(userTopLeftY/MapRegion::tilesSize)-1)*MapRegion::tilesSize;
+			double userEndX=(ceil(userBottomRightX/MapRegion::tilesSize)+1)*MapRegion::tilesSize;
+			double userEndY=(ceil(userBottomRightY/MapRegion::tilesSize)+1)*MapRegion::tilesSize;
 
 			if (userStartX<0.0) userStartX=0.0;
 			if (userStartY<0.0) userStartY=0.0;
@@ -412,13 +410,13 @@ namespace MapEditor {
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 			cairo_new_path(cr);
 
-			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=userRegionSizeY) {
+			for(double userCurrY=userStartY; userCurrY<=userEndY; userCurrY+=MapRegion::tilesSize) {
 				cairo_new_sub_path(cr);
 				cairo_move_to(cr, userStartX, userCurrY);
 				cairo_line_to(cr, userEndX, userCurrY);
 			}
 
-			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=userRegionSizeX) {
+			for(double userCurrX=userStartX; userCurrX<=userEndX; userCurrX+=MapRegion::tilesSize) {
 				cairo_new_sub_path(cr);
 				cairo_move_to(cr, userCurrX, userStartY);
 				cairo_line_to(cr, userCurrX, userEndY);
@@ -758,8 +756,12 @@ namespace MapEditor {
 		return pow(2.0, zoomLevel-(zoomLevelMax-1));
 	}
 
+	int MainWindow::getZoomLevelHuman(void) {
+		return zoomLevel;
+	}
+
 	double MainWindow::getZoomFactorHuman(void) {
-		return pow(2.0, zoomLevel);
+		return pow(2.0, getZoomLevelHuman());
 	}
 
 	void MainWindow::updateFileMenuSensitivity(void) {
@@ -789,7 +791,7 @@ namespace MapEditor {
 
 		char *oldLocale = setlocale(LC_NUMERIC, NULL);
 		setlocale(LC_NUMERIC, "");
-		sprintf(str, "Centre (%.0f,%.0f), Zoom level %i (x%'.0f)", userCentreX, userCentreY, zoomLevel, getZoomFactorHuman());
+		sprintf(str, "Centre (%.0f,%.0f), Zoom level %i (x%f)", userCentreX, userCentreY, getZoomLevelHuman(), getZoomFactorHuman());
 		setlocale(LC_NUMERIC, oldLocale);
 
 		gtk_label_set_text(GTK_LABEL(positionLabel), str);
