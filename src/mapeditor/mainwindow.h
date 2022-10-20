@@ -35,6 +35,7 @@ namespace MapEditor {
 
 		bool menuViewZoomInActivate(GtkWidget *widget);
 		bool menuViewZoomOutActivate(GtkWidget *widget);
+		void setZoom(int level);
 
 		bool drawingAreaDraw(GtkWidget *widget, cairo_t *cr);
 		gboolean drawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event);

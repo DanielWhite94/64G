@@ -221,21 +221,28 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::menuViewZoomInActivate(GtkWidget *widget) {
-		if (zoomLevel+1<zoomLevelMax) {
-			++zoomLevel;
-			updateDrawingArea();
-			updatePositionLabel();
-		}
+		setZoom(zoomLevel+1);
 		return false;
 	}
 
 	bool MainWindow::menuViewZoomOutActivate(GtkWidget *widget) {
-		if (zoomLevel>zoomLevelMin) {
-			--zoomLevel;
-			updateDrawingArea();
-			updatePositionLabel();
-		}
+		setZoom(zoomLevel-1);
 		return false;
+	}
+
+	void MainWindow::setZoom(int level) {
+		if (level<zoomLevelMin)
+			level=zoomLevelMin;
+		if (level>=zoomLevelMax)
+			level=zoomLevelMax-1;
+
+		if (level==zoomLevel)
+			return;
+
+		zoomLevel=level;
+
+		updateDrawingArea();
+		updatePositionLabel();
 	}
 
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
