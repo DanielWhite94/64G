@@ -633,6 +633,13 @@ namespace MapEditor {
 				return false;
 		}
 
+		// Centre map within the drawing area with the zoom set such that the whole map is visible
+		double drawingW=gtk_widget_get_allocated_width(drawingArea);
+		double drawingH=gtk_widget_get_allocated_height(drawingArea);
+		setZoom(floor(log2(std::min(drawingW/map->getWidth(), drawingH/map->getHeight())))+8);
+		userCentreX=map->getWidth()/2.0;
+		userCentreY=map->getHeight()/2.0;
+
 		// Update various things
 		sprintf(statusLabelStr, "Opened map at: %s", filename);
 		gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
