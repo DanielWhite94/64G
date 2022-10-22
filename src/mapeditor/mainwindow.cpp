@@ -271,11 +271,11 @@ namespace MapEditor {
 		const double userMapSizeX=Engine::Map::Map::regionsSize*MapRegion::tilesSize;
 		const double userMapSizeY=Engine::Map::Map::regionsSize*MapRegion::tilesSize;
 
-		//                                              zoom level = {   0    1    2    3    4   5   6   7   8   9  10  11, 12, 13, 14, 15}
+		//                                              zoom level = {  0   1   2   3   4   5   6   7   8}
 		// TODO: this will need adjusting after changing MapTiled image size parameters
-		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={/*   0,   0,   0,   0,   0,  0,  0,*/  0,  0,  0,  1,  1,  1,  1,  1,  1};
-		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={/*   0,   0,   0,   0,   0,128,128,*/ 64, 32, 32, 16,  8,  8,  8,  4,  4};
-		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={/*4096,4096,2048,2048,1024,256,128,*/128, 64, 32, 32, 32,  16, 16, 8,  8};
+		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={  0,  0,  0,  1,  1,  1,  1,  1,  1};
+		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={ 64, 32, 32, 16,  8,  8,  4,  4,  2};
+		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={128, 64, 32, 32, 32, 16,  8,  8,  4};
 		assert(zoomLevelMax-zoomLevelMin==9);
 
 		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
@@ -395,7 +395,7 @@ namespace MapEditor {
 		}
 
 		// Draw tile grid if needed
-		if (menuViewShowTileGridIsActive() && zoomLevel>=8) {
+		if (menuViewShowTileGridIsActive() && zoomLevel>=10) {
 			double userStartX=floor(userTopLeftX)-1;
 			double userStartY=floor(userTopLeftY)-1;
 			double userEndX=ceil(userBottomRightX)+1;
@@ -428,7 +428,7 @@ namespace MapEditor {
 		}
 
 		// Draw region grid if needed
-		if (menuViewShowRegionGridIsActive() && zoomLevel>=1) {
+		if (menuViewShowRegionGridIsActive() && zoomLevel>=2) {
 			double userStartX=(floor(userTopLeftX/MapRegion::tilesSize)-1)*MapRegion::tilesSize;
 			double userStartY=(floor(userTopLeftY/MapRegion::tilesSize)-1)*MapRegion::tilesSize;
 			double userEndX=(ceil(userBottomRightX/MapRegion::tilesSize)+1)*MapRegion::tilesSize;
