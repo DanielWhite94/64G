@@ -408,6 +408,7 @@ namespace MapEditor {
 
 			cairo_save(cr);
 			cairo_set_line_width(cr, tileGridLineWidths[zoomLevel]);
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 			cairo_new_path(cr);
 
@@ -441,6 +442,7 @@ namespace MapEditor {
 
 			cairo_save(cr);
 			cairo_set_line_width(cr, regionGridLineWidths[zoomLevel]);
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 			cairo_new_path(cr);
 
@@ -474,6 +476,7 @@ namespace MapEditor {
 
 			cairo_save(cr);
 			cairo_set_line_width(cr, kmGridLineWidths[zoomLevel]);
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 			cairo_new_path(cr);
 
