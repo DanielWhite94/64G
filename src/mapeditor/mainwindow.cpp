@@ -36,6 +36,7 @@ gboolean mapEditorMainWindowWrapperMenuViewShowTileGridToggled(GtkWidget *widget
 gboolean mapEditorMainWindowWrapperMenuViewShowKmGridToggled(GtkWidget *widget, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer userData);
+gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData);
 
 namespace MapEditor {
 	MainWindow::MainWindow() {
@@ -82,6 +83,7 @@ namespace MapEditor {
 		error|=(menuViewLayersHeight=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersHeight")))==NULL;
 		error|=(menuViewLayersMoisture=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersMoisture")))==NULL;
 		error|=(menuViewLayersPolitical=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersPolitical")))==NULL;
+		error|=(menuViewLayersHeightContours=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersHeightContours")))==NULL;
 		error|=(menuViewZoomIn=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomIn")))==NULL;
 		error|=(menuViewZoomOut=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomOut")))==NULL;
 		error|=(menuViewZoomFit=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomFit")))==NULL;
@@ -110,6 +112,7 @@ namespace MapEditor {
 		g_signal_connect(menuViewLayersHeight, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersMoisture, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersPolitical, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
+		g_signal_connect(menuViewLayersHeightContours, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersHeightContoursToggled), (void *)this);
 
 		// Free memory used by GtkBuilder object.
 		g_object_unref(G_OBJECT(builder));
@@ -365,6 +368,27 @@ namespace MapEditor {
 							cairo_surface_destroy(mapTileSurface);
 							cairo_restore(cr);
 						}
+
+						// Do we need to draw any other layers on top?
+						if (menuViewLayersHeightContoursIsActive()) {
+							MapTiled::getZoomXYPath(map, zoomLevel, mapTileX, mapTileY, MapTiled::ImageLayerHeightContour, mapTileFilename);
+							cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+							if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
+								// To blit the png surface we will reset the cairo transformation matrix.
+								// So before we do that work out where we should be drawing said surface.
+								double deviceMapTileTopLeftX=userMapTileTopLeftX;
+								double deviceMapTileTopLeftY=userMapTileTopLeftY;
+								cairo_user_to_device(cr, &deviceMapTileTopLeftX, &deviceMapTileTopLeftY);
+
+								// Reset transformation matrix and blit
+								cairo_save(cr);
+								cairo_identity_matrix(cr);
+								cairo_set_source_surface(cr, mapTileSurface, deviceMapTileTopLeftX, deviceMapTileTopLeftY);
+								cairo_paint(cr);
+								cairo_surface_destroy(mapTileSurface);
+								cairo_restore(cr);
+							}
+						}
 					}
 				}
 			}
@@ -552,6 +576,15 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::menuViewLayersToggled(GtkWidget *widget) {
+		updateDrawingArea();
+		return false;
+	}
+
+	bool MainWindow::menuViewLayersHeightContoursIsActive(void) {
+		return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewLayersHeightContours));
+	}
+
+	bool MainWindow::menuViewLayersHeightContoursToggled(GtkWidget *widget) {
 		updateDrawingArea();
 		return false;
 	}
@@ -912,4 +945,9 @@ gboolean mapEditorMainWindowWrapperMenuViewShowKmGridToggled(GtkWidget *widget, 
 gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuViewLayersToggled(widget);
+}
+
+gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuViewLayersHeightContoursToggled(widget);
 }
