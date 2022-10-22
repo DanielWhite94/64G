@@ -245,6 +245,18 @@ namespace MapEditor {
 		updatePositionLabel();
 	}
 
+	void MainWindow::zoomFit(void) {
+		if (map==NULL)
+			return;
+
+		userCentreX=map->getWidth()/2.0;
+		userCentreY=map->getHeight()/2.0;
+
+		double ratioW=gtk_widget_get_allocated_width(drawingArea)/((double)map->getWidth());
+		double ratioH=gtk_widget_get_allocated_height(drawingArea)/((double)map->getHeight());
+		setZoom(floor(log2(std::min(ratioW, ratioH)))+8);
+	}
+
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
 		// Clear 'to gen' list (ready to populate during this function)
 		mapTilesToGen.clear();
@@ -633,21 +645,16 @@ namespace MapEditor {
 				return false;
 		}
 
-		// Centre map within the drawing area with the zoom set such that the whole map is visible
-		double drawingW=gtk_widget_get_allocated_width(drawingArea);
-		double drawingH=gtk_widget_get_allocated_height(drawingArea);
-		setZoom(floor(log2(std::min(drawingW/map->getWidth(), drawingH/map->getHeight())))+8);
-		userCentreX=map->getWidth()/2.0;
-		userCentreY=map->getHeight()/2.0;
-
 		// Update various things
 		sprintf(statusLabelStr, "Opened map at: %s", filename);
 		gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 
 		updateFileMenuSensitivity();
 		updateTitle();
-		updateDrawingArea();
-		updatePositionLabel();
+
+		// Centre map within the drawing area with the zoom set such that the whole map is visible
+		// This also updates the drawing area and position label
+		zoomFit();
 
 		// Tidy up
 		g_free(filename);

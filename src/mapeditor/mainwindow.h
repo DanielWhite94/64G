@@ -36,6 +36,7 @@ namespace MapEditor {
 		bool menuViewZoomInActivate(GtkWidget *widget);
 		bool menuViewZoomOutActivate(GtkWidget *widget);
 		void setZoom(int level);
+		void zoomFit(void); // set zoom and centre x/y such that the entire map is visible and centered
 
 		bool drawingAreaDraw(GtkWidget *widget, cairo_t *cr);
 		gboolean drawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event);
