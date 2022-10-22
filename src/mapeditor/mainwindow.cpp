@@ -23,6 +23,7 @@ gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpoin
 
 gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData);
+gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
@@ -77,6 +78,7 @@ namespace MapEditor {
 		error|=(menuViewShowKmGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowKmGrid")))==NULL;
 		error|=(menuViewZoomIn=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomIn")))==NULL;
 		error|=(menuViewZoomOut=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomOut")))==NULL;
+		error|=(menuViewZoomFit=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomFit")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
@@ -90,6 +92,7 @@ namespace MapEditor {
 		g_signal_connect(menuFileQuit, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuFileQuitActivate), (void *)this);
 		g_signal_connect(menuViewZoomIn, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomInActivate), (void *)this);
 		g_signal_connect(menuViewZoomOut, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomOutActivate), (void *)this);
+		g_signal_connect(menuViewZoomFit, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomFitActivate), (void *)this);
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
 		g_signal_connect(drawingArea, "key-press-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyPressEvent), (void *)this);
 		g_signal_connect(drawingArea, "key-release-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent), (void *)this);
@@ -227,6 +230,11 @@ namespace MapEditor {
 
 	bool MainWindow::menuViewZoomOutActivate(GtkWidget *widget) {
 		setZoom(zoomLevel-1);
+		return false;
+	}
+
+	bool MainWindow::menuViewZoomFitActivate(GtkWidget *widget) {
+		zoomFit();
 		return false;
 	}
 
@@ -862,6 +870,11 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpo
 gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuViewZoomOutActivate(widget);
+}
+
+gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuViewZoomFitActivate(widget);
 }
 
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {

@@ -35,6 +35,7 @@ namespace MapEditor {
 
 		bool menuViewZoomInActivate(GtkWidget *widget);
 		bool menuViewZoomOutActivate(GtkWidget *widget);
+		bool menuViewZoomFitActivate(GtkWidget *widget);
 		void setZoom(int level);
 		void zoomFit(void); // set zoom and centre x/y such that the entire map is visible and centered
 
@@ -58,6 +59,7 @@ namespace MapEditor {
 		GtkWidget *menuFileQuit;
 		GtkWidget *menuViewZoomIn;
 		GtkWidget *menuViewZoomOut;
+		GtkWidget *menuViewZoomFit;
 		GtkWidget *statusLabel;
 		GtkWidget *positionLabel;
 		GtkWidget *drawingArea;
