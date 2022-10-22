@@ -28,6 +28,8 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gp
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
+void mapEditorMainWindowWrapperDrawingAreaDragBegin(GtkGestureDrag *gesture, double x, double y, gpointer userData);
+void mapEditorMainWindowWrapperDrawingAreaDragUpdate(GtkGestureDrag *gesture, double x, double y, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpointer userData);
 
@@ -113,6 +115,11 @@ namespace MapEditor {
 		g_signal_connect(menuViewLayersMoisture, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersPolitical, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersHeightContours, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersHeightContoursToggled), (void *)this);
+
+		GtkGesture *drag=gtk_gesture_drag_new(drawingArea); // TODO: does this need freed at some point?
+		gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(drag), GDK_BUTTON_PRIMARY);
+		g_signal_connect(drag, "drag-begin", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDragBegin), (void *)this);
+		g_signal_connect(drag, "drag-update", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDragUpdate), (void *)this);
 
 		// Free memory used by GtkBuilder object.
 		g_object_unref(G_OBJECT(builder));
@@ -539,6 +546,20 @@ namespace MapEditor {
 		return false;
 	}
 
+	void MainWindow::drawingAreaDragBegin(double startX, double startY) {
+		dragBeginUserCentreX=userCentreX;
+		dragBeginUserCentreY=userCentreY;
+	}
+
+	void MainWindow::drawingAreaDragUpdate(double startX, double startY, double offsetX, double offsetY) {
+		double zoomFactor=getZoomFactor();
+		userCentreX=dragBeginUserCentreX-offsetX/zoomFactor;
+		userCentreY=dragBeginUserCentreY-offsetY/zoomFactor;
+
+		updateDrawingArea();
+		updatePositionLabel();
+	}
+
 	bool MainWindow::menuViewShowRegionGridIsActive(void) {
 		return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewShowRegionGrid));
 	}
@@ -932,6 +953,19 @@ gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, G
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->drawingAreaKeyReleaseEvent(widget, event);
+}
+
+void mapEditorMainWindowWrapperDrawingAreaDragBegin(GtkGestureDrag *gesture, double x, double y, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	mainWindow->drawingAreaDragBegin(x, y);
+}
+
+void mapEditorMainWindowWrapperDrawingAreaDragUpdate(GtkGestureDrag *gesture, double x, double y, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+
+	double startX, startY;
+	if (gtk_gesture_drag_get_start_point(gesture, &startX, &startY))
+		mainWindow->drawingAreaDragUpdate(startX, startY, x, y);
 }
 
 gboolean mapEditorMainWindowWrapperMenuViewShowRegionGridToggled(GtkWidget *widget, gpointer userData) {
