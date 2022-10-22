@@ -855,7 +855,7 @@ namespace MapEditor {
 
 		char *oldLocale = setlocale(LC_NUMERIC, NULL);
 		setlocale(LC_NUMERIC, "");
-		sprintf(str, "Centre (%.0f,%.0f), Zoom level %i (x%f)", userCentreX, userCentreY, getZoomLevelHuman(), getZoomFactorHuman());
+		sprintf(str, "Centre (%.0f,%.0f), Zoom level %i (x%.0f)", userCentreX, userCentreY, getZoomLevelHuman(), getZoomFactorHuman());
 		setlocale(LC_NUMERIC, oldLocale);
 
 		gtk_label_set_text(GTK_LABEL(positionLabel), str);
