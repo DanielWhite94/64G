@@ -48,8 +48,8 @@ namespace Engine {
 			// If the zoom level is the max then we generate the image directly with MapPngLib.
 			// In any of the four child images are missing, we recurse to generate them.
 			// If/once all four children exist, we scale and stitch them to create the desired image.
-			// mapMinZoom is the minimum zoom level needed for a single image to contain the entire map (this is based on the map's size, see slippymap/main.cpp for more info)
-			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData);
+			// If timeoutMs is not 0 and has been exceed, once at least one new image has been generated the function will return early, potentially unfinished.
+			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs timeoutMs, GenerateImageProgress *progressFunctor, void *progressUserData);
 
 			static void getZoomPath(const class Map *map, unsigned zoom, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]); // TODO: improve hardcoded size
@@ -57,7 +57,7 @@ namespace Engine {
 			static void getBlankImagePath(const class Map *map, char path[1024]); // TODO: improve hardcoded size
 
 		private:
-			static bool generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs);
+			static bool generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs endTimeMs, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs);
 		};
 	};
 };

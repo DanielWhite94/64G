@@ -103,7 +103,7 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, GenerateImageProgress *progressFunctor, void *progressUserData) {
+		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs timeoutMs, GenerateImageProgress *progressFunctor, void *progressUserData) {
 			// Compute total number of images we need to generate worst case
 			unsigned layerCount=0;
 			for(ImageLayer layer=0; layer<ImageLayerNB; ++layer)
@@ -116,8 +116,9 @@ namespace Engine {
 			imagesTotal*=layerCount;
 
 			// Use recursive helper function
+			Util::TimeMs endTimeMs=(timeoutMs>0 ? Util::getTimeMs()+timeoutMs : 0);
 			unsigned long long int imagesDone=0;
-			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, &imagesDone, imagesTotal, progressFunctor, progressUserData, Util::getTimeMs());
+			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, endTimeMs, &imagesDone, imagesTotal, progressFunctor, progressUserData, Util::getTimeMs());
 		}
 
 		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
@@ -136,7 +137,7 @@ namespace Engine {
 			sprintf(path, "%s/blank.png", map->getMapTiledDir());
 		}
 
-		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs) {
+		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs endTimeMs, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs) {
 			// Invoke progress update if needed
 			assert(*imagesDone<=imagesTotal);
 			if (progressFunctor!=NULL)
@@ -201,6 +202,11 @@ namespace Engine {
 						return false;
 
 					++*imagesDone;
+
+					// Time limit reached?
+					if (endTimeMs>0 && Util::getTimeMs()>=endTimeMs)
+						return false;
+
 					continue;
 				}
 			} else {
@@ -212,7 +218,7 @@ namespace Engine {
 					for(unsigned ty=0; ty<2; ++ty) {
 						unsigned childX=childBaseX+tx;
 						unsigned childY=childBaseY+ty;
-						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, imagesDone, imagesTotal, progressFunctor, progressUserData, startTimeMs))
+						if (!generateImageHelper(map, childZoom, childX, childY, imageLayerSet, endTimeMs, imagesDone, imagesTotal, progressFunctor, progressUserData, startTimeMs))
 							return false;
 					}
 
@@ -241,6 +247,10 @@ namespace Engine {
 					system(stitchCommand);
 
 					++*imagesDone;
+
+					// Time limit reached?
+					if (endTimeMs>0 && Util::getTimeMs()>=endTimeMs)
+						return false;
 				}
 			}
 
