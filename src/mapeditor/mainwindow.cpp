@@ -589,8 +589,10 @@ namespace MapEditor {
 
 		updateFileMenuSensitivity();
 		updateTitle();
-		updateDrawingArea();
-		updatePositionLabel();
+
+		// Centre map within the drawing area with the zoom set such that the whole map is visible
+		// This also updates the drawing area and position label
+		zoomFit();
 
 		// Tidy up
 		g_free(filename);
