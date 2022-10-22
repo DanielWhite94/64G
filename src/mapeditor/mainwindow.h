@@ -11,10 +11,6 @@
 namespace MapEditor {
 	class MainWindow {
 	public:
-		struct DrawMapTileEntry {
-			int zoom, x, y;
-		};
-
 		MainWindow();
 		~MainWindow();
 
@@ -77,8 +73,6 @@ namespace MapEditor {
 
 		bool keyPanningLeft, keyPanningRight, keyPanningUp, keyPanningDown;
 		gint64 lastTickTimeMs;
-
-		vector<DrawMapTileEntry> mapTilesToGen;
 	private:
 		bool mapNew(void);
 		bool mapOpen(void); // Returns true if successfully opened, false if user clicks cancel of the choosen folder is not a valid map.

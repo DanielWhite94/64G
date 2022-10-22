@@ -38,7 +38,6 @@ gboolean mapEditorMainWindowWrapperMenuViewShowKmGridToggled(GtkWidget *widget, 
 namespace MapEditor {
 	MainWindow::MainWindow() {
 		// Clear basic fields
-		mapTilesToGen.clear();
 		map=NULL;
 		zoomLevel=zoomLevelMin;
 		userCentreX=0;
@@ -163,29 +162,6 @@ namespace MapEditor {
 	}
 
 	void MainWindow::idleTick(void) {
-		// If there is a map loaded, we may need to generate more images.
-		if (map!=NULL && !mapTilesToGen.empty()) {
-			if (!mapTilesToGen.empty()) {
-				// Take most recently marked 'maptile' and generate it, then remove it from the queue.
-				const DrawMapTileEntry &mapTileEntry=mapTilesToGen.back();
-				// TODO: fix this call - previously have genOnce=true so that only a single image would be generated before returning
-				// However, we retired this functionality from generateImage as it was inefficient and complex.
-				// Will need an alternative to use here
-				if (MapTiled::generateImage(map, mapTileEntry.zoom, mapTileEntry.x, mapTileEntry.y, MapTiled::ImageLayerSetAll, NULL, NULL))
-					mapTilesToGen.pop_back();
-
-				// Force redraw to show new image
-				updateDrawingArea();
-			}
-
-			// Update status bar
-			char statusLabelStr[128];
-			if (!mapTilesToGen.empty())
-				sprintf(statusLabelStr, "%llu images still to render", (unsigned long long)mapTilesToGen.size());
-			else
-				sprintf(statusLabelStr, "image rendering complete");
-			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
-		}
 	}
 
 	bool MainWindow::deleteEvent(GtkWidget *widget, GdkEvent *event) {
@@ -266,9 +242,6 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
-		// Clear 'to gen' list (ready to populate during this function)
-		mapTilesToGen.clear();
-
 		// Special case if no map loaded
 		if (map==NULL) {
 			// Simply clear screen to black
@@ -361,10 +334,6 @@ namespace MapEditor {
 							cairo_surface_destroy(mapTileSurface);
 							MapTiled::getBlankImagePath(map, mapTileFilename);
 							mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
-
-							// Add to list of map tiles that need generating for the current scene
-							DrawMapTileEntry mapTileEntry={.zoom=zoomLevel, .x=mapTileX, .y=mapTileY};
-							mapTilesToGen.push_back(mapTileEntry);
 						}
 
 						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
