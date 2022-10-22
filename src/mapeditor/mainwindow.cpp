@@ -603,8 +603,10 @@ namespace MapEditor {
 		    "Create", GTK_RESPONSE_ACCEPT,
 		NULL);
 
-		if (gtk_dialog_run(GTK_DIALOG(dialog))!=GTK_RESPONSE_ACCEPT)
+		if (gtk_dialog_run(GTK_DIALOG(dialog))!=GTK_RESPONSE_ACCEPT) {
+			gtk_widget_destroy(dialog);
 			return false;
+		}
 
 		// Extract filename
 		char *filename=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
@@ -649,8 +651,10 @@ namespace MapEditor {
 		    "Open", GTK_RESPONSE_ACCEPT,
 		NULL);
 
-		if (gtk_dialog_run(GTK_DIALOG(dialog))!=GTK_RESPONSE_ACCEPT)
+		if (gtk_dialog_run(GTK_DIALOG(dialog))!=GTK_RESPONSE_ACCEPT) {
+			gtk_widget_destroy(dialog);
 			return false;
+		}
 
 		// Extract filename
 		char *filename=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
