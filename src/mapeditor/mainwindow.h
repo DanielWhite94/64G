@@ -46,6 +46,9 @@ namespace MapEditor {
 		bool menuViewShowKmGridIsActive(void);
 		bool menuViewShowKmGridToggled(GtkWidget *widget);
 
+		MapTiled::ImageLayer menuViewLayersGetActiveLayer(void);
+		bool menuViewLayersToggled(GtkWidget *widget);
+
 		GtkWidget *window;
 		GtkWidget *menuFileNew;
 		GtkWidget *menuFileOpen;
@@ -62,6 +65,11 @@ namespace MapEditor {
 		GtkWidget *menuViewShowRegionGrid;
 		GtkWidget *menuViewShowTileGrid;
 		GtkWidget *menuViewShowKmGrid;
+		GtkWidget *menuViewLayersBase;
+		GtkWidget *menuViewLayersTemperature;
+		GtkWidget *menuViewLayersHeight;
+		GtkWidget *menuViewLayersMoisture;
+		GtkWidget *menuViewLayersPolitical;
 
 		class Map *map;
 
