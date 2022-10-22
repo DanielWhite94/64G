@@ -87,6 +87,10 @@ namespace MapEditor {
 
 		bool keyPanningLeft, keyPanningRight, keyPanningUp, keyPanningDown;
 		gint64 lastTickTimeMs;
+
+		// If this is set then whenever we are idle we will work towards generating this image, otherwise we work towards generating any missing images.
+		int mapTileToGenX, mapTileToGenY, mapTileToGenZoom;
+		MapTiled::ImageLayerSet mapTileToGenLayerSet;
 	private:
 		bool mapNew(void);
 		bool mapOpen(void); // Returns true if successfully opened, false if user clicks cancel of the choosen folder is not a valid map.

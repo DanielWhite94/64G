@@ -54,6 +54,11 @@ namespace MapEditor {
 		keyPanningUp=false;
 		keyPanningDown=false;
 
+		mapTileToGenX=0;
+		mapTileToGenY=0;
+		mapTileToGenZoom=0;
+		mapTileToGenLayerSet=MapTiled::ImageLayerSetAll;
+
 		// Use GtkBuilder to build our interface from the XML file.
 		GtkBuilder *builder=gtk_builder_new();
 		GError *err=NULL;
@@ -184,6 +189,22 @@ namespace MapEditor {
 	}
 
 	void MainWindow::idleTick(void) {
+		// No map?
+		if (map==NULL)
+			return;
+
+		// Generate a needed image (or work towards it by generating a child image)
+		if (!MapTiled::generateImage(map, mapTileToGenZoom, mapTileToGenX, mapTileToGenY, mapTileToGenLayerSet, 100, NULL, NULL))
+			return;
+
+		// Reset to-gen variables
+		mapTileToGenX=0;
+		mapTileToGenY=0;
+		mapTileToGenZoom=0;
+		mapTileToGenLayerSet=MapTiled::ImageLayerSetAll;
+
+		// Show newly generated image
+		updateDrawingArea();
 	}
 
 	bool MainWindow::deleteEvent(GtkWidget *widget, GdkEvent *event) {
@@ -272,6 +293,12 @@ namespace MapEditor {
 			return false;
 		}
 
+		// Clear any existing to-gen image
+		mapTileToGenX=0;
+		mapTileToGenY=0;
+		mapTileToGenZoom=0;
+		mapTileToGenLayerSet=MapTiled::ImageLayerSetAll;
+
 		// Various parameters
 		const double userKmSizeX=4.0*MapRegion::tilesSize;
 		const double userKmSizeY=4.0*MapRegion::tilesSize;
@@ -358,6 +385,14 @@ namespace MapEditor {
 							cairo_surface_destroy(mapTileSurface);
 							MapTiled::getBlankImagePath(map, mapTileFilename);
 							mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+
+							// Set to-gen variables to indicate this image is missing and needs generating
+							mapTileToGenX=mapTileX;
+							mapTileToGenY=mapTileY;
+							mapTileToGenZoom=zoomLevel;
+							mapTileToGenLayerSet=((1u)<<activeLayer);
+							if (menuViewLayersHeightContoursIsActive())
+								mapTileToGenLayerSet|=MapTiled::ImageLayerSetHeightContour;
 						}
 
 						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
@@ -641,6 +676,12 @@ namespace MapEditor {
 			return false;
 		}
 
+		// Reset to-gen variables
+		mapTileToGenX=0;
+		mapTileToGenY=0;
+		mapTileToGenZoom=0;
+		mapTileToGenLayerSet=MapTiled::ImageLayerSetAll;
+
 		// Update various things
 		char statusLabelStr[1024]; // TODO: better
 		sprintf(statusLabelStr, "Created new map at: %s", filename);
@@ -715,6 +756,12 @@ namespace MapEditor {
 			} else
 				return false;
 		}
+
+		// Reset to-gen variables
+		mapTileToGenX=0;
+		mapTileToGenY=0;
+		mapTileToGenZoom=0;
+		mapTileToGenLayerSet=MapTiled::ImageLayerSetAll;
 
 		// Update various things
 		sprintf(statusLabelStr, "Opened map at: %s", filename);
