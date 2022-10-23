@@ -387,12 +387,14 @@ namespace MapEditor {
 							mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
 
 							// Set to-gen variables to indicate this image is missing and needs generating
-							mapTileToGenX=mapTileX;
-							mapTileToGenY=mapTileY;
-							mapTileToGenZoom=zoomLevel;
-							mapTileToGenLayerSet=((1u)<<activeLayer);
-							if (menuViewLayersHeightContoursIsActive())
-								mapTileToGenLayerSet|=MapTiled::ImageLayerSetHeightContour;
+							if (mapTileToGenZoom==0) {
+								mapTileToGenX=mapTileX;
+								mapTileToGenY=mapTileY;
+								mapTileToGenZoom=zoomLevel;
+								mapTileToGenLayerSet=((1u)<<activeLayer);
+								if (menuViewLayersHeightContoursIsActive())
+									mapTileToGenLayerSet|=MapTiled::ImageLayerSetHeightContour;
+							}
 						}
 
 						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
