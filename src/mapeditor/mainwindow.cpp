@@ -392,8 +392,6 @@ namespace MapEditor {
 								mapTileToGenY=mapTileY;
 								mapTileToGenZoom=zoomLevel;
 								mapTileToGenLayerSet=((1u)<<activeLayer);
-								if (menuViewLayersHeightContoursIsActive())
-									mapTileToGenLayerSet|=MapTiled::ImageLayerSetHeightContour;
 							}
 						}
 
@@ -431,6 +429,14 @@ namespace MapEditor {
 								cairo_paint(cr);
 								cairo_surface_destroy(mapTileSurface);
 								cairo_restore(cr);
+							} else {
+								// Set to-gen variables to indicate this image is missing and needs generating
+								if (mapTileToGenZoom==0) {
+									mapTileToGenX=mapTileX;
+									mapTileToGenY=mapTileY;
+									mapTileToGenZoom=zoomLevel;
+									mapTileToGenLayerSet=MapTiled::ImageLayerSetHeightContour;
+								}
 							}
 						}
 					}
