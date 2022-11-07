@@ -12,7 +12,7 @@
 namespace MapEditor {
 	class MainWindow {
 	public:
-		MainWindow();
+		MainWindow(const char *filename); // pass NULL for no initial map
 		~MainWindow();
 
 		void show();
@@ -94,8 +94,10 @@ namespace MapEditor {
 		int mapTileToGenX, mapTileToGenY, mapTileToGenZoom;
 		MapTiled::ImageLayerSet mapTileToGenLayerSet;
 	private:
+		const char *initialMapFilenameToOpen;
+
 		bool mapNew(void);
-		bool mapOpen(void); // Returns true if successfully opened, false if user clicks cancel of the choosen folder is not a valid map.
+		bool mapOpen(const char *filename); // Returns true if successfully opened, false if choosen folder is not a valid map.
 		bool mapSave(void); // Returns false on failure to save
 		bool mapSaveAs(void); // Returns false on failure to save or user choosing cancel in file chooser dialogue
 		bool mapClose(void); // Can return false if map has unsaved changes and they choose to cancel. Returns true if no map even loaded.

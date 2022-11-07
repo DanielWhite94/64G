@@ -17,9 +17,14 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
+	// Check for arguments
+	char *pathToOpen=NULL;
+	if (argc>=2)
+		pathToOpen=argv[1];
+
 	// Init map editor
 	try {
-		MapEditor::Main m;
+		MapEditor::Main m(pathToOpen);
 
 		// Main loop.
 		g_timeout_add(mainTickIntervalMs, &mainTick, (void *)&m);
@@ -46,8 +51,8 @@ gint mainIdleTick(gpointer data) {
 }
 
 namespace MapEditor {
-	Main::Main() {
-		mainWindow=new MainWindow();
+	Main::Main(const char *pathToOpen) {
+		mainWindow=new MainWindow(pathToOpen);
 		mainWindow->show();
 	}
 

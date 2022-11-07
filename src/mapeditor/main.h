@@ -6,7 +6,7 @@
 namespace MapEditor {
 	class Main {
 	public:
-		Main();
+		Main(const char *pathToOpen);
 		~Main();
 
 		void tick(void);

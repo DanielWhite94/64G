@@ -42,7 +42,7 @@ gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer
 gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData);
 
 namespace MapEditor {
-	MainWindow::MainWindow() {
+	MainWindow::MainWindow(const char *filename) {
 		// Clear basic fields
 		map=NULL;
 		zoomLevel=zoomLevelMin;
@@ -59,6 +59,8 @@ namespace MapEditor {
 		mapTileToGenY=0;
 		mapTileToGenZoom=0;
 		mapTileToGenLayerSet=MapTiled::ImageLayerSetAll;
+
+		initialMapFilenameToOpen=filename;
 
 		// Use GtkBuilder to build our interface from the XML file.
 		GtkBuilder *builder=gtk_builder_new();
@@ -158,6 +160,10 @@ namespace MapEditor {
 	}
 
 	void MainWindow::tick(void) {
+		// If this is the first tick, we may need to open a map
+		if (lastTickTimeMs==0 && initialMapFilenameToOpen!=NULL)
+			mapOpen(initialMapFilenameToOpen);
+
 		// Compute time since last tick
 		gint64 tickTimeMs=g_get_monotonic_time()/1000.0;
 		double timeDeltaMs=(lastTickTimeMs>0 ? tickTimeMs-lastTickTimeMs : 1);
@@ -220,7 +226,27 @@ namespace MapEditor {
 	}
 
 	bool MainWindow::menuFileOpenActivate(GtkWidget *widget) {
-		mapOpen();
+		// Prompt user for filename
+		GtkWidget *dialog=gtk_file_chooser_dialog_new("Open Map", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+		    "Cancel", GTK_RESPONSE_CANCEL,
+		    "Open", GTK_RESPONSE_ACCEPT,
+		NULL);
+
+		if (gtk_dialog_run(GTK_DIALOG(dialog))!=GTK_RESPONSE_ACCEPT) {
+			gtk_widget_destroy(dialog);
+			return false;
+		}
+
+		// Extract filename
+		char *filename=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gtk_widget_destroy(dialog);
+
+		// Call mapOpen to do the rest of the work
+		mapOpen(filename);
+
+		// Tidy up
+		g_free(filename);
+
 		return false;
 	}
 
@@ -278,12 +304,18 @@ namespace MapEditor {
 		if (map==NULL)
 			return;
 
+		// Find centre of the map
 		userCentreX=map->getWidth()/2.0;
 		userCentreY=map->getHeight()/2.0;
 
+		// Calculate zoom level which shows entire map
 		double ratioW=gtk_widget_get_allocated_width(drawingArea)/((double)map->getWidth());
 		double ratioH=gtk_widget_get_allocated_height(drawingArea)/((double)map->getHeight());
 		setZoom(floor(log2(std::min(ratioW, ratioH)))+8);
+
+		// Call these manually here in case setZoom didn't because there was no change in the zoom level
+		updateDrawingArea();
+		updatePositionLabel();
 	}
 
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
@@ -724,27 +756,12 @@ namespace MapEditor {
 		return true;
 	}
 
-	bool MainWindow::mapOpen(void) {
+	bool MainWindow::mapOpen(const char *filename) {
 		char statusLabelStr[1024]; // TODO: better
 
 		// Close the current map (if any)
 		if (!mapClose())
 			return false;
-
-		// Prompt user for filename
-		GtkWidget *dialog=gtk_file_chooser_dialog_new("Open Map", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-		    "Cancel", GTK_RESPONSE_CANCEL,
-		    "Open", GTK_RESPONSE_ACCEPT,
-		NULL);
-
-		if (gtk_dialog_run(GTK_DIALOG(dialog))!=GTK_RESPONSE_ACCEPT) {
-			gtk_widget_destroy(dialog);
-			return false;
-		}
-
-		// Extract filename
-		char *filename=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		gtk_widget_destroy(dialog);
 
 		// Attempt to load map
 		try {
@@ -797,9 +814,6 @@ namespace MapEditor {
 		// Centre map within the drawing area with the zoom set such that the whole map is visible
 		// This also updates the drawing area and position label
 		zoomFit();
-
-		// Tidy up
-		g_free(filename);
 
 		return true;
 	}
