@@ -877,29 +877,6 @@ namespace MapEditor {
 		if (map==NULL)
 			return true;
 
-		// If there are unsaved changes prompt the user for confirmation.
-		/*
-		TODO: this
-		if (....unsaved changes) {
-			switch(.....response) {
-				case .....save:
-					if (!mapSave())
-						return false;
-				break;
-				case .....saveas:
-					if (!mapSaveAs())
-						return false;
-				break;
-				case .....discard:
-					// Nothing to do - simply avoid saving
-				break;
-				case .....cancel:
-					return false;
-				break;
-			}
-		}
-		*/
-
 		// Unload the current map
 		delete map;
 		map=NULL;
