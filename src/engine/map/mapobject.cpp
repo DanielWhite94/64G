@@ -14,7 +14,7 @@ namespace Engine {
 			movementMode=MapObjectMovementMode::Static;
 
 			for(unsigned i=0; i<CoordAngleNB; ++i)
-				textureIds[i]=0;
+				textureIds[i]=MapTexture::IdMax;
 
 			isItem=false;
 			isInventory=false;
@@ -49,7 +49,7 @@ namespace Engine {
 			movementMode=MapObjectMovementMode::Static;
 
 			for(unsigned i=0; i<CoordAngleNB; ++i)
-				textureIds[i]=0;
+				textureIds[i]=MapTexture::IdMax;
 
 			isItem=false;
 			isInventory=false;

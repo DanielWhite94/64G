@@ -13,7 +13,7 @@
 
 namespace Engine {
 	namespace Map {
-		MapTexture::MapTexture(unsigned gId, const char *gPath, unsigned gScale) {
+		MapTexture::MapTexture(unsigned gId, const char *gPath, unsigned gScale, uint8_t gMapColourR, uint8_t gMapColourG, uint8_t gMapColourB) {
 			assert(gId<IdMax);
 			assert(gPath!=NULL);
 			assert(gScale>=1);
@@ -22,6 +22,9 @@ namespace Engine {
 			path=(char *)malloc(strlen(gPath)+1); // TODO: Check return.
 			strcpy(path, gPath);
 			scale=gScale;
+			mapColourR=gMapColourR;
+			mapColourG=gMapColourG;
+			mapColourB=gMapColourB;
 		}
 
 		MapTexture::~MapTexture() {
@@ -35,7 +38,7 @@ namespace Engine {
 			// Copy image file.
 			const char *extension="png"; // TODO: Avoid hardcoding this.
 			char outPath[4096]; // TODO: This better.
-			sprintf(outPath, "%s/%us%u.%s", texturesDirPath, getId(), getScale(), extension);
+			sprintf(outPath, "%s/%us%ur%ug%ub%u.%s", texturesDirPath, getId(), getScale(), getMapColourR(), getMapColourG(), getMapColourB(), extension);
 
 			int inFd=open(getImagePath(), O_RDONLY); // TODO: Check return.
 			int outFd=open(outPath, O_WRONLY|O_CREAT, 0777); // TODO: Check return.
@@ -82,6 +85,18 @@ namespace Engine {
 
 		unsigned MapTexture::getScale(void) const {
 			return scale;
+		}
+
+		uint8_t MapTexture::getMapColourR(void) const {
+			return mapColourR;
+		}
+
+		uint8_t MapTexture::getMapColourG(void) const {
+			return mapColourG;
+		}
+
+		uint8_t MapTexture::getMapColourB(void) const {
+			return mapColourB;
 		}
 	};
 };

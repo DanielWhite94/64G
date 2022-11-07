@@ -16,6 +16,54 @@
 using namespace Engine;
 using namespace Engine::Map;
 
+static const MapTexture::Id TextureIdGrass0=0;
+static const MapTexture::Id TextureIdGrass1=1;
+static const MapTexture::Id TextureIdGrass2=2;
+static const MapTexture::Id TextureIdGrass3=3;
+static const MapTexture::Id TextureIdGrass4=4;
+static const MapTexture::Id TextureIdGrass5=5;
+static const MapTexture::Id TextureIdBrickPath=6;
+static const MapTexture::Id TextureIdDirt=7;
+static const MapTexture::Id TextureIdDock=8;
+static const MapTexture::Id TextureIdWater=9;
+static const MapTexture::Id TextureIdTree1=10;
+static const MapTexture::Id TextureIdTree2=11;
+static const MapTexture::Id TextureIdTree3=12;
+static const MapTexture::Id TextureIdMan1=13;
+static const MapTexture::Id TextureIdOldManN=14;
+static const MapTexture::Id TextureIdOldManE=15;
+static const MapTexture::Id TextureIdOldManS=16;
+static const MapTexture::Id TextureIdOldManW=17;
+static const MapTexture::Id TextureIdHouseDoorBL=18;
+static const MapTexture::Id TextureIdHouseDoorBR=19;
+static const MapTexture::Id TextureIdHouseDoorTL=20;
+static const MapTexture::Id TextureIdHouseDoorTR=21;
+static const MapTexture::Id TextureIdHouseRoof=22;
+static const MapTexture::Id TextureIdHouseRoofTop=23;
+static const MapTexture::Id TextureIdHouseWall2=24;
+static const MapTexture::Id TextureIdHouseWall3=25;
+static const MapTexture::Id TextureIdHouseWall4=26;
+static const MapTexture::Id TextureIdHouseChimney=27;
+static const MapTexture::Id TextureIdHouseChimneyTop=28;
+static const MapTexture::Id TextureIdSand=29;
+static const MapTexture::Id TextureIdHotSand=30;
+static const MapTexture::Id TextureIdShopCobbler=31;
+static const MapTexture::Id TextureIdSnow=32;
+static const MapTexture::Id TextureIdDeepWater=33;
+static const MapTexture::Id TextureIdRiver=34;
+static const MapTexture::Id TextureIdHighAlpine=35;
+static const MapTexture::Id TextureIdLowAlpine=36;
+static const MapTexture::Id TextureIdSheepN=37;
+static const MapTexture::Id TextureIdSheepE=38;
+static const MapTexture::Id TextureIdSheepS=39;
+static const MapTexture::Id TextureIdSheepW=40;
+static const MapTexture::Id TextureIdDog=41;
+static const MapTexture::Id TextureIdRoseBush=42;
+static const MapTexture::Id TextureIdCoins=43;
+static const MapTexture::Id TextureIdChestClosed=44;
+static const MapTexture::Id TextureIdChestOpen=45;
+static const MapTexture::Id TextureIdNB=46;
+
 enum DemoGenTileLayer {
 	DemoGenTileLayerGround,
 	DemoGenTileLayerDecoration,
@@ -44,6 +92,8 @@ typedef struct {
 	double landSqKm, arableSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
+bool demogenAddBaseTextures(class Map *map);
+
 void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGrassForestModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
@@ -54,6 +104,159 @@ void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsign
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
 void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
+
+bool demogenAddBaseTextures(class Map *map) {
+	const char *texturePaths[TextureIdNB]={
+		[TextureIdGrass0]="../images/tiles/grass0.png",
+		[TextureIdGrass1]="../images/tiles/grass1.png",
+		[TextureIdGrass2]="../images/tiles/grass2.png",
+		[TextureIdGrass3]="../images/tiles/grass3.png",
+		[TextureIdGrass4]="../images/tiles/grass4.png",
+		[TextureIdGrass5]="../images/tiles/grass5.png",
+		[TextureIdBrickPath]="../images/tiles/tile.png",
+		[TextureIdDirt]="../images/tiles/dirt.png",
+		[TextureIdDock]="../images/tiles/dock.png",
+		[TextureIdWater]="../images/tiles/water.png",
+		[TextureIdTree1]="../images/objects/tree1.png",
+		[TextureIdTree2]="../images/objects/tree2.png",
+		[TextureIdTree3]="../images/objects/tree3.png",
+		[TextureIdMan1]="../images/objects/man1.png",
+		[TextureIdOldManN]="../images/npcs/oldbeardman/north.png",
+		[TextureIdOldManE]="../images/npcs/oldbeardman/east.png",
+		[TextureIdOldManS]="../images/npcs/oldbeardman/south.png",
+		[TextureIdOldManW]="../images/npcs/oldbeardman/west.png",
+		[TextureIdHouseDoorBL]="../images/tiles/house/doorbl.png",
+		[TextureIdHouseDoorBR]="../images/tiles/house/doorbr.png",
+		[TextureIdHouseDoorTL]="../images/tiles/house/doortl.png",
+		[TextureIdHouseDoorTR]="../images/tiles/house/doortr.png",
+		[TextureIdHouseRoof]="../images/tiles/house/roof.png",
+		[TextureIdHouseRoofTop]="../images/tiles/house/rooftop.png",
+		[TextureIdHouseWall2]="../images/tiles/house/wall2.png",
+		[TextureIdHouseWall3]="../images/tiles/house/wall3.png",
+		[TextureIdHouseWall4]="../images/tiles/house/wall4.png",
+		[TextureIdHouseChimney]="../images/tiles/house/chimney.png",
+		[TextureIdHouseChimneyTop]="../images/tiles/house/chimneytop.png",
+		[TextureIdSand]="../images/tiles/sand.png",
+		[TextureIdHotSand]="../images/tiles/hotsand.png",
+		[TextureIdSnow]="../images/tiles/snow.png",
+		[TextureIdShopCobbler]="../images/tiles/shops/cobbler.png",
+		[TextureIdDeepWater]="../images/tiles/deepwater.png",
+		[TextureIdRiver]="../images/tiles/water.png",
+		[TextureIdHighAlpine]="../images/tiles/highalpine.png",
+		[TextureIdLowAlpine]="../images/tiles/lowalpine.png",
+		[TextureIdSheepN]="../images/npcs/sheep/north.png",
+		[TextureIdSheepE]="../images/npcs/sheep/east.png",
+		[TextureIdSheepS]="../images/npcs/sheep/south.png",
+		[TextureIdSheepW]="../images/npcs/sheep/west.png",
+		[TextureIdRoseBush]="../images/objects/rosebush.png",
+		[TextureIdCoins]="../images/objects/coins.png",
+		[TextureIdDog]="../images/npcs/dog/east.png",
+		[TextureIdChestClosed]="../images/objects/chestclosed.png",
+		[TextureIdChestOpen]="../images/objects/chestopen.png",
+	};
+	int textureScales[TextureIdNB]={
+		[TextureIdGrass0]=4,
+		[TextureIdGrass1]=4,
+		[TextureIdGrass2]=4,
+		[TextureIdGrass3]=4,
+		[TextureIdGrass4]=4,
+		[TextureIdGrass5]=4,
+		[TextureIdBrickPath]=4,
+		[TextureIdDirt]=4,
+		[TextureIdDock]=4,
+		[TextureIdWater]=4,
+		[TextureIdTree1]=4,
+		[TextureIdTree2]=4,
+		[TextureIdTree3]=4,
+		[TextureIdMan1]=4,
+		[TextureIdOldManN]=4,
+		[TextureIdOldManE]=4,
+		[TextureIdOldManS]=4,
+		[TextureIdOldManW]=4,
+		[TextureIdHouseDoorBL]=4,
+		[TextureIdHouseDoorBR]=4,
+		[TextureIdHouseDoorTL]=4,
+		[TextureIdHouseDoorTR]=4,
+		[TextureIdHouseRoof]=4,
+		[TextureIdHouseRoofTop]=4,
+		[TextureIdHouseWall2]=4,
+		[TextureIdHouseWall3]=4,
+		[TextureIdHouseWall4]=4,
+		[TextureIdHouseChimney]=4,
+		[TextureIdHouseChimneyTop]=4,
+		[TextureIdSand]=4,
+		[TextureIdHotSand]=4,
+		[TextureIdShopCobbler]=4,
+		[TextureIdDeepWater]=4,
+		[TextureIdRiver]=4,
+		[TextureIdSnow]=4,
+		[TextureIdHighAlpine]=4,
+		[TextureIdLowAlpine]=4,
+		[TextureIdSheepN]=8,
+		[TextureIdSheepE]=8,
+		[TextureIdSheepS]=8,
+		[TextureIdSheepW]=8,
+		[TextureIdRoseBush]=8,
+		[TextureIdCoins]=8,
+		[TextureIdDog]=8,
+		[TextureIdChestClosed]=4,
+		[TextureIdChestOpen]=4,
+	};
+	uint8_t textureColours[TextureIdNB][3]={
+		[TextureIdGrass0]={0,160,0},
+		[TextureIdGrass1]={0,192,0},
+		[TextureIdGrass2]={0,160,0},
+		[TextureIdGrass3]={0,128,0},
+		[TextureIdGrass4]={0,96,0},
+		[TextureIdGrass5]={0,64,0},
+		[TextureIdBrickPath]={102,51,0},
+		[TextureIdDirt]={204,102,0},
+		[TextureIdDock]={102,51,0},
+		[TextureIdWater]={0,0,140},
+		[TextureIdTree1]={0,100,0},
+		[TextureIdTree2]={0,100,0},
+		[TextureIdTree3]={255,50,0},
+		[TextureIdMan1]={255,0,0},
+		[TextureIdOldManN]={255,0,0},
+		[TextureIdOldManE]={255,0,0},
+		[TextureIdOldManS]={255,0,0},
+		[TextureIdOldManW]={255,0,0},
+		[TextureIdHouseDoorBL]={255,128,0},
+		[TextureIdHouseDoorBR]={255,128,0},
+		[TextureIdHouseDoorTL]={255,128,0},
+		[TextureIdHouseDoorTR]={255,128,0},
+		[TextureIdHouseRoof]={255,128,0},
+		[TextureIdHouseRoofTop]={255,128,0},
+		[TextureIdHouseWall2]={255,128,0},
+		[TextureIdHouseWall3]={255,128,0},
+		[TextureIdHouseWall4]={255,128,0},
+		[TextureIdHouseChimney]={255,128,0},
+		[TextureIdHouseChimneyTop]={255,128,0},
+		[TextureIdSand]={255,204,50},
+		[TextureIdHotSand]={255,102,50},
+		[TextureIdShopCobbler]={255,128,0},
+		[TextureIdDeepWater]={0,0,110},
+		[TextureIdRiver]={0,0,225},
+		[TextureIdSnow]={220,220,220},
+		[TextureIdHighAlpine]={95,95,95},
+		[TextureIdLowAlpine]={190,190,190},
+		[TextureIdSheepN]={255,0,0},
+		[TextureIdSheepE]={255,0,0},
+		[TextureIdSheepS]={255,0,0},
+		[TextureIdSheepW]={255,0,0},
+		[TextureIdRoseBush]={0,100,0},
+		[TextureIdCoins]={255,0,0},
+		[TextureIdDog]={255,0,0},
+		[TextureIdChestClosed]={255,0,0},
+		[TextureIdChestOpen]={255,0,0},
+	};
+
+	bool success=true;
+	for(unsigned textureId=0; textureId<TextureIdNB; ++textureId)
+		success&=map->addTexture(new MapTexture(textureId, texturePaths[textureId], textureScales[textureId], textureColours[textureId][0], textureColours[textureId][1], textureColours[textureId][2]));
+
+	return success;
+};
 
 void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
@@ -90,6 +293,11 @@ void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x
 	tile->setMoisture(0.0);
 	tile->setTemperature(temperature);
 	tile->setLandmassId(0); // default to 0 to imply part of a border - we will update non-border tiles in a later step
+
+	for(unsigned i=0; i<MapTile::layersMax; ++i) {
+		MapTile::Layer layer={.textureId=MapTexture::IdMax, .hitmask=HitMask()};
+		tile->setLayer(i, layer);
+	}
 }
 
 void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
@@ -108,12 +316,12 @@ void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned
 	const double temperature=tile->getTemperature();
 
 	// Choose texture.
-	MapTexture::Id idA=MapGen::TextureIdNone, idB=MapGen::TextureIdNone;
+	MapTexture::Id idA=MapTexture::IdMax, idB=MapTexture::IdMax;
 	double factor;
 	if (height<=mapData->map->seaLevel) {
 		// ocean
-		idA=MapGen::TextureIdDeepWater;
-		idB=MapGen::TextureIdWater;
+		idA=TextureIdDeepWater;
+		idB=TextureIdWater;
 		factor=((height-map->minHeight)/(mapData->map->seaLevel-map->minHeight));
 
 		double skewThreshold=0.7; // >0.5 shifts towards idA
@@ -121,25 +329,25 @@ void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned
 	} else if (height<=mapData->map->alpineLevel) {
 		// River?
 		if (tile->getMoisture()>mapData->riverMoistureThreshold) {
-			idA=MapGen::TextureIdRiver;
-			idB=MapGen::TextureIdRiver;
+			idA=TextureIdRiver;
+			idB=TextureIdRiver;
 			factor=0.0;
 		} else {
 			// land
 			if (temperature<=mapData->coldThreshold) {
 				// between snow and grass
-				idA=MapGen::TextureIdSnow;
-				idB=MapGen::TextureIdGrass0;
+				idA=TextureIdSnow;
+				idB=TextureIdGrass0;
 				factor=(temperature-map->minTemperature)/(mapData->coldThreshold-map->minTemperature);
 			} else if (temperature<=mapData->hotThreshold) {
 				// grass
-				idA=MapGen::TextureIdGrass0;
-				idB=MapGen::TextureIdGrass0;
+				idA=TextureIdGrass0;
+				idB=TextureIdGrass0;
 				factor=(temperature-mapData->coldThreshold)/(mapData->hotThreshold-mapData->coldThreshold);
 			} else {
 				// between sand and hot sand
-				idA=MapGen::TextureIdSand;
-				idB=MapGen::TextureIdHotSand;
+				idA=TextureIdSand;
+				idB=TextureIdHotSand;
 				factor=(temperature-mapData->hotThreshold)/(map->maxTemperature-mapData->hotThreshold);
 				double skewThreshold=0.5; // >0.5 shifts towards idA
 				factor=(factor>skewThreshold ? (factor-skewThreshold)/(2.0*(1.0-skewThreshold))+0.5 : factor/(2*skewThreshold));
@@ -147,8 +355,8 @@ void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned
 		}
 	} else {
 		// alpine
-		idA=MapGen::TextureIdLowAlpine;
-		idB=MapGen::TextureIdHighAlpine;
+		idA=TextureIdLowAlpine;
+		idB=TextureIdHighAlpine;
 		factor=(height-map->alpineLevel)/(map->maxHeight-map->alpineLevel);
 
 		double skewThreshold=0.75; // >0.5 shifts towards idA
@@ -157,18 +365,18 @@ void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned
 	assert(factor>=0.0 && factor<=1.0);
 
 	MapTexture::Id textureId=(factor<=0.5 ? idA : idB);
-	assert(textureId!=MapGen::TextureIdNone);
+	assert(textureId!=MapTexture::IdMax);
 
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=textureId, .hitmask=HitMask()};
 	tile->setLayer(DemoGenTileLayerGround, layer);
 
 	// Update map data.
-	if (textureId==MapGen::TextureIdWater || textureId==MapGen::TextureIdDeepWater || textureId==MapGen::TextureIdRiver)
+	if (textureId==TextureIdWater || textureId==TextureIdDeepWater || textureId==TextureIdRiver)
 		++mapData->waterCount;
 	else
 		++mapData->landCount;
-	if (textureId>=MapGen::TextureIdGrass0 && textureId<=MapGen::TextureIdGrass5)
+	if (textureId>=TextureIdGrass0 && textureId<=TextureIdGrass5)
 		++mapData->arableCount;
 	++mapData->totalCount;
 }
@@ -208,26 +416,27 @@ void demogenGrassForestModifyTilesFunctor(unsigned threadId, class Map *map, uns
 		return;
 
 	// Check layers.
-	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdGrass0)
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=TextureIdGrass0)
 		return;
-	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
+	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapTexture::IdMax)
 		return;
-	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapGen::TextureIdNone)
+	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapTexture::IdMax)
 		return;
-	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
+	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapTexture::IdMax)
 		return;
 
 	// Choose new texture.
-	MapTexture::Id textureId=MapGen::TextureIdNone;
+	MapTexture::Id textureId=MapTexture::IdMax;
 
 	if (temperature<hotThreshold) {
 		const double probabilities[]={0.3,0.2,0.2,0.2,0.1};
 		unsigned index=Util::chooseWithProb(probabilities, sizeof(probabilities)/sizeof(probabilities[0]));
-		textureId=MapGen::TextureIdGrass1+index;
+		textureId=TextureIdGrass1+index;
+		assert(textureId>=TextureIdGrass1 && textureId<=TextureIdGrass5);
 	} else
-		textureId=MapGen::TextureIdTree1;
+		textureId=TextureIdTree1;
 
-	assert(textureId!=MapGen::TextureIdNone);
+	assert(textureId!=MapTexture::IdMax);
 
 	// Update tile layer.
 	MapTile::Layer layer={.textureId=textureId};
@@ -264,17 +473,17 @@ void demogenSandForestModifyTilesFunctor(unsigned threadId, class Map *map, unsi
 		return;
 
 	// Check layers.
-	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdSand && tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdHotSand)
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=TextureIdSand && tile->getLayer(DemoGenTileLayerGround)->textureId!=TextureIdHotSand)
 		return;
-	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapGen::TextureIdNone)
+	if (tile->getLayer(DemoGenTileLayerDecoration)->textureId!=MapTexture::IdMax)
 		return;
-	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapGen::TextureIdNone)
+	if (tile->getLayer(DemoGenTileLayerHalf)->textureId!=MapTexture::IdMax)
 		return;
-	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapGen::TextureIdNone)
+	if (tile->getLayer(DemoGenTileLayerFull)->textureId!=MapTexture::IdMax)
 		return;
 
 	// Update tile layer.
-	MapTile::Layer layer={.textureId=MapGen::TextureIdTree3};
+	MapTile::Layer layer={.textureId=TextureIdTree3};
 	tile->setLayer(DemoGenTileLayerFull, layer);
 
 	// We have made a change - mark region dirty.
@@ -293,7 +502,7 @@ void demogenGrassSheepModifyTilesFunctor(unsigned threadId, class Map *map, unsi
 		return;
 
 	// Check layers.
-	if (tile->getLayer(DemoGenTileLayerGround)->textureId<MapGen::TextureIdGrass0 || tile->getLayer(DemoGenTileLayerGround)->textureId>MapGen::TextureIdGrass5)
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId<TextureIdGrass0 || tile->getLayer(DemoGenTileLayerGround)->textureId>TextureIdGrass5)
 		return;
 
 	// Decide whether to place a sheep here.
@@ -320,7 +529,7 @@ void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsign
 		return;
 
 	// Check layers.
-	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdBrickPath && tile->getLayer(DemoGenTileLayerGround)->textureId!=MapGen::TextureIdDirt)
+	if (tile->getLayer(DemoGenTileLayerGround)->textureId!=TextureIdBrickPath && tile->getLayer(DemoGenTileLayerGround)->textureId!=TextureIdDirt)
 		return;
 
 	// Decide whether to place someone here.
@@ -351,17 +560,17 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 
 			// Look for grass ground layer.
 			MapTexture::Id layerGround=tile->getLayer(DemoGenTileLayerGround)->textureId;
-			if (layerGround<MapGen::TextureIdGrass0 || layerGround>MapGen::TextureIdGrass5)
+			if (layerGround<TextureIdGrass0 || layerGround>TextureIdGrass5)
 				return false;
 
 			// Look for half obstacles.
 			MapTexture::Id layerHalf=tile->getLayer(DemoGenTileLayerHalf)->textureId;
-			if (layerHalf!=MapGen::TextureIdNone)
+			if (layerHalf!=MapTexture::IdMax)
 				return false;
 
 			// Look for full obstacles.
 			MapTexture::Id layerFull=tile->getLayer(DemoGenTileLayerFull)->textureId;
-			if (layerFull!=MapGen::TextureIdNone)
+			if (layerFull!=MapTexture::IdMax)
 				return false;
 		}
 
@@ -435,7 +644,7 @@ int main(int argc, char **argv) {
 
 	// Add textures.
 	printf("Creating textures...\n");
-	if (!MapGen::addBaseTextures(mapData.map)) {
+	if (!demogenAddBaseTextures(mapData.map)) {
 		printf("Could not add base textures.\n");
 		if (mapData.map!=NULL)
 			delete mapData.map;

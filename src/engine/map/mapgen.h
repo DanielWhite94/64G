@@ -60,58 +60,6 @@ namespace Engine {
 
 		class MapGen {
 		public:
-			static const MapTexture::Id TextureIdNone=0;
-			static const MapTexture::Id TextureIdGrass0=1;
-			static const MapTexture::Id TextureIdGrass1=2;
-			static const MapTexture::Id TextureIdGrass2=3;
-			static const MapTexture::Id TextureIdGrass3=4;
-			static const MapTexture::Id TextureIdGrass4=5;
-			static const MapTexture::Id TextureIdGrass5=6;
-			static const MapTexture::Id TextureIdBrickPath=7;
-			static const MapTexture::Id TextureIdDirt=8;
-			static const MapTexture::Id TextureIdDock=9;
-			static const MapTexture::Id TextureIdWater=10;
-			static const MapTexture::Id TextureIdTree1=11;
-			static const MapTexture::Id TextureIdTree2=12;
-			static const MapTexture::Id TextureIdTree3=13;
-			static const MapTexture::Id TextureIdMan1=14;
-			static const MapTexture::Id TextureIdOldManN=15;
-			static const MapTexture::Id TextureIdOldManE=16;
-			static const MapTexture::Id TextureIdOldManS=17;
-			static const MapTexture::Id TextureIdOldManW=18;
-			static const MapTexture::Id TextureIdHouseDoorBL=19;
-			static const MapTexture::Id TextureIdHouseDoorBR=20;
-			static const MapTexture::Id TextureIdHouseDoorTL=21;
-			static const MapTexture::Id TextureIdHouseDoorTR=22;
-			static const MapTexture::Id TextureIdHouseRoof=23;
-			static const MapTexture::Id TextureIdHouseRoofTop=24;
-			static const MapTexture::Id TextureIdHouseWall2=25;
-			static const MapTexture::Id TextureIdHouseWall3=26;
-			static const MapTexture::Id TextureIdHouseWall4=27;
-			static const MapTexture::Id TextureIdHouseChimney=28;
-			static const MapTexture::Id TextureIdHouseChimneyTop=29;
-			static const MapTexture::Id TextureIdSand=30;
-			static const MapTexture::Id TextureIdHotSand=31;
-			static const MapTexture::Id TextureIdShopCobbler=32;
-			static const MapTexture::Id TextureIdSnow=33;
-			static const MapTexture::Id TextureIdDeepWater=34;
-			static const MapTexture::Id TextureIdRiver=35;
-			static const MapTexture::Id TextureIdHighAlpine=36;
-			static const MapTexture::Id TextureIdLowAlpine=37;
-			static const MapTexture::Id TextureIdSheepN=38;
-			static const MapTexture::Id TextureIdSheepE=39;
-			static const MapTexture::Id TextureIdSheepS=40;
-			static const MapTexture::Id TextureIdSheepW=41;
-			static const MapTexture::Id TextureIdDog=42;
-			static const MapTexture::Id TextureIdRoseBush=43;
-			static const MapTexture::Id TextureIdCoins=44;
-			static const MapTexture::Id TextureIdChestClosed=45;
-			static const MapTexture::Id TextureIdChestOpen=46;
-			static const MapTexture::Id TextureIdHeatMapMin=47;
-			static const MapTexture::Id TextureIdHeatMapRange=256;
-			static const MapTexture::Id TextureIdHeatMapMax=TextureIdHeatMapMin+TextureIdHeatMapRange;
-			static const MapTexture::Id TextureIdNB=TextureIdHeatMapMax;
-
 			static const unsigned TileBitsetIndexContour=0;
 			static const unsigned TileBitsetIndexLandmassBorder=1;
 
@@ -300,8 +248,6 @@ namespace Engine {
 
 			MapGen();
 			~MapGen();
-
-			static bool addBaseTextures(class Map *map);
 
 			static MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 			static void addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval);

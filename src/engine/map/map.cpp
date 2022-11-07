@@ -30,10 +30,6 @@ namespace Engine {
 			mapWidth=((mapWidth+(MapRegion::tilesSize-1))/MapRegion::tilesSize)*MapRegion::tilesSize;
 			mapHeight=((mapHeight+(MapRegion::tilesSize-1))/MapRegion::tilesSize)*MapRegion::tilesSize;
 
-			// Create new map
-			DIR *dirFd;
-			struct dirent *dirEntry;
-
 			// Set Map to clean state.
 			unsigned i, j;
 
@@ -93,50 +89,6 @@ namespace Engine {
 
 			// Create metadata and region directories etc.
 			saveMetadata();
-
-			// Load textures
-			dirFd=opendir(getTexturesDir());
-			if (dirFd==NULL) {
-				throw std::runtime_error("could not open map texture dir");
-			} else {
-				while((dirEntry=readdir(dirFd))!=NULL) {
-					char dirEntryFileName[1024]; // TODO: this better
-					sprintf(dirEntryFileName , "%s/%s", getTexturesDir(), dirEntry->d_name);
-
-					struct stat stbuf;
-					if (stat(dirEntryFileName,&stbuf)==-1)
-						continue;
-
-					// Skip non-regular files.
-					if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
-						continue;
-
-					// Attempt to decode filename as a texture.
-					char *namePtr=strrchr(dirEntryFileName, '/');
-					if (namePtr!=NULL)
-						namePtr++;
-					else
-						namePtr=dirEntryFileName;
-
-					unsigned textureId=0, textureScale=0;
-					if (sscanf(namePtr, "%us%u.", &textureId, &textureScale)!=2) {
-						// TODO: error msg
-						continue;
-					}
-					if (textureId==0 || textureScale==0) {
-						// TODO: error msg
-						continue;
-					}
-
-					// Add texture.
-					MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale);
-					addTexture(texture); // TODO: Check return.
-				}
-
-				closedir(dirFd);
-			}
-
-			// Note: Regions are loaded on demand.
 		}
 
 		Map::Map(const char *mapBaseDirPath, bool ignoreLock) {
@@ -249,18 +201,18 @@ namespace Engine {
 					else
 						namePtr=dirEntryFileName;
 
-					unsigned textureId=0, textureScale=0;
-					if (sscanf(namePtr, "%us%u.", &textureId, &textureScale)!=2) {
+					unsigned textureId=0, textureScale=0, textureMapR=0, textureMapG=0, textureMapB=0;
+					if (sscanf(namePtr, "%us%ur%ug%ub%u.", &textureId, &textureScale, &textureMapR, &textureMapG, &textureMapB)!=5) {
 						// TODO: error msg
 						continue;
 					}
-					if (textureId==0 || textureScale==0) {
+					if (textureScale==0) {
 						// TODO: error msg
 						continue;
 					}
 
 					// Add texture.
-					MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale);
+					MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale, textureMapR, textureMapG, textureMapB);
 					addTexture(texture); // TODO: Check return.
 				}
 
@@ -441,7 +393,7 @@ namespace Engine {
 			const char *texturesDirPath=getTexturesDir();
 
 			unsigned textureId;
-			for(textureId=1; textureId<MapTexture::IdMax; ++textureId) {
+			for(textureId=0; textureId<MapTexture::IdMax; ++textureId) {
 				// Grab texture.
 				const MapTexture *texture=getTexture(textureId);
 				if (texture==NULL)
