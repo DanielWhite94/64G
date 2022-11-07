@@ -3,6 +3,7 @@
 
 #include <cairo.h>
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
 #include <vector>
 
 #include "../engine/map/map.h"
@@ -38,6 +39,7 @@ namespace MapEditor {
 		bool drawingAreaDraw(GtkWidget *widget, cairo_t *cr);
 		gboolean drawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event);
 		gboolean drawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event);
+		gboolean drawingAreaScrollEvent(GtkWidget *widget, GdkEventScroll *event);
 		void drawingAreaDragBegin(double startX, double startY);
 		void drawingAreaDragUpdate(double startX, double startY, double offsetX, double offsetY);
 

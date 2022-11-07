@@ -28,6 +28,7 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gp
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
+gboolean mapEditorMainWindowWrapperDrawingAreaScrollEvent(GtkWidget *widget, GdkEventScroll *event, gpointer userData);
 void mapEditorMainWindowWrapperDrawingAreaDragBegin(GtkGestureDrag *gesture, double x, double y, gpointer userData);
 void mapEditorMainWindowWrapperDrawingAreaDragUpdate(GtkGestureDrag *gesture, double x, double y, gpointer userData);
 
@@ -111,6 +112,7 @@ namespace MapEditor {
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
 		g_signal_connect(drawingArea, "key-press-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyPressEvent), (void *)this);
 		g_signal_connect(drawingArea, "key-release-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent), (void *)this);
+		g_signal_connect(drawingArea, "scroll-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaScrollEvent), (void *)this);
 		g_signal_connect(menuViewShowRegionGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowRegionGridToggled), (void *)this);
 		g_signal_connect(menuViewShowTileGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowTileGridToggled), (void *)this);
 		g_signal_connect(menuViewShowKmGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowKmGridToggled), (void *)this);
@@ -589,6 +591,20 @@ namespace MapEditor {
 		return false;
 	}
 
+	gboolean MainWindow::drawingAreaScrollEvent(GtkWidget *widget, GdkEventScroll *event) {
+		// Ensure we have correct event
+		if (event->type!=GDK_SCROLL)
+			return false;
+
+		// Zoom in/out based on direction
+		if (event->direction==GDK_SCROLL_UP)
+			setZoom(zoomLevel+1);
+		else if (event->direction==GDK_SCROLL_DOWN)
+			setZoom(zoomLevel-1);
+
+		return false;
+	}
+
 	void MainWindow::drawingAreaDragBegin(double startX, double startY) {
 		dragBeginUserCentreX=userCentreX;
 		dragBeginUserCentreY=userCentreY;
@@ -1008,6 +1024,11 @@ gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, G
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->drawingAreaKeyReleaseEvent(widget, event);
+}
+
+gboolean mapEditorMainWindowWrapperDrawingAreaScrollEvent(GtkWidget *widget, GdkEventScroll *event, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->drawingAreaScrollEvent(widget, event);
 }
 
 void mapEditorMainWindowWrapperDrawingAreaDragBegin(GtkGestureDrag *gesture, double x, double y, gpointer userData) {
