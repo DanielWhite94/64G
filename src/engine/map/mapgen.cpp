@@ -1068,19 +1068,12 @@ namespace Engine {
 			return NULL;
 		}
 
-		void MapGen::addBuiltinObjectForest(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval) {
+
+		void MapGen::addForest(class Map *map, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, AddForestFunctor *functor, void *functorUserData) {
 			assert(map!=NULL);
 			assert(widthHeight.x>=0 && widthHeight.y>=0);
 			assert(interval.x>0 && interval.y>0);
-
-			// Simply call addBuiltinObjectForestWithTestFunctor with NULL test functor.
-			addBuiltinObjectForestWithTestFunctor(map, builtin, topLeft, widthHeight, interval, NULL, NULL);
-		}
-
-		void MapGen::addBuiltinObjectForestWithTestFunctor(class Map *map, BuiltinObject builtin, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, ObjectTestFunctor *testFunctor, void *testFunctorUserData) {
-			assert(map!=NULL);
-			assert(widthHeight.x>=0 && widthHeight.y>=0);
-			assert(interval.x>0 && interval.y>0);
+			assert(functor!=NULL);
 
 			// Loop over rectangular region.
 			CoordVec pos;
@@ -1093,12 +1086,8 @@ namespace Engine {
 						CoordVec randomOffset=CoordVec(Util::randIntInInterval(0,interval.x), Util::randIntInInterval(0,interval.y));
 						CoordVec exactPosition=pos+randomOffset;
 
-						// Run test functor.
-						if (testFunctor!=NULL && !testFunctor(map, builtin, exactPosition, testFunctorUserData))
-							continue;
-
-						// Add object.
-						if (addBuiltinObject(map, builtin, CoordAngle0, exactPosition)!=NULL)
+						// Run functor.
+						if (functor(map, exactPosition, functorUserData))
 							break;
 					}
 				}
