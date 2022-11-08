@@ -63,16 +63,6 @@ namespace Engine {
 			static const unsigned TileBitsetIndexContour=0;
 			static const unsigned TileBitsetIndexLandmassBorder=1;
 
-			enum class BuiltinObject {
-				OldBeardMan,
-				Tree1,
-				Tree2,
-				Bush,
-				Sheep,
-				Dog,
-				Chest,
-			};
-
 			typedef bool (AddForestFunctor)(class Map *map, const CoordVec &position, void *userData);
 
 			typedef bool (TileTestFunctor)(class Map *map, int x, int y, int w, int h, void *userData);
@@ -249,7 +239,6 @@ namespace Engine {
 			MapGen();
 			~MapGen();
 
-			static MapObject *addBuiltinObject(class Map *map, BuiltinObject builtin, CoordAngle rotation, const CoordVec &pos);
 			// Call a functor for a set of tiles in a region representing a random forest with fixed density.
 			static void addForest(class Map *map, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, AddForestFunctor *functor, void *functorUserData);
 
