@@ -63,10 +63,7 @@ int main(int argc, char **argv) {
 		for(playerX=(8-playerW)/2; playerX<(8+playerW)/2; ++playerX)
 			playerHitmask.setXY(playerX, playerY, true);
 	objectPlayer.setHitMaskByTileOffset(0, 0, playerHitmask);
-	objectPlayer.setTextureIdForAngle(CoordAngle0, MapGen::TextureIdOldManS);
-	objectPlayer.setTextureIdForAngle(CoordAngle90, MapGen::TextureIdOldManW);
-	objectPlayer.setTextureIdForAngle(CoordAngle180, MapGen::TextureIdOldManN);
-	objectPlayer.setTextureIdForAngle(CoordAngle270, MapGen::TextureIdOldManE);
+	//TODO: set textures for player for each direction
 
 	objectPlayer.inventoryEmpty(24);
 	MapObjectItem coins={.type=mapObjectItemTypeCoins, .count=1035};
