@@ -855,117 +855,101 @@ namespace Engine {
 				}
 		}
 
-		bool MapGen::addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned tileLayer, unsigned decorationLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, const AddHouseParameters *params) {
 			assert(map!=NULL);
-
-			// Check arguments are reasonable.
-			if (totalW<=3 || totalH<=3)
-				return false;
-
-			// Choose parameters.
-			const double roofRatio=0.6;
-			unsigned roofHeight=(int)floor(roofRatio*totalH);
-
-			unsigned doorOffset=Util::randIntInInterval(1, totalW-2);
-			unsigned chimneyOffset=Util::randIntInInterval(0, totalW);
-
-			// Call addHouseFull to do most of the work.
-			return addHouseFull(map, AddHouseFullFlags::All, baseX, baseY, totalW, totalH, roofHeight, tileLayer, decorationLayer, doorOffset, chimneyOffset, testFunctor, testFunctorUserData);
-		}
-
-		bool MapGen::addHouseFull(class Map *map, AddHouseFullFlags flags, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned roofHeight, unsigned tileLayer, unsigned decorationLayer, unsigned doorXOffset, unsigned chimneyXOffset, TileTestFunctor *testFunctor, void *testFunctorUserData) {
-			assert(map!=NULL);
+			assert(params!=NULL);
 
 			unsigned tx, ty;
 
-			const int doorW=(flags & AddHouseFullFlags::ShowDoor) ? 2 : 0;
+			const int doorW=(params->flags & AddHouseFlags::ShowDoor) ? 2 : 0;
 
 			// Check arguments are reasonable.
 			if (totalW<5 || totalH<5)
 				return false;
-			if (roofHeight>=totalH-2)
+			if (params->roofHeight>=totalH-2)
 				return false;
-			if ((flags & AddHouseFullFlags::ShowDoor) && doorXOffset+doorW>totalW)
+			if ((params->flags & AddHouseFlags::ShowDoor) && params->doorXOffset+doorW>totalW)
 				return false;
-			if ((flags & AddHouseFullFlags::ShowChimney) && chimneyXOffset>=totalW)
+			if ((params->flags & AddHouseFlags::ShowChimney) && params->chimneyXOffset>=totalW)
 				return false;
 
 			// Check area is suitable.
-			if (testFunctor!=NULL && !testFunctor(map, baseX, baseY, totalW, totalH, testFunctorUserData))
+			if (params->testFunctor!=NULL && !params->testFunctor(map, baseX, baseY, totalW, totalH, params->testFunctorUserData))
 				return false;
 
 			// Calculate constants.
-			unsigned wallHeight=totalH-roofHeight;
+			unsigned wallHeight=totalH-params->roofHeight;
 
 			// Add walls.
 			for(ty=0;ty<wallHeight;++ty)
 				for(tx=0;tx<totalW;++tx) {
 					MapTexture::Id texture;
 					switch(ty%4) {
-						case 0: texture=TextureIdHouseWall3; break;
-						case 1: texture=TextureIdHouseWall2; break;
-						case 2: texture=TextureIdHouseWall4; break;
-						case 3: texture=TextureIdHouseWall2; break;
+						case 0: texture=params->textureIdWall0; break;
+						case 1: texture=params->textureIdWall1; break;
+						case 2: texture=params->textureIdWall0; break;
+						case 3: texture=params->textureIdWall1; break;
 					}
-					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+totalH-1-ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=texture, .hitmask=HitMask(HitMask::fullMask)});
+					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+totalH-1-ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=texture, .hitmask=HitMask(HitMask::fullMask)});
 				}
 
 			// Add door.
-			if (flags & AddHouseFullFlags::ShowDoor) {
-				int doorX=doorXOffset+baseX;
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBL, .hitmask=HitMask(HitMask::fullMask)});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorBR, .hitmask=HitMask(HitMask::fullMask)});
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTL, .hitmask=HitMask(HitMask::fullMask)});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseDoorTR, .hitmask=HitMask(HitMask::fullMask)});
+			if (params->flags & AddHouseFlags::ShowDoor) {
+				int doorX=params->doorXOffset+baseX;
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorBL, .hitmask=HitMask(HitMask::fullMask)});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorBR, .hitmask=HitMask(HitMask::fullMask)});
+				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorTL, .hitmask=HitMask(HitMask::fullMask)});
+				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorTR, .hitmask=HitMask(HitMask::fullMask)});
 			}
 
 			// Add main part of roof.
-			for(ty=0;ty<roofHeight-1;++ty) // -1 due to ridge tiles added later
+			for(ty=0;ty<params->roofHeight-1;++ty) // -1 due to ridge tiles added later
 				for(tx=0;tx<totalW;++tx)
-					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+1+ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseRoof, .hitmask=HitMask(HitMask::fullMask)});
+					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+1+ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseRoof, .hitmask=HitMask(HitMask::fullMask)});
 
 			// Add roof top ridge.
 			for(tx=0;tx<totalW;++tx)
-				map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseRoofTop, .hitmask=HitMask(HitMask::fullMask)});
+				map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseRoofTop, .hitmask=HitMask(HitMask::fullMask)});
 
 			// Add chimney.
-			if (flags & AddHouseFullFlags::ShowChimney) {
-				int chimneyX=chimneyXOffset+baseX;
-				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseChimneyTop, .hitmask=HitMask(HitMask::fullMask)});
-				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (baseY+1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=TextureIdHouseChimney, .hitmask=HitMask(HitMask::fullMask)});
+			if (params->flags & AddHouseFlags::ShowChimney) {
+				int chimneyX=params->chimneyXOffset+baseX;
+				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseChimneyTop, .hitmask=HitMask(HitMask::fullMask)});
+				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (baseY+1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdHouseChimney, .hitmask=HitMask(HitMask::fullMask)});
 			}
 
 			// Add some decoration.
-			if ((flags & AddHouseFullFlags::AddDecoration)) {
+			if ((params->flags & AddHouseFlags::AddDecoration)) {
 				// Add path infront of door (if any).
-				if (flags & AddHouseFullFlags::ShowDoor) {
+				if (params->flags & AddHouseFlags::ShowDoor) {
 					for(int offset=0; offset<doorW; ++offset) {
-						int posX=baseX+doorXOffset+offset;
-						map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(tileLayer, {.textureId=MapGen::TextureIdBrickPath, .hitmask=HitMask()});
+						int posX=baseX+params->doorXOffset+offset;
+						map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.textureId=params->textureIdBrickPath, .hitmask=HitMask()});
 					}
 				}
 
 				// Random chance of adding a rose bush at random position (avoiding the door, if any).
 				if (Util::randIntInInterval(0, 4)==0) {
 					int offset=Util::randIntInInterval(0, totalW-doorW);
-					if ((flags & AddHouseFullFlags::ShowDoor) && offset>=doorXOffset)
+					if ((params->flags & AddHouseFlags::ShowDoor) && offset>=params->doorXOffset)
 						offset+=doorW;
 					assert(offset>=0 && offset<totalW);
 
 					int posX=offset+baseX;
-					map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(decorationLayer, {.textureId=MapGen::TextureIdRoseBush, .hitmask=HitMask()});
+					map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->decorationLayer, {.textureId=params->textureIdRoseBush, .hitmask=HitMask()});
 				}
 			}
 
 			return true;
 		}
 
-		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, unsigned houseDecorationLayer, int townPop, TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, const AddTownParameters *params, const AddHouseParameters *houseParams, int townPop) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
-			assert(roadTileLayer<MapTile::layersMax);
-			assert(houseTileLayer<MapTile::layersMax);
+			assert(params!=NULL);
+			assert(params->roadTileLayer<MapTile::layersMax);
+			assert(houseParams!=NULL);
 
 			// Check either horizontal or vertical.
 			if (!((y0==y1) || (x0==x1)))
@@ -1012,7 +996,7 @@ namespace Engine {
 				int testFunctorY=road.y0-(road.isHorizontal() ? testFunctorMargin : 0);
 				int testFunctorWidth=road.trueX1-road.x0+(road.isVertical() ? testFunctorMargin*2 : 0);
 				int testFunctorHeight=road.trueY1-road.y0+(road.isHorizontal() ? testFunctorMargin*2 : 0);
-				if (!testFunctor(map, testFunctorX, testFunctorY, testFunctorWidth, testFunctorHeight, testFunctorUserData))
+				if (!params->testFunctor(map, testFunctorX, testFunctorY, testFunctorWidth, testFunctorHeight, params->testFunctorUserData))
 					continue;
 
 				// Add road.
@@ -1021,7 +1005,7 @@ namespace Engine {
 				int a, b;
 				for(a=road.y0; a<road.trueY1; ++a)
 					for(b=road.x0; b<road.trueX1; ++b)
-						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(roadTileLayer, {.textureId=(road.width>=3 ? TextureIdBrickPath : TextureIdDirt), .hitmask=HitMask()});
+						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->roadTileLayer, {.textureId=(road.width>=3 ? params->textureIdMajorPath : params->textureIdMinorPath), .hitmask=HitMask()});
 
 				// Add potential child roads.
 				MapGenRoad newRoad;
@@ -1080,27 +1064,29 @@ namespace Engine {
 
 						// Test house area is valid.
 						if (road.isHorizontal()) {
-							if (!testFunctor(map, houseData.x-1, houseData.y, houseData.mapW+2, houseData.mapH, testFunctorUserData))
+							if (!params->testFunctor(map, houseData.x-1, houseData.y, houseData.mapW+2, houseData.mapH, params->testFunctorUserData))
 								continue;
 						} else {
-							if (!testFunctor(map, houseData.x, houseData.y-1, houseData.mapW, houseData.mapH+2, testFunctorUserData))
+							if (!params->testFunctor(map, houseData.x, houseData.y-1, houseData.mapW, houseData.mapH+2, params->testFunctorUserData))
 								continue;
 						}
 
 						// Compute house parameters.
-						bool showDoor=(road.isHorizontal() && !houseData.side);
-						houseData.flags=(AddHouseFullFlags)(AddHouseFullFlags::AddDecoration|AddHouseFullFlags::ShowChimney);
-						if (showDoor)
-							houseData.flags=(AddHouseFullFlags)(houseData.flags|AddHouseFullFlags::ShowDoor);
+						AddHouseParameters houseParamsCopy=*houseParams;
+
+						if (road.isHorizontal() && !houseData.side)
+							houseParamsCopy.flags=(AddHouseFlags)(houseParamsCopy.flags|AddHouseFlags::ShowDoor);
+						else
+							houseParamsCopy.flags=(AddHouseFlags)(houseParamsCopy.flags&~AddHouseFlags::ShowDoor);
 
 						const double houseRoofRatio=0.6;
-						houseData.roofHeight=(int)floor(houseRoofRatio*houseData.mapH);
+						houseParamsCopy.roofHeight=(int)floor(houseRoofRatio*houseData.mapH);
 
-						houseData.doorOffset=Util::randIntInInterval(1, houseData.mapW-2);
-						houseData.chimneyOffset=Util::randIntInInterval(0, houseData.mapW);
+						houseParamsCopy.doorXOffset=Util::randIntInInterval(1, houseData.mapW-2);
+						houseParamsCopy.chimneyXOffset=Util::randIntInInterval(0, houseData.mapW);
 
 						// Attempt to add the house.
-						if (!addHouseFull(map, houseData.flags, houseData.x, houseData.y, houseData.mapW, houseData.mapH, houseData.roofHeight, houseTileLayer, houseDecorationLayer, houseData.doorOffset, houseData.chimneyOffset, NULL, NULL))
+						if (!addHouse(map, houseData.x, houseData.y, houseData.mapW, houseData.mapH, &houseParamsCopy))
 							continue;
 
 						// Add to array of houses.
@@ -1129,7 +1115,7 @@ namespace Engine {
 			// Give buildings some purpose.
 			for(auto houseData : houses) {
 				// Give the building a purpose (e.g. a shop).
-				if (houseData.flags & AddHouseFullFlags::ShowDoor) {
+				if (houseParams->flags & AddHouseFlags::ShowDoor) {
 					// Choose sign.
 					MapTexture::Id signTextureId;
 					int r=Util::randIntInInterval(0, shopsPeopleTotal);
@@ -1152,35 +1138,35 @@ namespace Engine {
 						case 7:
 						case 8:
 						case 9:
-							signTextureId=TextureIdShopCobbler;
+							signTextureId=params->textureIdShopSignCobbler;
 						break;
 						default:
-							signTextureId=TextureIdHouseWall2;
+							signTextureId=params->textureIdShopSignNone;
 						break;
 					}
 
 					// Compute sign position.
 					int signOffset;
-					if (houseData.doorOffset<houseData.mapW/2)
+					if (houseParams->doorXOffset<houseData.mapW/2)
 						signOffset=2;
 					else
 						signOffset=-1;
-					int signX=signOffset+houseData.doorOffset+houseData.x;
+					int signX=signOffset+houseParams->doorXOffset+houseData.x;
 
 					// Add sign.
-					map->getTileAtCoordVec(CoordVec(signX*Physics::CoordsPerTile, (houseData.y+houseData.mapH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(houseTileLayer, {.textureId=signTextureId, .hitmask=HitMask(HitMask::fullMask)});
+					map->getTileAtCoordVec(CoordVec(signX*Physics::CoordsPerTile, (houseData.y+houseData.mapH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(houseParams->tileLayer, {.textureId=signTextureId, .hitmask=HitMask(HitMask::fullMask)});
 				}
 			}
 
 			return true;
 		}
 
-		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, unsigned houseDecorationLayer, double totalPopulation, MapGen::TileTestFunctor *testFunctor, void *testFunctorUserData) {
+		bool MapGen::addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, const AddTownParameters *params, const AddHouseParameters *houseParams, double totalPopulation) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
-			assert(roadTileLayer<MapTile::layersMax);
-			assert(houseTileLayer<MapTile::layersMax);
+			assert(params!=NULL);
+			assert(houseParams!=NULL);
 
 			const double peoplePerSqKm=20000.0;
 
@@ -1206,13 +1192,13 @@ namespace Engine {
 						int townX1=townX+townSize/2;
 						if (townX0<0)
 							continue;
-						addedCount+=MapGen::addTown(map, townX0, townY, townX1, townY, roadTileLayer, houseTileLayer, houseDecorationLayer, townPop, testFunctor, testFunctorUserData);
+						addedCount+=MapGen::addTown(map, townX0, townY, townX1, townY, params, houseParams, townPop);
 					} else {
 						int townY0=townY-townSize/2;
 						int townY1=townY+townSize/2;
 						if (townY0<0)
 							continue;
-						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, roadTileLayer, houseTileLayer, houseDecorationLayer, townPop, testFunctor, testFunctorUserData);
+						addedCount+=MapGen::addTown(map, townX, townY0, townX, townY1, params, houseParams, townPop);
 					}
 				}
 

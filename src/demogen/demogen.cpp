@@ -873,7 +873,37 @@ int main(int argc, char **argv) {
 
 	// Add towns.
 	printf("Adding towns...\n");
-	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, DemoGenTileLayerGround, DemoGenTileLayerFull, DemoGenTileLayerDecoration, mapData.totalPopulation, &demogenTownTileTestFunctor, NULL);
+	MapGen::AddTownParameters townParams={
+		.roadTileLayer=DemoGenTileLayerGround,
+		.houseDecorationLayer=DemoGenTileLayerDecoration,
+		.testFunctor=&demogenTownTileTestFunctor,
+		.testFunctorUserData=NULL,
+		.textureIdMajorPath=TextureIdBrickPath,
+		.textureIdMinorPath=TextureIdDirt,
+		.textureIdShopSignNone=TextureIdHouseWall2,
+		.textureIdShopSignCobbler=TextureIdShopCobbler,
+	};
+	MapGen::AddHouseParameters houseParams={
+		.flags=(MapGen::AddHouseFlags)(MapGen::AddHouseFlags::ShowChimney|MapGen::AddHouseFlags::AddDecoration),
+		.tileLayer=DemoGenTileLayerFull,
+		.decorationLayer=DemoGenTileLayerDecoration,
+		.testFunctor=NULL,
+		.testFunctorUserData=NULL,
+		.textureIdWall0=TextureIdHouseWall3,
+		.textureIdWall1=TextureIdHouseWall2,
+		.textureIdWall2=TextureIdHouseWall4,
+		.textureIdHouseDoorBL=TextureIdHouseDoorBL,
+		.textureIdHouseDoorBR=TextureIdHouseDoorBR,
+		.textureIdHouseDoorTL=TextureIdHouseDoorTL,
+		.textureIdHouseDoorTR=TextureIdHouseDoorTR,
+		.textureIdHouseRoof=TextureIdHouseRoof,
+		.textureIdHouseRoofTop=TextureIdHouseRoofTop,
+		.textureIdHouseChimneyTop=TextureIdHouseChimneyTop,
+		.textureIdHouseChimney=TextureIdHouseChimney,
+		.textureIdBrickPath=TextureIdBrickPath,
+		.textureIdRoseBush=TextureIdRoseBush,
+	};
+	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, &townParams, &houseParams, mapData.totalPopulation);
 	printf("\n");
 
 	// Run modify tiles npcs/animals.

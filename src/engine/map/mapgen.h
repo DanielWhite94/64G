@@ -89,7 +89,7 @@ namespace Engine {
 				NB,
 			};
 
-			enum AddHouseFullFlags {
+			enum AddHouseFlags {
 				None=0x0,
 				ShowDoor=0x1,
 				ShowChimney=0x2,
@@ -97,6 +97,48 @@ namespace Engine {
 				All=(ShowDoor|ShowChimney|AddDecoration),
 			};
 
+			struct AddHouseParameters {
+				AddHouseFlags flags;
+
+				unsigned tileLayer;
+				unsigned decorationLayer;
+
+				TileTestFunctor *testFunctor;
+				void *testFunctorUserData;
+
+				MapTexture::Id textureIdWall0;
+				MapTexture::Id textureIdWall1;
+				MapTexture::Id textureIdWall2;
+				MapTexture::Id textureIdHouseDoorBL;
+				MapTexture::Id textureIdHouseDoorBR;
+				MapTexture::Id textureIdHouseDoorTL;
+				MapTexture::Id textureIdHouseDoorTR;
+				MapTexture::Id textureIdHouseRoof;
+				MapTexture::Id textureIdHouseRoofTop;
+				MapTexture::Id textureIdHouseChimneyTop;
+				MapTexture::Id textureIdHouseChimney;
+				MapTexture::Id textureIdBrickPath;
+				MapTexture::Id textureIdRoseBush;
+
+				unsigned roofHeight;
+				unsigned doorXOffset;
+				unsigned chimneyXOffset;
+			};
+
+			struct AddTownParameters {
+				unsigned roadTileLayer;
+				unsigned houseDecorationLayer;
+
+				TileTestFunctor *testFunctor;
+				void *testFunctorUserData;
+
+				MapTexture::Id textureIdMajorPath;
+				MapTexture::Id textureIdMinorPath;
+				MapTexture::Id textureIdShopSignNone;
+				MapTexture::Id textureIdShopSignCobbler;
+			};
+
+			// used internally
 			struct AddTownHouseData {
 				int x, y;
 
@@ -106,11 +148,6 @@ namespace Engine {
 
 				bool isHorizontal; // derived from the road the house is conencted to
 				bool side; // 0 = left/top, 1=/right/down
-				AddHouseFullFlags flags;
-
-				unsigned roofHeight;
-				unsigned doorOffset; // Only valid if flags has ShowDoor
-				unsigned chimneyOffset;
 			};
 
 			struct NArySearchData {
@@ -242,11 +279,11 @@ namespace Engine {
 			// Call a functor for a set of tiles in a region representing a random forest with fixed density.
 			static void addForest(class Map *map, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, AddForestFunctor *functor, void *functorUserData);
 
-			static bool addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned tileLayer, unsigned decorationLayer, bool showDoor, TileTestFunctor *testFunctor, void *testFunctorUserData);
-			static bool addHouseFull(class Map *map, AddHouseFullFlags flags, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, unsigned roofHeight, unsigned tileLayer, unsigned decorationLayer, unsigned doorXOffset, unsigned chimneyXOffset, TileTestFunctor *testFunctor, void *testFunctorUserData);
+			static bool addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, const AddHouseParameters *params);
 
-			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, unsigned houseDecorationLayer, int townPop, TileTestFunctor *testFunctor, void *testFunctorUserData);
-			static bool addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, unsigned roadTileLayer, unsigned houseTileLayer, unsigned houseDecorationLayer, double totalPopulation,  TileTestFunctor *testFunctor, void *testFunctorUserData);
+			// Note: in houseParams the following fields will be set internally by addTown: roofHeight, doorOffset, chimneyOffset and the ShowDoor flag will be set as needed
+			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, const AddTownParameters *params, const AddHouseParameters *houseParams, int townPop);
+			static bool addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, const AddTownParameters *params, const AddHouseParameters *houseParams, double totalPopulation);
 
 			static void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData);
 			static void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, size_t functorArrayCount, MapGen::ModifyTilesManyEntry functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData);
