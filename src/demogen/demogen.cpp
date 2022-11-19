@@ -94,6 +94,10 @@ typedef struct {
 
 bool demogenAddBaseTextures(class Map *map);
 
+MapObject *demogenAddObjectSheep(class Map *map, CoordAngle rotation, const CoordVec &pos);
+MapObject *demogenAddObjectDog(class Map *map, CoordAngle rotation, const CoordVec &pos);
+MapObject *demogenAddObjectOldBeardMan(class Map *map, CoordAngle rotation, const CoordVec &pos);
+
 void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 void demogenGrassForestModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
@@ -257,6 +261,92 @@ bool demogenAddBaseTextures(class Map *map) {
 
 	return success;
 };
+
+MapObject *demogenAddObjectSheep(class Map *map, CoordAngle rotation, const CoordVec &pos) {
+	// Create hitmask.
+	const char hitmaskStr[64+1]=
+		"________"
+		"________"
+		"_######_"
+		"_######_"
+		"_######_"
+		"_######_"
+		"_######_"
+		"_######_";
+	HitMask hitmask(hitmaskStr);
+
+	// Create object.
+	MapObject *object=new MapObject(rotation, pos, 1, 1);
+	object->setHitMaskByTileOffset(0, 0, hitmask);
+	object->setTextureIdForAngle(CoordAngle0, TextureIdSheepS);
+	object->setTextureIdForAngle(CoordAngle90, TextureIdSheepW);
+	object->setTextureIdForAngle(CoordAngle180, TextureIdSheepN);
+	object->setTextureIdForAngle(CoordAngle270, TextureIdSheepE);
+
+	// Add object to map.
+	if (!map->addObject(object)) {
+		delete object;
+		return NULL;
+	}
+
+	return object;
+}
+
+MapObject *demogenAddObjectDog(class Map *map, CoordAngle rotation, const CoordVec &pos) {
+	// Create hitmask.
+	const char hitmaskStr[64+1]=
+		"________"
+		"________"
+		"________"
+		"_#####__"
+		"_#####__"
+		"_#####__"
+		"___###__"
+		"________";
+	HitMask hitmask(hitmaskStr);
+
+	// Create object.
+	MapObject *object=new MapObject(rotation, pos, 1, 1);
+	object->setHitMaskByTileOffset(0, 0, hitmask);
+	object->setTextureIdForAngle(CoordAngle0, TextureIdDog);
+	object->setTextureIdForAngle(CoordAngle90, TextureIdDog);
+	object->setTextureIdForAngle(CoordAngle180, TextureIdDog);
+	object->setTextureIdForAngle(CoordAngle270, TextureIdDog);
+
+	// Add object to map.
+	if (!map->addObject(object)) {
+		delete object;
+		return NULL;
+	}
+
+	return object;
+}
+
+MapObject *demogenAddObjectOldBeardMan(class Map *map, CoordAngle rotation, const CoordVec &pos) {
+	// Create hitmask.
+	const unsigned hitmaskW=4, hitmaskH=5;
+	HitMask hitmask;
+	unsigned x, y;
+	for(y=(8-hitmaskH)/2; y<(8+hitmaskH)/2; ++y)
+		for(x=(8-hitmaskW)/2; x<(8+hitmaskW)/2; ++x)
+			hitmask.setXY(x, y, true);
+
+	// Create object.
+	MapObject *object=new MapObject(rotation, pos, 1, 1);
+	object->setHitMaskByTileOffset(0, 0, hitmask);
+	object->setTextureIdForAngle(CoordAngle0, TextureIdOldManS);
+	object->setTextureIdForAngle(CoordAngle90, TextureIdOldManW);
+	object->setTextureIdForAngle(CoordAngle180, TextureIdOldManN);
+	object->setTextureIdForAngle(CoordAngle270, TextureIdOldManE);
+
+	// Add object to map.
+	if (!map->addObject(object)) {
+		delete object;
+		return NULL;
+	}
+
+	return object;
+}
 
 void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 	assert(map!=NULL);
@@ -511,7 +601,7 @@ void demogenGrassSheepModifyTilesFunctor(unsigned threadId, class Map *map, unsi
 
 	// Add object.
 	CoordVec pos(x*CoordsPerTile, y*CoordsPerTile);
-	MapObject *sheep=MapGen::addBuiltinObject(map, MapGen::BuiltinObject::Sheep, CoordAngle0, pos);
+	MapObject *sheep=demogenAddObjectSheep(map, CoordAngle0, pos);
 	if (sheep==NULL)
 		return;
 	sheep->setMovementModeRandomRadius(pos, 10*CoordsPerTile);
@@ -536,12 +626,9 @@ void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsign
 	if (rand()%64!=0)
 		return;
 
-	// Choose object.
-	MapGen::BuiltinObject builtinObject=(rand()%3==0 ? MapGen::BuiltinObject::Dog : MapGen::BuiltinObject::OldBeardMan);
-
-	// Add object.
+	// Choose and add object.
 	CoordVec pos(x*CoordsPerTile, y*CoordsPerTile);
-	MapObject *object=MapGen::addBuiltinObject(map, builtinObject, CoordAngle0, pos);
+	MapObject *object=(rand()%3==0 ? demogenAddObjectDog(map, CoordAngle0, pos) : demogenAddObjectOldBeardMan(map, CoordAngle0, pos));
 	if (object==NULL)
 		return;
 	object->setMovementModeRandomRadius(pos, 10*CoordsPerTile);
