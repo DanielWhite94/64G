@@ -1,109 +1,52 @@
-#include <cassert>
-#include <cstdbool>
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <new>
-
 #include <SDL2/SDL.h>
 
-#include "./graphics/camera.h"
-#include "./graphics/renderer.h"
-#include "./map/map.h"
-#include "./map/mapgen.h"
-#include "./map/mapobject.h"
+#include "engine.h"
 
 using namespace Engine;
-using namespace Engine::Graphics;
-using namespace Engine::Map;
 
-int main(int argc, char **argv) {
-	// Parse arguments.
-	if (argc!=4 && argc!=5) {
-		printf("Usage: %s mapfile starttilex starttiley [--debug]\n", argv[0]);
-		return EXIT_FAILURE;
-	}
+namespace Engine {
 
-	const char *path=argv[1];
-	int startTileX=atoi(argv[2]);
-	int startTileY=atoi(argv[3]);
-	bool debug=(argc==5 && strcmp(argv[4], "--debug")==0);
-
-	// Set various constants/parameters.
-	const int maxZoom=8;
-	const int defaultZoom=4;
-	const int TilesWide=24;
-	const int TilesHigh=18;
-	const double fps=30.0;
-
-	const int windowWidth=(TilesWide*Physics::CoordsPerTile*defaultZoom);
-	const int windowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
-	const int fpsDelay=1000.0/fps;
-
-	CoordVec playerDelta(0, 0);
-	bool playerRunning=false;
-
+Engine::Engine(const char *mapPath, int windowWidth, int windowHeight, int defaultZoom, int maxZoom, int fps, bool debug): maxZoom(maxZoom), fps(fps), debug(debug), stopFlag(false), renderer(windowWidth, windowHeight), camera(CoordVec(0,0), defaultZoom) {
 	// Load map.
-	printf("Loading map at '%s'...\n", path);
+	printf("Loading map at '%s'...\n", mapPath);
 
-	class Map *map;
-	try {
-		map=new class Map(path, false);
-	} catch (std::exception& e) {
-		std::cout << "Could not load map: " << e.what() << '\n';
-		return EXIT_FAILURE;
-	}
+	map=new class Map(mapPath, false);
 
-	// Add player object.
-	MapObject objectPlayer(CoordAngle0, CoordVec(startTileX*Physics::CoordsPerTile, startTileY*Physics::CoordsPerTile), 1, 1);
-	HitMask playerHitmask;
-	const unsigned playerW=4, playerH=6;
-	unsigned playerX, playerY;
-	for(playerY=(8-playerH)/2; playerY<(8+playerH)/2; ++playerY)
-		for(playerX=(8-playerW)/2; playerX<(8+playerW)/2; ++playerX)
-			playerHitmask.setXY(playerX, playerY, true);
-	objectPlayer.setHitMaskByTileOffset(0, 0, playerHitmask);
-	//TODO: set textures for player for each direction
-
-	objectPlayer.inventoryEmpty(24);
-	MapObjectItem coins={.type=mapObjectItemTypeCoins, .count=1035};
-	objectPlayer.inventoryAddItem(coins);
-	MapObjectItem chest={.type=mapObjectItemTypeChest, .count=19};
-	objectPlayer.inventoryAddItem(chest);
-
-	if (!map->addObject(&objectPlayer)) {
-		printf("Could not add player object.\n");
-		delete map;
-		return EXIT_FAILURE;
-	}
-
-	// Create renderer.
-	Renderer renderer(windowWidth, windowHeight);
+	// Set renderer parameters.
 	renderer.drawMinimap=true;
 	renderer.drawInventory=true;
+}
 
-	// Create camera variables.
-	Camera camera(CoordVec(0,0), defaultZoom);
+Engine::~Engine() {
+	if (map!=NULL)
+		delete map;
+}
+
+void Engine::start(void) {
+	// Init
+	CoordVec playerDelta(0, 0);
+	bool playerRunning=false;
 
 	// Main loop.
 	const unsigned mapTickRate=8;
 
-	bool quit=false;
 	unsigned tick=0;
-	for(tick=0; !quit; ++tick) {
+	for(tick=0; !stopFlag; ++tick) {
 		// Note tick start time to maintain constant FPS later.
 		unsigned startTime=SDL_GetTicks();
 
 		// Redraw screen.
-		camera.setVec(objectPlayer.getCoordTopLeft());
-		renderer.refresh(&camera, map, &objectPlayer);
+		if (playerObject!=NULL) {
+			camera.setVec(playerObject->getCoordTopLeft());
+			renderer.refresh(&camera, map, playerObject);
+		}
 
 		// Check keyboard and events and move camera.
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
 			switch (event.type) {
 				case SDL_QUIT:
-					quit=true;
+					stop();
 				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym) {
@@ -137,7 +80,7 @@ int main(int argc, char **argv) {
 								renderer.drawTileGrid=true;
 						break;
 						case SDLK_q:
-							quit=true;
+							stop();
 						break;
 					}
 				break;
@@ -169,8 +112,10 @@ int main(int argc, char **argv) {
 				break;
 			}
 
-		const int moveSpeed=(playerRunning ? 2*Physics::CoordsPerTile : 1);
-		map->moveObject(&objectPlayer, objectPlayer.getCoordTopLeft()+playerDelta*moveSpeed);
+		if (playerObject!=NULL) {
+			const int moveSpeed=(playerRunning ? 2*Physics::CoordsPerTile : 1);
+			map->moveObject(playerObject, playerObject->getCoordTopLeft()+playerDelta*moveSpeed);
+		}
 
 		// Tick map every so often.
 		if (tick%mapTickRate==0)
@@ -179,21 +124,41 @@ int main(int argc, char **argv) {
 		// Delay to maintain a constant FPS.
 		unsigned endTime=SDL_GetTicks();
 		unsigned deltaTime=endTime-startTime;
-		int delay=fpsDelay-deltaTime;
+		int delay=1000/fps-deltaTime;
 		if (delay>0)
 			SDL_Delay(delay);
 
 		// Debugging.
 		if (debug) {
-			if (delay>0)
-				printf("Main: tick (player position (%i,%i)). render took %u.%03us (delaying for %u.%03us)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000, delay/1000, delay%1000);
-			else
-				printf("Main: tick (player position (%i,%i)). render took %u.%03us (no delay)\n", objectPlayer.getCoordTopLeft().x, objectPlayer.getCoordTopLeft().y, deltaTime/1000, deltaTime%1000);
+			if (playerObject!=NULL) {
+				if (delay>0)
+					printf("Main: tick (player position (%i,%i)). render took %u.%03us (delaying for %u.%03us)\n", playerObject->getCoordTopLeft().x, playerObject->getCoordTopLeft().y, deltaTime/1000, deltaTime%1000, delay/1000, delay%1000);
+				else
+					printf("Main: tick (player position (%i,%i)). render took %u.%03us (no delay)\n", playerObject->getCoordTopLeft().x, playerObject->getCoordTopLeft().y, deltaTime/1000, deltaTime%1000);
+			} else {
+				if (delay>0)
+					printf("Main: tick (player position (NULL). render took %u.%03us (delaying for %u.%03us)\n", deltaTime/1000, deltaTime%1000, delay/1000, delay%1000);
+				else
+					printf("Main: tick (player position (NULL). render took %u.%03us (no delay)\n", deltaTime/1000, deltaTime%1000);
+			}
 		}
 	}
-
-	// Tidy up
-	delete map;
-
-	return EXIT_SUCCESS;
 }
+
+void Engine::stop(void) {
+	stopFlag=true;
+}
+
+class Map *Engine::getMap(void) {
+	return map;
+}
+
+MapObject *Engine::getPlayerObject(void) {
+	return playerObject;
+}
+
+void Engine::setPlayerObject(MapObject *object) {
+	playerObject=object;
+}
+
+};
