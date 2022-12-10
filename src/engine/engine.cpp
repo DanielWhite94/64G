@@ -14,7 +14,6 @@ Engine::Engine(const char *mapPath, int windowWidth, int windowHeight, int defau
 
 	// Set renderer parameters.
 	renderer.drawMinimap=true;
-	renderer.drawInventory=true;
 }
 
 Engine::~Engine() {

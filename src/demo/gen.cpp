@@ -36,7 +36,8 @@ typedef struct {
 	double landSqKm, arableSqKm, peoplePerSqKm, totalPopulation;
 } DemogenMapData;
 
-bool demogenAddBaseTextures(class Map *map);
+bool demogenAddTextures(class Map *map);
+bool demogenAddItems(class Map *map);
 
 MapObject *demogenAddObjectSheep(class Map *map, CoordAngle rotation, const CoordVec &pos);
 MapObject *demogenAddObjectDog(class Map *map, CoordAngle rotation, const CoordVec &pos);
@@ -53,7 +54,7 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 
 void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
 
-bool demogenAddBaseTextures(class Map *map) {
+bool demogenAddTextures(class Map *map) {
 	const char *texturePaths[TextureIdNB]={
 		[TextureIdGrass0]="../src/demo/images/tiles/grass0.png",
 		[TextureIdGrass1]="../src/demo/images/tiles/grass1.png",
@@ -202,6 +203,18 @@ bool demogenAddBaseTextures(class Map *map) {
 	bool success=true;
 	for(unsigned textureId=0; textureId<TextureIdNB; ++textureId)
 		success&=map->addTexture(new MapTexture(textureId, texturePaths[textureId], textureScales[textureId], textureColours[textureId][0], textureColours[textureId][1], textureColours[textureId][2]));
+
+	return success;
+};
+
+bool demogenAddItems(class Map *map) {
+	const char *itemNames[ItemIdNB]={
+		[ItemIdCoins]="Coins",
+	};
+
+	bool success=true;
+	for(unsigned itemId=0; itemId<ItemIdNB; ++itemId)
+		success&=map->addItem(new MapItem(itemId, itemNames[itemId]));
 
 	return success;
 };
@@ -675,8 +688,17 @@ int main(int argc, char **argv) {
 
 	// Add textures.
 	printf("Creating textures...\n");
-	if (!demogenAddBaseTextures(mapData.map)) {
-		printf("Could not add base textures.\n");
+	if (!demogenAddTextures(mapData.map)) {
+		printf("Could not add textures.\n");
+		if (mapData.map!=NULL)
+			delete mapData.map;
+		return EXIT_FAILURE;
+	}
+
+	// Add items.
+	printf("Creating items...\n");
+	if (!demogenAddItems(mapData.map)) {
+		printf("Could not add items.\n");
 		if (mapData.map!=NULL)
 			delete mapData.map;
 		return EXIT_FAILURE;

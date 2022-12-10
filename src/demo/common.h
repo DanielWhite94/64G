@@ -52,6 +52,9 @@ static const MapTexture::Id TextureIdChestClosed=44;
 static const MapTexture::Id TextureIdChestOpen=45;
 static const MapTexture::Id TextureIdNB=46;
 
+static const MapItem::Id ItemIdCoins=0;
+static const MapItem::Id ItemIdNB=1;
+
 enum DemoGenTileLayer {
 	DemoGenTileLayerGround,
 	DemoGenTileLayerDecoration,

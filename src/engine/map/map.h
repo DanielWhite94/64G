@@ -37,6 +37,7 @@ namespace Engine {
 			bool save(void); // Saves everything recursively.
 			bool saveMetadata(void) const; // Creates directories.
 			bool saveTextures(void) const; // Only saves list of textures (requires directory exists).
+			bool saveItems(void) const; // Only saves list of item 'definitions' (requires directory exists).
 			bool saveRegions(void); // Only saves regions (requires directory exists).
 
 			bool loadRegion(unsigned regionX, unsigned regionY, const char *regionPath);
@@ -59,6 +60,10 @@ namespace Engine {
 			void removeTexture(unsigned id);
 			const MapTexture *getTexture(unsigned id) const;
 
+			bool addItem(MapItem *item); // These functions will free item later.
+			void removeItem(unsigned id);
+			const MapItem *getItem(unsigned id) const;
+
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
 
@@ -78,6 +83,7 @@ namespace Engine {
 
 			char *baseDir;
 			char *texturesDir;
+			char *itemsDir;
 			char *regionsDir;
 			char *mapTiledDir;
 
@@ -95,8 +101,11 @@ namespace Engine {
 
 			MapTexture *textures[MapTexture::IdMax];
 
+			MapItem *items[MapItem::IdMax];
+
 			const char *getRegionsDir(void) const;
 			const char *getTexturesDir(void) const;
+			const char *getItemsDir(void) const;
 
 			MapRegion *getRegionAtIndex(unsigned index);
 			const MapRegion *getRegionAtIndex(unsigned index) const;

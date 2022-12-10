@@ -54,12 +54,6 @@ int main(int argc, char **argv) {
 	player.setTextureIdForAngle(CoordAngle180, TextureIdOldManN);
 	player.setTextureIdForAngle(CoordAngle270, TextureIdOldManE);
 
-	player.inventoryEmpty(24);
-	MapObjectItem coins={.type=mapObjectItemTypeCoins, .count=1035};
-	player.inventoryAddItem(coins);
-	MapObjectItem chest={.type=mapObjectItemTypeChest, .count=19};
-	player.inventoryAddItem(chest);
-
 	class Map *map=engine->getMap();
 	if (!map->addObject(&player)) {
 		printf("Could not add player object.\n");

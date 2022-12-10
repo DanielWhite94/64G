@@ -37,6 +37,7 @@ namespace Engine {
 
 			baseDir=NULL;
 			texturesDir=NULL;
+			itemsDir=NULL;
 			regionsDir=NULL;
 			mapTiledDir=NULL;
 
@@ -52,6 +53,9 @@ namespace Engine {
 			for(i=0; i<MapTexture::IdMax; ++i)
 				textures[i]=NULL;
 
+			for(i=0; i<MapItem::IdMax; ++i)
+				items[i]=NULL;
+
 			// Create directory strings.
 			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 			baseDir=(char *)malloc(mapBaseDirPathLen+1); // TODO: Check return.
@@ -61,6 +65,11 @@ namespace Engine {
 			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
 			texturesDir=(char *)malloc(texturesDirPathLen+1); // TODO: check return
 			sprintf(texturesDir, "%s/%s", mapBaseDirPath, texturesDirName);
+
+			const char *itemsDirName="items";
+			size_t itemsDirPathLen=mapBaseDirPathLen+1+strlen(itemsDirName); // +1 is for '/'
+			itemsDir=(char *)malloc(itemsDirPathLen+1); // TODO: check return
+			sprintf(itemsDir, "%s/%s", mapBaseDirPath, itemsDirName);
 
 			const char *regionsDirName="regions";
 			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
@@ -103,6 +112,7 @@ namespace Engine {
 
 			baseDir=NULL;
 			texturesDir=NULL;
+			itemsDir=NULL;
 			regionsDir=NULL;
 			mapTiledDir=NULL;
 
@@ -118,6 +128,9 @@ namespace Engine {
 			for(i=0; i<MapTexture::IdMax; ++i)
 				textures[i]=NULL;
 
+			for(i=0; i<MapItem::IdMax; ++i)
+				items[i]=NULL;
+
 			// Create directory strings.
 			size_t mapBaseDirPathLen=strlen(mapBaseDirPath);
 			baseDir=(char *)malloc(mapBaseDirPathLen+1); // TODO: Check return.
@@ -127,6 +140,11 @@ namespace Engine {
 			size_t texturesDirPathLen=mapBaseDirPathLen+1+strlen(texturesDirName); // +1 is for '/'
 			texturesDir=(char *)malloc(texturesDirPathLen+1); // TODO: check return
 			sprintf(texturesDir, "%s/%s", mapBaseDirPath, texturesDirName);
+
+			const char *itemsDirName="items";
+			size_t itemsDirPathLen=mapBaseDirPathLen+1+strlen(itemsDirName); // +1 is for '/'
+			itemsDir=(char *)malloc(itemsDirPathLen+1); // TODO: check return
+			sprintf(itemsDir, "%s/%s", mapBaseDirPath, itemsDirName);
 
 			const char *regionsDirName="regions";
 			size_t regionsDirPathLen=mapBaseDirPathLen+1+strlen(regionsDirName); // +1 is for '/'
@@ -219,6 +237,8 @@ namespace Engine {
 				closedir(dirFd);
 			}
 
+			// Load items.
+			// TODO: this
 			// Note: Regions are loaded on demand.
 		}
 
@@ -232,6 +252,10 @@ namespace Engine {
 			// Remove textures.
 			for(i=0; i<MapTexture::IdMax; ++i)
 				removeTexture(i);
+
+			// Remove items.
+			for(i=0; i<MapItem::IdMax; ++i)
+				removeItem(i);
 
 			// Close and remove lock file
 			if (lockFd!=-1)
@@ -247,6 +271,8 @@ namespace Engine {
 			baseDir=NULL;
 			free(texturesDir);
 			texturesDir=NULL;
+			free(itemsDir);
+			itemsDir=NULL;
 			free(regionsDir);
 			regionsDir=NULL;
 			free(mapTiledDir);
@@ -269,6 +295,10 @@ namespace Engine {
 			if (!saveTextures())
 				return false;
 
+			// Save all items.
+			if (!saveItems())
+				return false;
+
 			return true;
 		}
 
@@ -287,6 +317,15 @@ namespace Engine {
 			if (!Util::isDir(texturesDirPath)) {
 				if (!Util::makeDir(texturesDirPath)) {
 					fprintf(stderr,"error: could not create map textures dir at '%s'\n", texturesDirPath);
+					return false;
+				}
+			}
+
+			// Do we need to create items directory?
+			const char *itemsDirPath=getItemsDir();
+			if (!Util::isDir(itemsDirPath)) {
+				if (!Util::makeDir(itemsDirPath)) {
+					fprintf(stderr,"error: could not create map items dir at '%s'\n", itemsDirPath);
 					return false;
 				}
 			}
@@ -401,6 +440,26 @@ namespace Engine {
 
 				// Save texture.
 				success&=texture->save(texturesDirPath);
+			}
+
+			return success;
+		}
+
+		bool Map::saveItems(void) const {
+			bool success=true;
+
+			// Save all items.
+			const char *itemsDirPath=getItemsDir();
+
+			unsigned itemId;
+			for(itemId=0; itemId<MapItem::IdMax; ++itemId) {
+				// Grab item.
+				const MapItem *item=getItem(itemId);
+				if (item==NULL)
+					continue;
+
+				// Save item.
+				success&=item->save(itemsDirPath);
 			}
 
 			return success;
@@ -741,6 +800,35 @@ namespace Engine {
 			return textures[id];
 		}
 
+		bool Map::addItem(MapItem *item) {
+			assert(item!=NULL);
+
+			// Ensure this id is free.
+			if (items[item->getId()]!=NULL)
+				return false;
+
+			// Create item and add to array.
+			items[item->getId()]=item;
+
+			return (items[item->getId()]!=NULL);
+		}
+
+		void Map::removeItem(unsigned id) {
+			assert(id<MapItem::IdMax);
+
+			// If there is a item here, free it and set entry to NULL.
+			if (items[id]!=NULL) {
+				delete items[id];
+				items[id]=NULL;
+			}
+		}
+
+		const MapItem *Map::getItem(unsigned id) const {
+			assert(id<MapItem::IdMax);
+
+			return items[id];
+		}
+
 		const char *Map::getBaseDir(void) const {
 			return baseDir;
 		}
@@ -755,6 +843,10 @@ namespace Engine {
 
 		const char *Map::getTexturesDir(void) const {
 			return texturesDir;
+		}
+
+		const char *Map::getItemsDir(void) const {
+			return itemsDir;
 		}
 
 		MapRegion *Map::getRegionAtIndex(unsigned index) {

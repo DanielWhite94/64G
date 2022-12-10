@@ -2,6 +2,9 @@
 #define ENGINE_MAP_MAPOBJECT_H
 
 #include <cstdio>
+#include <vector>
+
+#include "./mapitem.h"
 #include "./maptexture.h"
 #include "../physics/coord.h"
 #include "../physics/hitmask.h"
@@ -29,35 +32,13 @@ namespace Engine {
 			HitMask hitmask;
 		};
 
-		typedef uint16_t MapObjectItemType;
-		static const MapObjectItemType mapObjectItemTypeEmpty=0;
-		static const MapObjectItemType mapObjectItemTypeCoins=1;
-		static const MapObjectItemType mapObjectItemTypeChest=2;
-		static const MapObjectItemType mapObjectItemTypeNB=3;
-
-		typedef uint16_t MapObjectItemCount;
-		static const MapObjectItemCount mapObjectMaxSlots=32;
-
-		struct MapObjectItemTypeData {
-			MapTexture::Id iconTexture;
-			MapObjectItemCount maxStackSize; // set to 1 for non-stackable items
-		};
-
-		// TODO: Think about texture assignment here (actually it doesn't really make sense for any of this data to be here).
-		static const MapObjectItemTypeData mapObjectItemTypeData[mapObjectItemTypeNB]={
-			[mapObjectItemTypeEmpty]={.iconTexture=0, .maxStackSize=1},
-			[mapObjectItemTypeCoins]={.iconTexture=44, .maxStackSize=1000},
-			[mapObjectItemTypeChest]={.iconTexture=45, .maxStackSize=1},
-		};
-
 		struct MapObjectItem {
-			MapObjectItemType type;
-			MapObjectItemCount count;
+			MapItem::Id id;
+			// TODO: this exists as a struct so that item variable values can also be stored
 		};
 
 		struct MapObjectInventory {
-			MapObjectItem items[mapObjectMaxSlots];
-			MapObjectItemCount numSlots;
+			std::vector<MapObjectItem> items;
 		};
 
 		class MapObject {
@@ -94,13 +75,10 @@ namespace Engine {
 			void setMovementModeRandomRadius(const CoordVec &centre, CoordComponent radius);
 			void setTextureIdForAngle(CoordAngle angle, MapTexture::Id textureId);
 
-			void setItemData(MapObjectItemType type, MapObjectItemCount count);
-
 			bool inventoryExists(void) const;
-			MapObjectItemCount inventoryGetNumSlots(void) const;
-			MapObjectItem inventoryGetItem(MapObjectItemCount slot) const;
-			void inventoryEmpty(MapObjectItemCount numSlots);
-			MapObjectItemCount inventoryAddItem(const MapObjectItem &item); // Returns number of items successfully added.
+			const std::vector<MapObjectItem> *inventoryGetItems(void) const;
+			void inventoryEmpty(void);
+			bool inventoryAddItem(const MapObjectItem &item);
 		private:
 			CoordAngle angle;
 			CoordVec pos;
@@ -116,9 +94,6 @@ namespace Engine {
 				MovementData() {};
 				~MovementData() {};
 			} movementData;
-
-			bool isItem;
-			MapObjectItem itemData;
 
 			bool isInventory;
 			MapObjectInventory inventoryData;

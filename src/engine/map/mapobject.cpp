@@ -16,7 +16,6 @@ namespace Engine {
 			for(unsigned i=0; i<CoordAngleNB; ++i)
 				textureIds[i]=MapTexture::IdMax;
 
-			isItem=false;
 			isInventory=false;
 		}
 
@@ -27,10 +26,6 @@ namespace Engine {
 			movementData=src.movementData;
 
 			memcpy(textureIds, src.textureIds, sizeof(textureIds));
-
-			isItem=src.isItem;
-			if (isItem)
-				itemData=src.itemData;
 
 			isInventory=src.isInventory;
 			if (isInventory)
@@ -51,7 +46,6 @@ namespace Engine {
 			for(unsigned i=0; i<CoordAngleNB; ++i)
 				textureIds[i]=MapTexture::IdMax;
 
-			isItem=false;
 			isInventory=false;
 		}
 
@@ -71,8 +65,6 @@ namespace Engine {
 			result&=(fread(&movementMode, sizeof(movementMode), 1, file)==1);
 			result&=(fread(&textureIds, sizeof(textureIds), 1, file)==1);
 			result&=(fread(&movementData, sizeof(movementData), 1, file)==1);
-			result&=(fread(&isItem, sizeof(isItem), 1, file)==1);
-			result&=(fread(&itemData, sizeof(itemData), 1, file)==1);
 			result&=(fread(&isInventory, sizeof(isInventory), 1, file)==1);
 			result&=(fread(&inventoryData, sizeof(inventoryData), 1, file)==1);
 
@@ -92,8 +84,6 @@ namespace Engine {
 			result&=(fwrite(&movementMode, sizeof(movementMode), 1, file)==1);
 			result&=(fwrite(&textureIds, sizeof(textureIds), 1, file)==1);
 			result&=(fwrite(&movementData, sizeof(movementData), 1, file)==1);
-			result&=(fwrite(&isItem, sizeof(isItem), 1, file)==1);
-			result&=(fwrite(&itemData, sizeof(itemData), 1, file)==1);
 			result&=(fwrite(&isInventory, sizeof(isInventory), 1, file)==1);
 			result&=(fwrite(&inventoryData, sizeof(inventoryData), 1, file)==1);
 
@@ -254,61 +244,27 @@ namespace Engine {
 			textureIds[angle]=textureId;
 		}
 
-		void MapObject::setItemData(MapObjectItemType type, MapObjectItemCount count) {
-			isItem=true;
-			itemData.type=type;
-			itemData.count=count;
-		}
-
 		bool MapObject::inventoryExists(void) const {
 			return isInventory;
 		}
 
-		MapObjectItemCount MapObject::inventoryGetNumSlots(void) const {
+		const std::vector<MapObjectItem> *MapObject::inventoryGetItems(void) const {
 			assert(isInventory);
 
-			return inventoryData.numSlots;
+			return &inventoryData.items;
 		}
 
-		MapObjectItem MapObject::inventoryGetItem(MapObjectItemCount slot) const {
-			assert(isInventory);
-			assert(slot<inventoryGetNumSlots());
-
-			return inventoryData.items[slot];
-		}
-
-		void MapObject::inventoryEmpty(MapObjectItemCount numSlots) {
+		void MapObject::inventoryEmpty(void) {
 			isInventory=true;
-			inventoryData.numSlots=numSlots;
-			for(unsigned i=0; i<inventoryData.numSlots; ++i) {
-				inventoryData.items[i].type=mapObjectItemTypeEmpty;
-				inventoryData.items[i].count=0;
-			}
+			inventoryData.items.clear();
 		}
 
-		MapObjectItemCount MapObject::inventoryAddItem(const MapObjectItem &item) {
-			const MapObjectItemCount stackSize=mapObjectItemTypeData[item.type].maxStackSize;
+		bool MapObject::inventoryAddItem(const MapObjectItem &item) {
+			assert(isInventory);
 
-			MapObjectItemCount remaining=item.count;
+			inventoryData.items.push_back(item);
 
-			// Look over slots for existing stacks to fill.
-			for(MapObjectItemCount slot=0; slot<inventoryData.numSlots && remaining>0; ++slot)
-				if (inventoryData.items[slot].type==item.type && inventoryData.items[slot].count<stackSize) {
-					MapObjectItemCount delta=std::min((int)remaining, (int)stackSize-inventoryData.items[slot].count);
-					remaining-=delta;
-					inventoryData.items[slot].count+=delta;
-				}
-
-			// Put any remaining items into empty slots if possible.
-			for(MapObjectItemCount slot=0; slot<inventoryData.numSlots && remaining>0; ++slot)
-				if (inventoryData.items[slot].type==mapObjectItemTypeEmpty) {
-					MapObjectItemCount delta=std::min((int)remaining, (int)stackSize);
-					remaining-=delta;
-					inventoryData.items[slot].type=item.type;
-					inventoryData.items[slot].count+=delta;
-				}
-
-			return item.count-remaining;
+			return true;
 		}
 
 		MapObjectTile * MapObject::getTileData(int x, int y) {
