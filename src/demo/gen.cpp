@@ -542,6 +542,7 @@ void demogenGrassSheepModifyTilesFunctor(unsigned threadId, class Map *map, unsi
 	assert(userData!=NULL);
 
 	const DemogenMapData *mapData=(const DemogenMapData *)userData;
+	(void)mapData; // HACK to stop compiler unused variable warning
 
 	// Grab tile.
 	const MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
@@ -569,6 +570,7 @@ void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsign
 	assert(userData!=NULL);
 
 	const DemogenMapData *mapData=(const DemogenMapData *)userData;
+	(void)mapData; // HACK to stop compiler unused variable warning
 
 	// Grab tile.
 	const MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
