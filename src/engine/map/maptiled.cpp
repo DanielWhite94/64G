@@ -100,6 +100,38 @@ namespace Engine {
 			png_free_data(pngPtr, infoPtr, PNG_FREE_ALL, -1);
 			png_destroy_write_struct(&pngPtr, (png_infopp)NULL);
 
+			// Create transparent image (used by MapTiled to speed up generating out of map bounds images)
+			getTransparentImagePath(map, imagePath);
+			imageFile=fopen(imagePath, "wb");
+			pngPtr=png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+			png_init_io(pngPtr, imageFile);
+			infoPtr=png_create_info_struct(pngPtr);
+			png_set_IHDR(pngPtr, infoPtr, imageSize, imageSize, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+			png_write_info(pngPtr, infoPtr);
+			png_set_compression_level(pngPtr, 3);
+
+			pngRows=(png_bytep)malloc(imageSize*imageSize*4*sizeof(png_byte));
+			r=0;
+			g=0;
+			b=0;
+			uint8_t a=0;
+			for(imageY=0; imageY<imageSize; ++imageY) {
+				unsigned imageX;
+				for(imageX=0; imageX<imageSize; ++imageX) {
+					pngRows[(imageY*imageSize+imageX)*4+0]=r;
+					pngRows[(imageY*imageSize+imageX)*4+1]=g;
+					pngRows[(imageY*imageSize+imageX)*4+2]=b;
+					pngRows[(imageY*imageSize+imageX)*4+3]=a;
+				}
+				png_write_row(pngPtr, &pngRows[(imageY*imageSize+0)*4*sizeof(png_byte)]);
+			}
+			free(pngRows);
+
+			png_write_end(pngPtr, NULL);
+			fclose(imageFile);
+			png_free_data(pngPtr, infoPtr, PNG_FREE_ALL, -1);
+			png_destroy_write_struct(&pngPtr, (png_infopp)NULL);
+
 			return true;
 		}
 
@@ -135,6 +167,10 @@ namespace Engine {
 
 		void MapTiled::getBlankImagePath(const class Map *map, char path[1024]) {
 			sprintf(path, "%s/blank.png", map->getMapTiledDir());
+		}
+
+		void MapTiled::getTransparentImagePath(const class Map *map, char path[1024]) {
+			sprintf(path, "%s/transparent.png", map->getMapTiledDir());
 		}
 
 		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs endTimeMs, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs) {

@@ -55,6 +55,7 @@ namespace Engine {
 			static void getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayer layer, char path[1024]); // TODO: improve hardcoded size
 			static void getBlankImagePath(const class Map *map, char path[1024]); // TODO: improve hardcoded size
+			static void getTransparentImagePath(const class Map *map, char path[1024]); // TODO: improve hardcoded size
 
 		private:
 			static bool generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs endTimeMs, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs);

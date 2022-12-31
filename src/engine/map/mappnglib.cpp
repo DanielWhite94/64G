@@ -1,4 +1,7 @@
 #include <cassert>
+#include <fcntl.h>
+#include <sys/sendfile.h>
+#include <unistd.h>
 
 #include "mappnglib.h"
 
@@ -7,6 +10,29 @@ namespace Engine {
 		assert(map!=NULL);
 		assert(mapTileX>=0);
 		assert(mapTileY>=0);
+
+		// Determine if the given area is beyond the map boundaries and so does not need generating
+		if (mapTileX>=map->getWidth() || mapTileY>=map->getHeight()) {
+			char transparentPath[1024];
+			MapTiled::getTransparentImagePath(map, transparentPath);
+
+			int outputFd=open(imagePath, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
+			if (outputFd!=-1) {
+				int transparentFd=open(transparentPath, O_RDONLY);
+				size_t count=Util::getFileSize(transparentPath);
+
+				if (sendfile(outputFd, transparentFd, NULL, count)==count) {
+					close(transparentFd);
+					close(outputFd);
+					return true;
+				}
+
+				close(transparentFd);
+				close(outputFd);
+			}
+
+			// Fall back on common method
+		}
 
 		// Create file for writing.
 		if (!quiet)
