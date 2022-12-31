@@ -41,6 +41,8 @@ int main(int argc, char **argv) {
 	}
 
 	// Create, add and set player object.
+	class Map *map=engine->getMap();
+
 	MapObject player(CoordAngle0, CoordVec(startTileX*Physics::CoordsPerTile, startTileY*Physics::CoordsPerTile), 1, 1);
 	HitMask playerHitmask;
 	const unsigned playerW=4, playerH=6;
@@ -54,7 +56,11 @@ int main(int argc, char **argv) {
 	player.setTextureIdForAngle(CoordAngle180, TextureIdOldManN);
 	player.setTextureIdForAngle(CoordAngle270, TextureIdOldManE);
 
-	class Map *map=engine->getMap();
+	player.inventoryClear();
+	MapObjectItem item;
+	item.id=ItemIdCoins;
+	player.inventoryAddItem(item);
+
 	if (!map->addObject(&player)) {
 		printf("Could not add player object.\n");
 		delete map;
