@@ -20,6 +20,7 @@ namespace Engine {
 
 		static bool isDir(const char *path);
 		static bool isFile(const char *path);
+		static size_t getFileSize(const char *path);
 		static bool makeDir(const char *path);
 		static bool unlinkFile(const char *path);
 
