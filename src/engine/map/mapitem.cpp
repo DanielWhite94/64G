@@ -30,8 +30,23 @@ namespace Engine {
 		bool MapItem::save(const char *itemsDirPath) const {
 			assert(itemsDirPath!=NULL);
 
-			// TODO: this
-			return true; // ..... temporary hack
+			// Create file name
+			char path[4096]; // TODO: This better.
+			sprintf(path, "%s/%u", itemsDirPath, getId());
+
+			// Save data to file (creating/truncating as required)
+			FILE *fd=fopen(path, "w");
+			if (fd==NULL)
+				return false;
+
+			if (fprintf(fd, "%s\n", getName())<0) {
+				fclose(fd);
+				return false;
+			}
+
+			fclose(fd);
+
+			return true;
 		}
 
 		unsigned MapItem::getId(void) const {
