@@ -238,7 +238,54 @@ namespace Engine {
 			}
 
 			// Load items.
-			// TODO: this
+			dirFd=opendir(getItemsDir());
+			if (dirFd==NULL) {
+				throw std::runtime_error("could not open map item dir");
+			} else {
+				while((dirEntry=readdir(dirFd))!=NULL) {
+					char dirEntryFileName[1024]; // TODO: this better
+					sprintf(dirEntryFileName , "%s/%s", getItemsDir(), dirEntry->d_name);
+
+					struct stat stbuf;
+					if (stat(dirEntryFileName,&stbuf)==-1)
+						continue;
+
+					// Skip non-regular files.
+					if ((stbuf.st_mode & S_IFMT)!=S_IFREG)
+						continue;
+
+					// Attempt to decode filename as an item id.
+					char *idPtr=strrchr(dirEntryFileName, '/');
+					if (idPtr!=NULL)
+						idPtr++;
+					else
+						idPtr=dirEntryFileName;
+
+					MapItem::Id itemId=atoi(idPtr);
+
+					FILE *itemFile=fopen(dirEntryFileName, "r");
+					if (itemFile==NULL)
+						continue;
+
+					char itemName[4096]; // TODO: this better
+					if (fgets(itemName, 4096, itemFile)==NULL) {
+						fclose(itemFile);
+						continue;
+					}
+					if (itemName[strlen(itemName)-1]=='\n')
+						itemName[strlen(itemName)-1]='\0'; // trim newline
+
+					fclose(itemFile);
+
+					// Add item.
+					printf("@@@@@ adding item: %u '%s'\n", itemId, itemName);
+					MapItem *item=new MapItem(itemId, itemName);
+					addItem(item); // TODO: Check return.
+				}
+
+				closedir(dirFd);
+			}
+
 			// Note: Regions are loaded on demand.
 		}
 
