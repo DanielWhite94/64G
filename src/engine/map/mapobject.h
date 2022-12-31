@@ -77,7 +77,7 @@ namespace Engine {
 
 			bool inventoryExists(void) const;
 			const std::vector<MapObjectItem> *inventoryGetItems(void) const;
-			void inventoryEmpty(void);
+			void inventoryClear(void); // also called to enable an inventory for an object
 			bool inventoryAddItem(const MapObjectItem &item);
 		private:
 			CoordAngle angle;

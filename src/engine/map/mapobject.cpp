@@ -254,7 +254,7 @@ namespace Engine {
 			return &inventoryData.items;
 		}
 
-		void MapObject::inventoryEmpty(void) {
+		void MapObject::inventoryClear(void) {
 			isInventory=true;
 			inventoryData.items.clear();
 		}
