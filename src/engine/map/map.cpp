@@ -278,7 +278,6 @@ namespace Engine {
 					fclose(itemFile);
 
 					// Add item.
-					printf("@@@@@ adding item: %u '%s'\n", itemId, itemName);
 					MapItem *item=new MapItem(itemId, itemName);
 					addItem(item); // TODO: Check return.
 				}
