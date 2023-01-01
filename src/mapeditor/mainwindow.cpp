@@ -339,12 +339,12 @@ namespace MapEditor {
 		const double userMapSizeX=Engine::Map::Map::regionsSize*MapRegion::tilesSize;
 		const double userMapSizeY=Engine::Map::Map::regionsSize*MapRegion::tilesSize;
 
-		//                                              zoom level = {  0   1   2   3   4   5   6   7   8}
+		//                                              zoom level = {  0   1   2   3   4   5   6   7   8   9  10  11}
 		// TODO: this will need adjusting after changing MapTiled image size parameters
-		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={  0,  0,  0,  1,  1,  1,  1,  1,  1};
-		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={ 64, 32, 32, 16,  8,  8,  4,  4,  2};
-		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={128, 64, 32, 32, 32, 16,  8,  8,  4};
-		assert(zoomLevelMax-zoomLevelMin==9);
+		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1}; // ...... need tweaking
+		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={ 64, 32, 32, 16,  8,  8,  4,  4,  2,  2,  2,  2}; // ...... need tweaking
+		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={128, 64, 32, 32, 32, 16,  8,  8,  4,  4,  4,  4}; // ...... need tweaking
+		assert(zoomLevelMax-zoomLevelMin==9+3);
 
 		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
 		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
@@ -376,7 +376,7 @@ namespace MapEditor {
 		if (1) {
 			// Calculate which set of map tile images to use (i.e. which zoom level)
 			if (1) {
-				double userDevicePixelSize=pow(2.0, zoomLevelMax-1-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
+				double userDevicePixelSize=pow(2.0, zoomLevelMax-zoomExtra-1-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
 				double userMapTileImageSize=userDevicePixelSize*MapTiled::imageSize;
 
 				int mapTileStartX=floor(userTopLeftX/userMapTileImageSize);
@@ -907,7 +907,7 @@ namespace MapEditor {
 	}
 
 	double MainWindow::getZoomFactor(void) {
-		return pow(2.0, zoomLevel-(zoomLevelMax-1));
+		return pow(2.0, zoomLevel-(zoomLevelMax-zoomExtra-1));
 	}
 
 	int MainWindow::getZoomLevelHuman(void) {
