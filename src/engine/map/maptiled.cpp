@@ -136,6 +136,8 @@ namespace Engine {
 		}
 
 		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs timeoutMs, GenerateImageProgress *progressFunctor, void *progressUserData) {
+			assert(zoom<=maxZoom);
+
 			// Compute total number of images we need to generate worst case
 			unsigned layerCount=0;
 			for(ImageLayer layer=0; layer<ImageLayerNB; ++layer)
