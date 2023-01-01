@@ -1,7 +1,7 @@
 #include <cassert>
 
 #include "floodfill.h"
-#include "../map/mapgen.h"
+#include "modifytiles.h"
 
 using namespace Engine;
 
@@ -95,7 +95,7 @@ namespace Engine {
 			modifyTileFunctorData.progressRatio=preModifyTilesProgressRatio;
 
 			uint64_t scratchBitMask=(((uint64_t)1)<<scratchBit);
-			Map::MapGen::modifyTiles(map, 0, 0, mapWidth, mapHeight, 1, &mapGenBitsetIntersectionModifyTilesFunctor, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &floodFillFillClearScratchBitModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
+			Gen::modifyTiles(map, 0, 0, mapWidth, mapHeight, 1, &modifyTilesFunctorBitsetIntersection, (void *)(uintptr_t)~scratchBitMask, (progressFunctor!=NULL ? &floodFillFillClearScratchBitModifyTilesProgressFunctor : NULL), &modifyTileFunctorData);
 
 			// Loop over regions
 			unsigned rYEnd=mapHeight/MapRegion::tilesSize;

@@ -8,6 +8,7 @@
 #include <new>
 
 #include "../engine/gen/floodfill.h"
+#include "../engine/gen/modifytiles.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
@@ -712,7 +713,7 @@ int main(int argc, char **argv) {
 	mapData.temperatureNoise=new FbnNoise(seed+19, 8, 1.0);
 
 	const char *progressStringInit="Initializing tile parameters ";
-	MapGen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &demogenInitModifyTilesFunctor, &mapData, &mapGenModifyTilesProgressString, (void *)progressStringInit);
+	Gen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &demogenInitModifyTilesFunctor, &mapData, &Gen::modifyTilesProgressString, (void *)progressStringInit);
 	printf("\n");
 
 	delete mapData.heightNoise;
@@ -722,7 +723,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats1="Collecting global statistics (1/3) ";
-	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats1);
+	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats1);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -741,12 +742,12 @@ int main(int argc, char **argv) {
 
 	const char *progressStringGlaciers="Applying glacial effects ";
 	MapGen::ParticleFlow glacierGen(mapData.map, 7, false);
-	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, threadCount, &mapGenModifyTilesProgressString, (void *)progressStringGlaciers);
+	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlaciers);
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats2="Collecting global statistics (2/3) ";
-	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats2);
+	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats2);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -762,12 +763,12 @@ int main(int argc, char **argv) {
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
 	MapGen::ParticleFlow riverGen(mapData.map, 2, true);
-	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, 1/*.....threadCount*/, &mapGenModifyTilesProgressString, (void *)progressStringRivers);
+	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, 1/*.....threadCount*/, &Gen::modifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats3="Collecting global statistics (3/3) ";
-	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &mapGenModifyTilesProgressString, (void *)progressStringGlobalStats3);
+	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats3);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -811,7 +812,7 @@ int main(int argc, char **argv) {
 
 	// Run modify tiles for forests.
 	size_t biomesModifyTilesArrayCount=3;
-	MapGen::ModifyTilesManyEntry biomesModifyTilesArray[biomesModifyTilesArrayCount];
+	Gen::ModifyTilesManyEntry biomesModifyTilesArray[biomesModifyTilesArrayCount];
 	biomesModifyTilesArray[0].functor=&demogenGroundModifyTilesFunctor;
 	biomesModifyTilesArray[0].userData=&mapData;
 	biomesModifyTilesArray[1].functor=&demogenGrassForestModifyTilesFunctor;
@@ -820,7 +821,7 @@ int main(int argc, char **argv) {
 	biomesModifyTilesArray[2].userData=&mapData;
 
 	const char *progressStringBiomes="Assigning tile textures for biomes ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, biomesModifyTilesArrayCount, biomesModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringBiomes);
+	Gen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, biomesModifyTilesArrayCount, biomesModifyTilesArray, &Gen::modifyTilesProgressString, (void *)progressStringBiomes);
 	printf("\n");
 
 	delete mapData.forestNoise;
@@ -877,14 +878,14 @@ int main(int argc, char **argv) {
 
 	// Run modify tiles npcs/animals.
 	size_t npcModifyTilesArrayCount=2;
-	MapGen::ModifyTilesManyEntry npcModifyTilesArray[npcModifyTilesArrayCount];
+	Gen::ModifyTilesManyEntry npcModifyTilesArray[npcModifyTilesArrayCount];
 	npcModifyTilesArray[0].functor=&demogenGrassSheepModifyTilesFunctor;
 	npcModifyTilesArray[0].userData=&mapData;
 	npcModifyTilesArray[1].functor=&demogenTownFolkModifyTilesFunctor;
 	npcModifyTilesArray[1].userData=&mapData;
 
 	const char *progressStringNpcsAnimals="Adding npcs and animals ";
-	MapGen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, 1, npcModifyTilesArrayCount, npcModifyTilesArray, &mapGenModifyTilesProgressString, (void *)progressStringNpcsAnimals);
+	Gen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, 1, npcModifyTilesArrayCount, npcModifyTilesArray, &Gen::modifyTilesProgressString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
 	// Landmass (contintent/island) identification
