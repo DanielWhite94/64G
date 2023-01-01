@@ -10,6 +10,7 @@
 #include "../engine/gen/edgedetect.h"
 #include "../engine/gen/floodfill.h"
 #include "../engine/gen/modifytiles.h"
+#include "../engine/gen/search.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
@@ -734,7 +735,7 @@ int main(int argc, char **argv) {
 	/*
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (1/3)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run glacier calculation.
@@ -758,7 +759,7 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (2/3)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run moisture/river calculation.
@@ -778,37 +779,37 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	printf("Searching for sea level (with desired land coverage %.2f%%) (3/3)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Calculate alpine level.
 	printf("Searching for alpine level (with desired coverage %.2f%%)...\n", desiredAlpineFraction*100.0);
-	mapData.map->alpineLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredAlpineFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &mapGenNarySearchGetFunctorHeight, NULL);
+	mapData.map->alpineLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredAlpineFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
 	printf("	Alpine level %f\n", mapData.map->alpineLevel);
 
 	// Calculate cold threshold.
 	double desiredColdCoverage=0.4;
 	printf("Searching for cold threshold (with desired coverage %.2f%%)...\n", desiredColdCoverage*100.0);
-	mapData.coldThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredColdCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
+	mapData.coldThreshold=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredColdCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &Gen::searchGetFunctorTemperature, NULL);
 	printf("	Cold temperature %f\n", mapData.coldThreshold);
 
 	// Calculate hot threshold level.
 	double desiredHotCoverage=0.2;
 	printf("Searching for hot threshold level (with desired coverage %.2f%%)...\n", desiredHotCoverage*100.0);
-	mapData.hotThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredHotCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &mapGenNarySearchGetFunctorTemperature, NULL);
+	mapData.hotThreshold=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredHotCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &Gen::searchGetFunctorTemperature, NULL);
 	printf("	Hot temperature %f\n", mapData.hotThreshold);
 
 	// Calculate river moisture threshold.
 	double desiredRiverCoverage=0.005;
 	printf("Searching for river moisture threshold (with desired coverage %.2f%%)...\n", desiredRiverCoverage*100.0);
-	mapData.riverMoistureThreshold=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredRiverCoverage, 0.45, mapData.map->minMoisture, mapData.map->maxMoisture, &mapGenNarySearchGetFunctorMoisture, NULL);
+	mapData.riverMoistureThreshold=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredRiverCoverage, 0.45, mapData.map->minMoisture, mapData.map->maxMoisture, &Gen::searchGetFunctorMoisture, NULL);
 	printf("	River moisture threshold %f\n", mapData.riverMoistureThreshold);
 
 	// Calculate forest threshold.
 	mapData.forestNoise=new FbnNoise(seed+23, 8, 8.0);
 
 	printf("Searching for forest level (with desired land coverage %.2f%%)...\n", desiredForestFraction*100.0);
-	mapData.map->forestLevel=MapGen::narySearch(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredForestFraction, 0.005, -1.0, 1.0, &mapGenNarySearchGetFunctorNoise, mapData.forestNoise);
+	mapData.map->forestLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredForestFraction, 0.005, -1.0, 1.0, &Gen::searchGetFunctorNoise, mapData.forestNoise);
 	printf("	Forest level %f\n", mapData.map->forestLevel);
 
 	// Run modify tiles for forests.

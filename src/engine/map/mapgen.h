@@ -13,11 +13,6 @@
 
 namespace Engine {
 	namespace Map {
-		void mapGenNArySearchModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
-		double mapGenNarySearchGetFunctorHeight(class Map *map, unsigned x, unsigned y, void *userData);
-		double mapGenNarySearchGetFunctorTemperature(class Map *map, unsigned x, unsigned y, void *userData);
-		double mapGenNarySearchGetFunctorMoisture(class Map *map, unsigned x, unsigned y, void *userData);
-		double mapGenNarySearchGetFunctorNoise(class Map *map, unsigned x, unsigned y, void *userData); // userData should be a pointer to an FbnNoise instance
 
 		struct MapGenRoad {
 			int x0, y0, x1, y1;
@@ -53,8 +48,6 @@ namespace Engine {
 			typedef bool (AddForestFunctor)(class Map *map, const CoordVec &position, void *userData);
 
 			typedef bool (TileTestFunctor)(class Map *map, int x, int y, int w, int h, void *userData);
-
-			typedef double (NArySearchGetFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 
 			enum AddTownsShopType {
 				Shoemaker,
@@ -129,18 +122,6 @@ namespace Engine {
 				bool side; // 0 = left/top, 1=/right/down
 			};
 
-			struct NArySearchData {
-				class Map *map;
-
-				NArySearchGetFunctor *getFunctor;
-				void *getUserData;
-
-				double sampleMin, sampleMax, sampleRange;
-				double sampleConversionFactor; // equal to (data->sampleCount+1.0)/data->sampleRange, see MapGen::narySearchValueToSample
-				int sampleCount;
-				unsigned long long int *sampleTally, sampleTotal;
-			};
-
 			class ParticleFlow {
 			public:
 				ParticleFlow(Map *map, int erodeRadius, bool incMoisture): map(map), erodeRadius(erodeRadius), incMoisture(incMoisture) {
@@ -173,10 +154,6 @@ namespace Engine {
 			// Note: in houseParams the following fields will be set internally by addTown: roofHeight, doorOffset, chimneyOffset and the ShowDoor flag will be set as needed
 			static bool addTown(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, const AddTownParameters *params, const AddHouseParameters *houseParams, int townPop);
 			static bool addTowns(class Map *map, unsigned x0, unsigned y0, unsigned x1, unsigned y1, const AddTownParameters *params, const AddHouseParameters *houseParams, double totalPopulation);
-
-			static double narySearch(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, int n, double threshold, double epsilon, double sampleMin, double sampleMax, NArySearchGetFunctor *getFunctor, void *getUserData); // Returns (approximate) height/moisture etc value for which threshold fraction of the tiles in the given region are lower than said value.
-			static int narySearchValueToSample(const NArySearchData *data, double value);
-			static double narySearchSampleToValue(const NArySearchData *data, int sample);
 
 			static void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, Gen::ModifyTilesProgress *progressFunctor, void *progressUserData); // Updates map's min/maxHeight and other such fields.
 
