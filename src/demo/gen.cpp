@@ -923,7 +923,7 @@ int main(int argc, char **argv) {
 	// Print elapsed total time
 	Util::TimeMs totalTime=Util::getTimeMs()-startTime;
 	printf("Total generation time: ");
-	mapGenPrintTime(totalTime);
+	Util::printTime(totalTime);
 	printf("\n");
 
 	// Tidy up

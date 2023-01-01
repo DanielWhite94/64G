@@ -3,7 +3,6 @@
 
 #include "renderer.h"
 #include "../util.h"
-#include "../map/mapgen.h"
 
 using namespace Engine;
 using namespace Engine::Graphics;

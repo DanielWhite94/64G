@@ -759,42 +759,6 @@ namespace Engine {
 				tile->setBitset(tile->getBitset()&bitset);
 		}
 
-		void mapGenPrintTime(Util::TimeMs timeMs) {
-			const Util::TimeMs minuteFactor=60;
-			const Util::TimeMs hourFactor=minuteFactor*60;
-			const Util::TimeMs dayFactor=hourFactor*24;
-
-			// Convert to seconds.
-			timeMs/=1000;
-
-			// Print time.
-			bool output=false;
-
-			if (timeMs>=dayFactor) {
-				Util::TimeMs days=timeMs/dayFactor;
-				timeMs-=days*dayFactor;
-				printf("%llud", days);
-				output=true;
-			}
-
-			if (timeMs>=hourFactor) {
-				Util::TimeMs hours=timeMs/hourFactor;
-				timeMs-=hours*hourFactor;
-				printf("%llih", hours);
-				output=true;
-			}
-
-			if (timeMs>=minuteFactor) {
-				Util::TimeMs minutes=timeMs/minuteFactor;
-				timeMs-=minutes*minuteFactor;
-				printf("%llim", minutes);
-				output=true;
-			}
-
-			if (timeMs>0 || !output)
-				printf("%llis", timeMs);
-		}
-
 		void mapGenModifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(map!=NULL);
 			assert(progress>=0.0 && progress<=1.0);
@@ -809,14 +773,14 @@ namespace Engine {
 			printf("%s%.3f%% ", string, progress*100.0);
 
 			// Append time elapsed so far.
-			mapGenPrintTime(elapsedTimeMs);
+			Util::printTime(elapsedTimeMs);
 
 			// Attempt to compute estimated total time.
 			if (progress>=0.0001 && progress<=0.9999) {
 				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
 				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
 					printf(" (~");
-					mapGenPrintTime(estRemainingTimeMs);
+					Util::printTime(estRemainingTimeMs);
 					printf(" remaining)");
 				}
 			}
@@ -1603,14 +1567,14 @@ namespace Engine {
 			printf("%s%.3f%% ", string, progress*100.0);
 
 			// Append time elapsed so far.
-			mapGenPrintTime(elapsedTimeMs);
+			Util::printTime(elapsedTimeMs);
 
 			// Attempt to compute estimated total time.
 			if (progress>=0.0001 && progress<=0.9999) {
 				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
 				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
 					printf(" (~");
-					mapGenPrintTime(estRemainingTimeMs);
+					Util::printTime(estRemainingTimeMs);
 					printf(" remaining)");
 				}
 			}
@@ -1647,14 +1611,14 @@ namespace Engine {
 			printf("%s%.3f%% ", string, progress*100.0);
 
 			// Append time elapsed so far.
-			mapGenPrintTime(elapsedTimeMs);
+			Util::printTime(elapsedTimeMs);
 
 			// Attempt to compute estimated total time.
 			if (progress>=0.0001 && progress<=0.9999) {
 				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
 				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
 					printf(" (~");
-					mapGenPrintTime(estRemainingTimeMs);
+					Util::printTime(estRemainingTimeMs);
 					printf(" remaining)");
 				}
 			}

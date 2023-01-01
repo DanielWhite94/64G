@@ -28,6 +28,7 @@ namespace Engine {
 
 		typedef long long int TimeMs;
 		static TimeMs getTimeMs(void);
+		static void printTime(TimeMs timeMs);
 	};
 };
 

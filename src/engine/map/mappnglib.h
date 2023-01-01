@@ -8,7 +8,6 @@
 #include <png.h>
 
 #include "map.h"
-#include "mapgen.h"
 #include "mapobject.h"
 #include "maptiled.h"
 #include "../util.h"

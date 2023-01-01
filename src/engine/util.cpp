@@ -143,3 +143,39 @@ bool Util::isImageWhite(const char *path) {
 Util::TimeMs Util::getTimeMs(void) {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
+
+void Util::printTime(TimeMs timeMs) {
+	const TimeMs minuteFactor=60;
+	const TimeMs hourFactor=minuteFactor*60;
+	const TimeMs dayFactor=hourFactor*24;
+
+	// Convert to seconds.
+	timeMs/=1000;
+
+	// Print time.
+	bool output=false;
+
+	if (timeMs>=dayFactor) {
+		TimeMs days=timeMs/dayFactor;
+		timeMs-=days*dayFactor;
+		printf("%llud", days);
+		output=true;
+	}
+
+	if (timeMs>=hourFactor) {
+		TimeMs hours=timeMs/hourFactor;
+		timeMs-=hours*hourFactor;
+		printf("%llih", hours);
+		output=true;
+	}
+
+	if (timeMs>=minuteFactor) {
+		TimeMs minutes=timeMs/minuteFactor;
+		timeMs-=minutes*minuteFactor;
+		printf("%llim", minutes);
+		output=true;
+	}
+
+	if (timeMs>0 || !output)
+		printf("%llis", timeMs);
+}

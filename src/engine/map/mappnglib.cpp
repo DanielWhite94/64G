@@ -3,6 +3,7 @@
 #include <sys/sendfile.h>
 #include <unistd.h>
 
+#include "mapgen.h"
 #include "mappnglib.h"
 
 namespace Engine {
