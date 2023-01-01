@@ -12,6 +12,7 @@
 #include "../engine/gen/modifytiles.h"
 #include "../engine/gen/particleflow.h"
 #include "../engine/gen/search.h"
+#include "../engine/gen/town.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
@@ -846,7 +847,7 @@ int main(int argc, char **argv) {
 
 	// Add towns.
 	printf("Adding towns...\n");
-	MapGen::AddTownParameters townParams={
+	Gen::AddTownParameters townParams={
 		.roadTileLayer=DemoGenTileLayerGround,
 		.houseDecorationLayer=DemoGenTileLayerDecoration,
 		.testFunctor=&demogenTownTileTestFunctor,
@@ -856,8 +857,8 @@ int main(int argc, char **argv) {
 		.textureIdShopSignNone=TextureIdHouseWall2,
 		.textureIdShopSignCobbler=TextureIdShopCobbler,
 	};
-	MapGen::AddHouseParameters houseParams={
-		.flags=(MapGen::AddHouseFlags)(MapGen::AddHouseFlags::ShowChimney|MapGen::AddHouseFlags::AddDecoration),
+	Gen::AddHouseParameters houseParams={
+		.flags=(Gen::AddHouseFlags)(Gen::AddHouseFlags::ShowChimney|Gen::AddHouseFlags::AddDecoration),
 		.tileLayer=DemoGenTileLayerFull,
 		.decorationLayer=DemoGenTileLayerDecoration,
 		.testFunctor=NULL,
@@ -876,7 +877,7 @@ int main(int argc, char **argv) {
 		.textureIdBrickPath=TextureIdBrickPath,
 		.textureIdRoseBush=TextureIdRoseBush,
 	};
-	MapGen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, &townParams, &houseParams, mapData.totalPopulation);
+	Gen::addTowns(mapData.map, 0, 0, mapData.width, mapData.height, &townParams, &houseParams, mapData.totalPopulation);
 	printf("\n");
 
 	// Run modify tiles npcs/animals.
