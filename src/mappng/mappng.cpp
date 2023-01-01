@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 	try {
 		map=new class Map(mapPath, false);
 	} catch (std::exception& e) {
-		if (quiet)
+		if (!quiet)
 			std::cout << "Could not load map: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
