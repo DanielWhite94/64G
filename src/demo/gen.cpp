@@ -7,6 +7,7 @@
 #include <iostream>
 #include <new>
 
+#include "../engine/gen/floodfill.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
@@ -897,8 +898,8 @@ int main(int argc, char **argv) {
 	landmassEdgeDetect.trace(&mapGenEdgeDetectLandSampleFunctor, NULL, &mapGenEdgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &mapGenEdgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
 	printf("\n");
 
-	MapGen::FloodFill landmassFloodFill(mapData.map, 63);
-	landmassFloodFill.fill(&mapGenFloodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &mapGenFloodFillStringProgressFunctor, (void *)"Identifying individual landmasses via flood-fill ");
+	Gen::FloodFill landmassFloodFill(mapData.map, 63);
+	landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &Gen::floodFillStringProgressFunctor, (void *)"Identifying individual landmasses via flood-fill ");
 	printf("\n");
 
 	// Run contour line detection logic
