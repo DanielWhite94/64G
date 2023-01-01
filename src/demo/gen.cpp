@@ -10,6 +10,7 @@
 #include "../engine/gen/edgedetect.h"
 #include "../engine/gen/floodfill.h"
 #include "../engine/gen/modifytiles.h"
+#include "../engine/gen/particleflow.h"
 #include "../engine/gen/search.h"
 #include "../engine/map/map.h"
 #include "../engine/map/mapgen.h"
@@ -743,7 +744,7 @@ int main(int argc, char **argv) {
 	Note: this is disabled for now as it is quite slow, although it does produce good effects
 
 	const char *progressStringGlaciers="Applying glacial effects ";
-	MapGen::ParticleFlow glacierGen(mapData.map, 7, false);
+	Gen::ParticleFlow glacierGen(mapData.map, 7, false);
 	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlaciers);
 	printf("\n");
 
@@ -764,7 +765,7 @@ int main(int argc, char **argv) {
 
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
-	MapGen::ParticleFlow riverGen(mapData.map, 2, true);
+	Gen::ParticleFlow riverGen(mapData.map, 2, true);
 	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, 1/*.....threadCount*/, &Gen::modifyTilesProgressString, (void *)progressStringRivers);
 	printf("\n");
 
