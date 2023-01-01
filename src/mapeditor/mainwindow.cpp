@@ -929,6 +929,34 @@ namespace MapEditor {
 	}
 
 	cairo_surface_t *MainWindow::getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer) {
+		// Separate case if need to generate/adjust the image due to being beyond MapTiled max zoom
+		if (z>=zoomLevelMax-zoomExtra) {
+			// Find and attempt to grab 'parent' image (more zoomed out which we can sample from)
+			unsigned aZ=z, aX=x, aY=y;
+			unsigned subSize=256;
+			unsigned zoomMultiplier=1;
+			while(aZ>=zoomLevelMax-zoomExtra) {
+				--aZ;
+				aX/=2;
+				aY/=2;
+				subSize/=2;
+				zoomMultiplier*=2;
+			}
+
+			cairo_surface_t *parentSurface=getMapTiledImageSurface(aZ, aX, aY, layer);
+
+			// Determine which part of parent image we need and scale as required
+			int subOffsetX=256*(x-aX*zoomMultiplier)/zoomMultiplier;
+			int subOffsetY=256*(y-aY*zoomMultiplier)/zoomMultiplier;
+
+			cairo_surface_t *surface=cairo_surface_create_for_rectangle(parentSurface, subOffsetX, subOffsetY, subSize, subSize);
+			cairo_surface_destroy(parentSurface);
+
+			cairo_surface_set_device_scale(surface, 1.0/zoomMultiplier, 1.0/zoomMultiplier);
+
+			return surface;
+		}
+
 		// Calculate image path
 		char path[1024];
 		MapTiled::getZoomXYPath(map, z, x, y, layer, path);
