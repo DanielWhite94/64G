@@ -78,15 +78,15 @@ namespace Engine {
 		for(regionY=regionY0; regionY<regionY1; ++regionY) {
 			const int regionTileY0=regionY*MapRegion::tilesSize;
 			const int regionTileY1=regionTileY0+MapRegion::tilesSize;
+			const unsigned imageY0=std::max(0, (int)floor((regionTileY0-mapTileY)/yScale));
+			const unsigned imageY1=std::min(imageHeight, (int)floor((regionTileY1-mapTileY)/yScale));
+
 			for(regionX=regionX0; regionX<regionX1; ++regionX) {
 				// Loop over each pixel covered by the current region.
 				const int regionTileX0=regionX*MapRegion::tilesSize;
 				const int regionTileX1=regionTileX0+MapRegion::tilesSize;
-
 				const unsigned imageX0=std::max(0, (int)floor((regionTileX0-mapTileX)/xScale));
 				const unsigned imageX1=std::min(imageWidth, (int)floor((regionTileX1-mapTileX)/xScale));
-				const unsigned imageY0=std::max(0, (int)floor((regionTileY0-mapTileY)/yScale));
-				const unsigned imageY1=std::min(imageHeight, (int)floor((regionTileY1-mapTileY)/yScale));
 
 				bool regionExists=true; // until shown false later
 				unsigned imageX, imageY;
@@ -96,9 +96,9 @@ namespace Engine {
 						CoordComponent imageTileX=imageX*xScale+mapTileX;
 						CoordComponent imageTileY=imageY*yScale+mapTileY;
 
-						CoordVec vec={imageTileX*Physics::CoordsPerTile, imageTileY*Physics::CoordsPerTile};
 						const MapTile *tile=NULL;
 						if (regionExists) {
+							CoordVec vec={imageTileX*Physics::CoordsPerTile, imageTileY*Physics::CoordsPerTile};
 							tile=map->getTileAtCoordVec(vec, Engine::Map::Map::GetTileFlag::None);
 							if (tile==NULL) {
 								// If this tile does not exist, it must be because the whole region doesn't, so skip even trying to read the rest of the tiles within it.
