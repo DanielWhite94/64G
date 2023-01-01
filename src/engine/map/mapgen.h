@@ -45,8 +45,6 @@ namespace Engine {
 			static const unsigned TileBitsetIndexContour=0;
 			static const unsigned TileBitsetIndexLandmassBorder=1;
 
-			typedef bool (AddForestFunctor)(class Map *map, const CoordVec &position, void *userData);
-
 			typedef bool (TileTestFunctor)(class Map *map, int x, int y, int w, int h, void *userData);
 
 			enum AddTownsShopType {
@@ -124,9 +122,6 @@ namespace Engine {
 
 			MapGen();
 			~MapGen();
-
-			// Call a functor for a set of tiles in a region representing a random forest with fixed density.
-			static void addForest(class Map *map, const CoordVec &topLeft, const CoordVec &widthHeight, const CoordVec &interval, AddForestFunctor *functor, void *functorUserData);
 
 			static bool addHouse(class Map *map, unsigned baseX, unsigned baseY, unsigned totalW, unsigned totalH, const AddHouseParameters *params);
 
