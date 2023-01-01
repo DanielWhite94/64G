@@ -7,7 +7,7 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Gen {
-		struct GenFloodFillFillClearScratchBitModifyTilesProgressData {
+		struct FloodFillFillClearScratchBitModifyTilesProgressData {
 			FloodFill::ProgressFunctor *functor;
 			void *userData;
 
@@ -89,7 +89,7 @@ namespace Engine {
 				progressFunctor(map, 0.0, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			// Clear scratch bits (these are used to indicate from which directions we have previously entered a tile on, to avoid retracing similar edges)
-			GenFloodFillFillClearScratchBitModifyTilesProgressData modifyTileFunctorData;
+			FloodFillFillClearScratchBitModifyTilesProgressData modifyTileFunctorData;
 			modifyTileFunctorData.functor=progressFunctor;
 			modifyTileFunctorData.userData=progressUserData;
 			modifyTileFunctorData.progressRatio=preModifyTilesProgressRatio;
@@ -273,7 +273,7 @@ namespace Engine {
 			assert(map!=NULL);
 			assert(userData!=NULL);
 
-			const GenFloodFillFillClearScratchBitModifyTilesProgressData *functorData=(const GenFloodFillFillClearScratchBitModifyTilesProgressData *)userData;
+			const FloodFillFillClearScratchBitModifyTilesProgressData *functorData=(const FloodFillFillClearScratchBitModifyTilesProgressData *)userData;
 
 			// Calculate true progress (for the entire trace operation, rather than this individual modify tiles sub-operation)
 			double trueProgress=functorData->progressRatio*progress;
