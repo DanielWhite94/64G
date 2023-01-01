@@ -7,6 +7,7 @@
 #include <iostream>
 #include <new>
 
+#include "../engine/gen/edgedetect.h"
 #include "../engine/gen/floodfill.h"
 #include "../engine/gen/modifytiles.h"
 #include "../engine/map/map.h"
@@ -889,14 +890,14 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Landmass (contintent/island) identification
-	unsigned landmassCacheBits[MapGen::EdgeDetect::DirectionNB];
-	landmassCacheBits[MapGen::EdgeDetect::DirectionEast]=60;
-	landmassCacheBits[MapGen::EdgeDetect::DirectionNorth]=61;
-	landmassCacheBits[MapGen::EdgeDetect::DirectionWest]=62;
-	landmassCacheBits[MapGen::EdgeDetect::DirectionSouth]=63;
+	unsigned landmassCacheBits[Gen::EdgeDetect::DirectionNB];
+	landmassCacheBits[Gen::EdgeDetect::DirectionEast]=60;
+	landmassCacheBits[Gen::EdgeDetect::DirectionNorth]=61;
+	landmassCacheBits[Gen::EdgeDetect::DirectionWest]=62;
+	landmassCacheBits[Gen::EdgeDetect::DirectionSouth]=63;
 
-	MapGen::EdgeDetect landmassEdgeDetect(mapData.map, landmassCacheBits);
-	landmassEdgeDetect.trace(&mapGenEdgeDetectLandSampleFunctor, NULL, &mapGenEdgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &mapGenEdgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
+	Gen::EdgeDetect landmassEdgeDetect(mapData.map, landmassCacheBits);
+	landmassEdgeDetect.trace(&Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &Gen::edgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
 	printf("\n");
 
 	Gen::FloodFill landmassFloodFill(mapData.map, 63);
@@ -904,14 +905,14 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Run contour line detection logic
-	unsigned contourCacheBits[MapGen::EdgeDetect::DirectionNB];
-	contourCacheBits[MapGen::EdgeDetect::DirectionEast]=60;
-	contourCacheBits[MapGen::EdgeDetect::DirectionNorth]=61;
-	contourCacheBits[MapGen::EdgeDetect::DirectionWest]=62;
-	contourCacheBits[MapGen::EdgeDetect::DirectionSouth]=63;
+	unsigned contourCacheBits[Gen::EdgeDetect::DirectionNB];
+	contourCacheBits[Gen::EdgeDetect::DirectionEast]=60;
+	contourCacheBits[Gen::EdgeDetect::DirectionNorth]=61;
+	contourCacheBits[Gen::EdgeDetect::DirectionWest]=62;
+	contourCacheBits[Gen::EdgeDetect::DirectionSouth]=63;
 
-	MapGen::EdgeDetect heightContourEdgeDetect(mapData.map, contourCacheBits);
-	heightContourEdgeDetect.traceHeightContours(19, &mapGenEdgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
+	Gen::EdgeDetect heightContourEdgeDetect(mapData.map, contourCacheBits);
+	heightContourEdgeDetect.traceHeightContours(19, &Gen::edgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
 	printf("\n");
 
 	// Save map.
