@@ -216,7 +216,11 @@ namespace Engine {
 			}
 
 			// If we are at the maximum zoom level then this is a 'leaf node' that needs rendering from scratch.
-			if (zoom==maxZoom-1) {
+			// Also choose this path if the area the image covers is beyond the map boundaries as an optimisation taking advantage of a similar special case in MapPngLib::generatePng.
+			unsigned mapSize=imageSize;
+			unsigned mapX=x*mapSize;
+			unsigned mapY=y*mapSize;
+			if (zoom==maxZoom-1 || (mapX>=map->getWidth() || mapY>=map->getHeight())) {
 				// Loop over image layer set
 				for(ImageLayer layer=0; layer<ImageLayerNB; ++layer) {
 					// Check if we even need to generate this layer
@@ -226,11 +230,6 @@ namespace Engine {
 					// Get path for this image
 					char path[1024];
 					getZoomXYPath(map, zoom, x, y, layer, path);
-
-					// Compute mappng arguments.
-					unsigned mapSize=imageSize;
-					unsigned mapX=x*mapSize;
-					unsigned mapY=y*mapSize;
 
 					// Generate image
 					bool res=MapPngLib::generatePng(map, path, mapX, mapY, mapSize, mapSize, imageSize, imageSize, layer, true);
