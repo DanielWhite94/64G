@@ -37,6 +37,8 @@ namespace Engine {
 		void searchMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, size_t entryArrayCount, SearchManyEntry entryArray[]) {
 			assert(map!=NULL);
 
+			Util::TimeMs startTimeMs=Util::getTimeMs();
+
 			// Initialize data struct.
 			SearchData data;
 			data.count=entryArrayCount;
@@ -134,7 +136,9 @@ namespace Engine {
 			free(data.entries);
 
 			// Return midpoint of interval.
-			printf("	Final intervals:\n");
+			printf("	Final intervals (took ");
+			Util::printTime(Util::getTimeMs()-startTimeMs);
+			printf("):\n");
 			for(size_t i=0; i<data.count; ++i) {
 				SearchDataEntry *entry=&data.entries[i];
 				entryArray[i].result=(entry->sampleMin+entry->sampleMax)/2.0;
