@@ -202,6 +202,7 @@ namespace MapEditor {
 			return;
 
 		// Generate a needed image (or work towards it by generating a child image)
+		assert(mapTileToGenZoom<zoomLevelMax-zoomExtra);
 		if (!MapTiled::generateImage(map, mapTileToGenZoom, mapTileToGenX, mapTileToGenY, mapTileToGenLayerSet, 100, NULL, NULL))
 			return;
 
