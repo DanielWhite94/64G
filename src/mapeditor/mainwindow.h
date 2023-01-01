@@ -113,6 +113,8 @@ namespace MapEditor {
 		void updateTitle(void);
 		void updateDrawingArea(void);
 		void updatePositionLabel(void);
+
+		cairo_surface_t *getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer);
 	};
 };
 

@@ -411,24 +411,9 @@ namespace MapEditor {
 						double userMapTileTopLeftX=mapTileX*userMapTileImageSize;
 
 						// Attempt to load png image as a cairo surface
-						char mapTileFilename[1024];
-						MapTiled::getZoomXYPath(map, zoomLevel, mapTileX, mapTileY, activeLayer, mapTileFilename);
-						cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
-						if (cairo_surface_status(mapTileSurface)!=CAIRO_STATUS_SUCCESS) {
-							// No image avaiable - use standard blank one until it has been generated
-							cairo_surface_destroy(mapTileSurface);
-							MapTiled::getBlankImagePath(map, mapTileFilename);
-							mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+						cairo_surface_t *mapTileSurface=getMapTiledImageSurface(zoomLevel, mapTileX, mapTileY, activeLayer);
 
-							// Set to-gen variables to indicate this image is missing and needs generating
-							if (mapTileToGenZoom==0) {
-								mapTileToGenX=mapTileX;
-								mapTileToGenY=mapTileY;
-								mapTileToGenZoom=zoomLevel;
-								mapTileToGenLayerSet=((1u)<<activeLayer);
-							}
-						}
-
+						// Draw surface
 						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
 							// To blit the png surface we will reset the cairo transformation matrix.
 							// So before we do that work out where we should be drawing said surface.
@@ -447,8 +432,7 @@ namespace MapEditor {
 
 						// Do we need to draw any other layers on top?
 						if (menuViewLayersHeightContoursIsActive()) {
-							MapTiled::getZoomXYPath(map, zoomLevel, mapTileX, mapTileY, MapTiled::ImageLayerHeightContour, mapTileFilename);
-							cairo_surface_t *mapTileSurface=cairo_image_surface_create_from_png(mapTileFilename);
+							cairo_surface_t *mapTileSurface=getMapTiledImageSurface(zoomLevel, mapTileX, mapTileY, MapTiled::ImageLayerHeightContour);
 							if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
 								// To blit the png surface we will reset the cairo transformation matrix.
 								// So before we do that work out where we should be drawing said surface.
@@ -463,14 +447,6 @@ namespace MapEditor {
 								cairo_paint(cr);
 								cairo_surface_destroy(mapTileSurface);
 								cairo_restore(cr);
-							} else {
-								// Set to-gen variables to indicate this image is missing and needs generating
-								if (mapTileToGenZoom==0) {
-									mapTileToGenX=mapTileX;
-									mapTileToGenY=mapTileY;
-									mapTileToGenZoom=zoomLevel;
-									mapTileToGenLayerSet=MapTiled::ImageLayerSetHeightContour;
-								}
 							}
 						}
 					}
@@ -949,6 +925,33 @@ namespace MapEditor {
 		setlocale(LC_NUMERIC, oldLocale);
 
 		gtk_label_set_text(GTK_LABEL(positionLabel), str);
+	}
+
+	cairo_surface_t *MainWindow::getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer) {
+		// Calculate image path
+		char path[1024];
+		MapTiled::getZoomXYPath(map, z, x, y, layer, path);
+
+		// Attempt to load image
+		cairo_surface_t *surface=cairo_image_surface_create_from_png(path);
+
+		// Unsuccessful?
+		if (cairo_surface_status(surface)!=CAIRO_STATUS_SUCCESS) {
+			// No image avaiable - use standard blank one until it has been generated
+			cairo_surface_destroy(surface);
+			MapTiled::getBlankImagePath(map, path);
+			surface=cairo_image_surface_create_from_png(path);
+
+			// Set to-gen variables to indicate this image is missing and needs generating
+			if (mapTileToGenZoom==0) {
+				mapTileToGenX=x;
+				mapTileToGenY=y;
+				mapTileToGenZoom=z;
+				mapTileToGenLayerSet=((1u)<<layer);
+			}
+		}
+
+		return surface;
 	}
 };
 
