@@ -14,25 +14,29 @@ namespace Engine {
 
 		// Determine if the given area is beyond the map boundaries and so does not need generating
 		if (mapTileX>=map->getWidth() || mapTileY>=map->getHeight()) {
-			char transparentPath[1024];
-			MapTiled::getTransparentImagePath(map, transparentPath);
-
+			// Attempt to simply make a copy of the pre-generated transparent image in the MapTiled directory
+			// Start by opening output file, creating if necessary
 			int outputFd=open(imagePath, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
 			if (outputFd!=-1) {
+				// Open pre-generated empty image and determine its size
+				char transparentPath[1024];
+				MapTiled::getTransparentImagePath(map, transparentPath);
 				int transparentFd=open(transparentPath, O_RDONLY);
 				size_t count=Util::getFileSize(transparentPath);
 
+				// Attempt to copy the file
 				if (sendfile(outputFd, transparentFd, NULL, count)==count) {
 					close(transparentFd);
 					close(outputFd);
 					return true;
 				}
 
+				// Close files
 				close(transparentFd);
 				close(outputFd);
 			}
 
-			// Fall back on common method
+			// On failure fall back on standard method below
 		}
 
 		// Create file for writing.
