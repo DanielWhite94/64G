@@ -728,7 +728,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats1="Collecting global statistics (1/3) ";
-	Gen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats1);
+	Gen::recalculateStats(mapData.map, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats1);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -752,7 +752,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats2="Collecting global statistics (2/3) ";
-	Gen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats2);
+	Gen::recalculateStats(mapData.map, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats2);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -773,7 +773,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats3="Collecting global statistics (3/3) ";
-	Gen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats3);
+	Gen::recalculateStats(mapData.map, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats3);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
