@@ -7,14 +7,15 @@
 #include <iostream>
 #include <new>
 
+#include "../engine/gen/common.h"
 #include "../engine/gen/edgedetect.h"
 #include "../engine/gen/floodfill.h"
 #include "../engine/gen/modifytiles.h"
 #include "../engine/gen/particleflow.h"
 #include "../engine/gen/search.h"
+#include "../engine/gen/stats.h"
 #include "../engine/gen/town.h"
 #include "../engine/map/map.h"
-#include "../engine/map/mapgen.h"
 #include "../engine/map/mapobject.h"
 #include "../engine/fbnnoise.h"
 #include "../engine/util.h"
@@ -727,7 +728,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats1="Collecting global statistics (1/3) ";
-	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats1);
+	Gen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats1);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -751,7 +752,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats2="Collecting global statistics (2/3) ";
-	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats2);
+	Gen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats2);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -772,7 +773,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats3="Collecting global statistics (3/3) ";
-	MapGen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats3);
+	Gen::recalculateStats(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats3);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -900,11 +901,11 @@ int main(int argc, char **argv) {
 	landmassCacheBits[Gen::EdgeDetect::DirectionSouth]=63;
 
 	Gen::EdgeDetect landmassEdgeDetect(mapData.map, landmassCacheBits);
-	landmassEdgeDetect.trace(&Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &Gen::edgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
+	landmassEdgeDetect.trace(&Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &Gen::edgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
 	printf("\n");
 
 	Gen::FloodFill landmassFloodFill(mapData.map, 63);
-	landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &Gen::floodFillStringProgressFunctor, (void *)"Identifying individual landmasses via flood-fill ");
+	landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &Gen::floodFillStringProgressFunctor, (void *)"Identifying individual landmasses via flood-fill ");
 	printf("\n");
 
 	// Run contour line detection logic

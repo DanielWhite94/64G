@@ -1,8 +1,8 @@
 #include <cassert>
 
+#include "common.h"
 #include "edgedetect.h"
 #include "modifytiles.h"
-#include "../map/mapgen.h"
 
 using namespace Engine;
 
@@ -249,7 +249,7 @@ namespace Engine {
 			// Run edge detection at various height thresholds to trace all contour lines
 			for(functorData.contourIndex=0; functorData.contourIndex<contourCount; ++functorData.contourIndex) {
 				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
-				trace(&edgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)MapGen::TileBitsetIndexContour, (progressFunctor!=NULL ? &edgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
+				trace(&edgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexContour, (progressFunctor!=NULL ? &edgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
 			}
 		}
 

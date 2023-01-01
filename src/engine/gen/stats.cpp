@@ -1,43 +1,28 @@
-#include <algorithm>
 #include <cassert>
 #include <cfloat>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <random>
-#include <thread>
 
-#include "mapgen.h"
-#include "../physics/coord.h"
-#include "../util.h"
-#include "../fbnnoise.h"
+#include "stats.h"
 
 using namespace Engine;
 
 namespace Engine {
-	namespace Map {
-		struct MapGenRecalculateStatsThreadData {
+	namespace Gen {
+		struct RecalculateStatsThreadData {
 			double minHeight, maxHeight;
 			double minTemperature, maxTemperature;
 			double minMoisture, maxMoisture;
 		};
 
-		void mapGenRecalculateStatsModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+		void recalculateStatsModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
-		MapGen::MapGen() {
-		}
-
-		MapGen::~MapGen() {
-		};
-
-		void mapGenRecalculateStatsModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
+		void recalculateStatsModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);
 
-			MapGenRecalculateStatsThreadData *dataArray=(MapGenRecalculateStatsThreadData *)userData;
+			RecalculateStatsThreadData *dataArray=(RecalculateStatsThreadData *)userData;
 
 			// Grab tile.
-			const MapTile *tile=map->getTileAtOffset(x, y, Map::GetTileFlag::None);
+			const MapTile *tile=map->getTileAtOffset(x, y, Map::Map::GetTileFlag::None);
 			if (tile==NULL)
 				return;
 
@@ -50,11 +35,11 @@ namespace Engine {
 			dataArray[threadId].maxMoisture=std::max(dataArray[threadId].maxMoisture, tile->getMoisture());
 		}
 
-		void MapGen::recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, Gen::ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void recalculateStats(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, Gen::ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 
 			// Initialize thread data.
-			MapGenRecalculateStatsThreadData *threadData=(MapGenRecalculateStatsThreadData *)malloc(sizeof(MapGenRecalculateStatsThreadData)*threadCount);
+			RecalculateStatsThreadData *threadData=(RecalculateStatsThreadData *)malloc(sizeof(RecalculateStatsThreadData)*threadCount);
 			for(unsigned i=0; i<threadCount; ++i) {
 				threadData[i].minHeight=DBL_MAX;
 				threadData[i].maxHeight=DBL_MIN;
@@ -65,7 +50,7 @@ namespace Engine {
 			}
 
 			// Use modifyTiles to loop over tiles and update the above fields
-			Gen::modifyTiles(map, x, y, width, height, threadCount, &mapGenRecalculateStatsModifyTilesFunctor, threadData, progressFunctor, progressUserData);
+			Gen::modifyTiles(map, x, y, width, height, threadCount, &recalculateStatsModifyTilesFunctor, threadData, progressFunctor, progressUserData);
 
 			// Combine thread data to obtain final values
 			map->minHeight=threadData[0].minHeight;

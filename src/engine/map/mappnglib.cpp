@@ -3,8 +3,8 @@
 #include <sys/sendfile.h>
 #include <unistd.h>
 
-#include "mapgen.h"
 #include "mappnglib.h"
+#include "../gen/common.h"
 
 namespace Engine {
 	bool MapPngLib::generatePng(class Map *map, const char *imagePath, int mapTileX, int mapTileY, int mapTileWidth, int mapTileHeight, int imageWidth, int imageHeight, MapTiled::ImageLayer layer, bool quiet) {
@@ -323,7 +323,7 @@ namespace Engine {
 	void MapPngLib::getColourForTileHeightContour(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Use black pixels for the contour lines themselves, transparent for everything else
 		*r=*g=*b=0;
-		*a=(tile->getBitsetN(MapGen::TileBitsetIndexContour) ? 255 : 0);
+		*a=(tile->getBitsetN(Gen::TileBitsetIndexContour) ? 255 : 0);
 	}
 
 	void MapPngLib::getColourForTilePolitical(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
