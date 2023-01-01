@@ -780,40 +780,32 @@ int main(int argc, char **argv) {
 	printf("	Min temperature %f, max temperature %f\n", mapData.map->minTemperature, mapData.map->maxTemperature);
 	printf("	Min moisture %f, max moisture %f\n", mapData.map->minMoisture, mapData.map->maxMoisture);
 
-	// Calculate sea level.
-	printf("Searching for sea level (with desired land coverage %.2f%%) (3/3)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
-	printf("	Sea level %f\n", mapData.map->seaLevel);
-
-	// Calculate alpine level.
-	printf("Searching for alpine level (with desired coverage %.2f%%)...\n", desiredAlpineFraction*100.0);
-	mapData.map->alpineLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredAlpineFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
-	printf("	Alpine level %f\n", mapData.map->alpineLevel);
-
-	// Calculate cold threshold.
+	// Calculate variable levels/values/thresholds
 	double desiredColdCoverage=0.4;
-	printf("Searching for cold threshold (with desired coverage %.2f%%)...\n", desiredColdCoverage*100.0);
-	mapData.coldThreshold=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredColdCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &Gen::searchGetFunctorTemperature, NULL);
-	printf("	Cold temperature %f\n", mapData.coldThreshold);
-
-	// Calculate hot threshold level.
 	double desiredHotCoverage=0.2;
-	printf("Searching for hot threshold level (with desired coverage %.2f%%)...\n", desiredHotCoverage*100.0);
-	mapData.hotThreshold=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredHotCoverage, 0.45, mapData.map->minTemperature, mapData.map->maxTemperature, &Gen::searchGetFunctorTemperature, NULL);
-	printf("	Hot temperature %f\n", mapData.hotThreshold);
-
-	// Calculate river moisture threshold.
 	double desiredRiverCoverage=0.005;
-	printf("Searching for river moisture threshold (with desired coverage %.2f%%)...\n", desiredRiverCoverage*100.0);
-	mapData.riverMoistureThreshold=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredRiverCoverage, 0.45, mapData.map->minMoisture, mapData.map->maxMoisture, &Gen::searchGetFunctorMoisture, NULL);
-	printf("	River moisture threshold %f\n", mapData.riverMoistureThreshold);
-
-	// Calculate forest threshold.
 	mapData.forestNoise=new FbnNoise(seed+23, 8, 8.0);
 
-	printf("Searching for forest level (with desired land coverage %.2f%%)...\n", desiredForestFraction*100.0);
-	mapData.map->forestLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredForestFraction, 0.005, -1.0, 1.0, &Gen::searchGetFunctorNoise, mapData.forestNoise);
-	printf("	Forest level %f\n", mapData.map->forestLevel);
+	printf("Searching for: sea level (with desired coverage %.2f%%), alpine level (%.2f%%), cold threshold (%.2f%%), hot threshold level (%.2f%%), river moisture threshold (%.2f%%), forest level (%.2f%%)...\n", desiredLandFraction*100.0, desiredAlpineFraction*100.0, desiredColdCoverage*100.0, desiredHotCoverage*100.0, desiredRiverCoverage*100.0, desiredForestFraction*100.0);
+
+	Gen::SearchManyEntry searchManyArray[]={
+		{.threshold=desiredLandFraction, .epsilon=0.45, .sampleMin=mapData.map->minHeight, .sampleMax=mapData.map->maxHeight, .sampleCount=63, .getFunctor=&Gen::searchGetFunctorHeight, .getUserData=NULL},
+		{.threshold=desiredAlpineFraction, .epsilon=0.45, .sampleMin=mapData.map->minHeight, .sampleMax=mapData.map->maxHeight, .sampleCount=63, .getFunctor=&Gen::searchGetFunctorHeight, .getUserData=NULL},
+		{.threshold=desiredColdCoverage, .epsilon=0.45, .sampleMin=mapData.map->minTemperature, .sampleMax=mapData.map->maxTemperature, .sampleCount=63, .getFunctor=&Gen::searchGetFunctorTemperature, .getUserData=NULL},
+		{.threshold=desiredHotCoverage, .epsilon=0.45, .sampleMin=mapData.map->minTemperature, .sampleMax=mapData.map->maxTemperature, .sampleCount=63, .getFunctor=&Gen::searchGetFunctorTemperature, .getUserData=NULL},
+		{.threshold=desiredRiverCoverage, .epsilon=0.45, .sampleMin=mapData.map->minMoisture, .sampleMax=mapData.map->maxMoisture, .sampleCount=63, .getFunctor=&Gen::searchGetFunctorMoisture, .getUserData=NULL},
+		{.threshold=desiredForestFraction, .epsilon=0.005, .sampleMin=-1.0, .sampleMax=1.0, .sampleCount=63, .getFunctor=&Gen::searchGetFunctorNoise, .getUserData=mapData.forestNoise},
+	};
+
+	Gen::searchMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, sizeof(searchManyArray)/sizeof(searchManyArray[0]), searchManyArray);
+	mapData.map->seaLevel=searchManyArray[0].result;
+	mapData.map->alpineLevel=searchManyArray[1].result;
+	mapData.coldThreshold=searchManyArray[2].result;
+	mapData.hotThreshold=searchManyArray[3].result;
+	mapData.riverMoistureThreshold=searchManyArray[4].result;
+	mapData.map->forestLevel=searchManyArray[5].result;
+
+	printf("	Sea level %f, alpine level %f, cold temperature %f, hot temperature %f, river moisture threshold %f, forest level %f\n", mapData.map->seaLevel, mapData.map->alpineLevel, mapData.coldThreshold, mapData.hotThreshold, mapData.riverMoistureThreshold, mapData.map->forestLevel);
 
 	// Run modify tiles for forests.
 	size_t biomesModifyTilesArrayCount=3;
