@@ -11,6 +11,7 @@ From the root directory, run `make clean` followed by either `make release` or `
         * 'g' - step through grid options (initially no grid, one press gives a tile grid, and the final press also adds a coordinate grid)
 * `mappng` - takes a map file and outputs a png image of a given size, representing a given region in the map.
 * `slippymap` - takes a map and generates a series of images suitable for interactive/slippy maps (these are good for larger maps where mappng can not generate a single image with enough detail). The resulting map can be viewed via the `slippymap.html` file within the map directory.
+* `mapeditor` - A WIP GUI editor for maps.
 
 # Usage #
 Note: these assume you are in the `bin` directory
