@@ -8,7 +8,10 @@
 #include <new>
 
 #include "mainwindow.h"
+#include "progressdialogue.h"
 #include "util.h"
+
+#include "../engine/gen/modifytiles.h"
 
 const char mainWindowXmlFile[]="mainwindow.glade";
 
@@ -25,6 +28,8 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomInActivate(GtkWidget *widget, gpo
 gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gpointer userData);
 
+gboolean mapEditorMainWindowWrapperMenuToolsClearActivate(GtkWidget *widget, gpointer userData);
+
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
@@ -40,6 +45,9 @@ gboolean mapEditorMainWindowWrapperMenuViewShowKmGridToggled(GtkWidget *widget, 
 
 gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData);
+
+void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+void mainWindowToolsClearProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 namespace MapEditor {
 	MainWindow::MainWindow(const char *filename) {
@@ -97,6 +105,7 @@ namespace MapEditor {
 		error|=(menuViewZoomIn=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomIn")))==NULL;
 		error|=(menuViewZoomOut=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomOut")))==NULL;
 		error|=(menuViewZoomFit=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomFit")))==NULL;
+		error|=(menuToolsClear=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsClear")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
@@ -111,6 +120,7 @@ namespace MapEditor {
 		g_signal_connect(menuViewZoomIn, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomInActivate), (void *)this);
 		g_signal_connect(menuViewZoomOut, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomOutActivate), (void *)this);
 		g_signal_connect(menuViewZoomFit, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomFitActivate), (void *)this);
+		g_signal_connect(menuToolsClear, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsClearActivate), (void *)this);
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
 		g_signal_connect(drawingArea, "key-press-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyPressEvent), (void *)this);
 		g_signal_connect(drawingArea, "key-release-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent), (void *)this);
@@ -317,6 +327,23 @@ namespace MapEditor {
 		// Call these manually here in case setZoom didn't because there was no change in the zoom level
 		updateDrawingArea();
 		updatePositionLabel();
+	}
+
+	bool MainWindow::menuToolsClearActivate(GtkWidget *widget) {
+		// Sanity check
+		if (map==NULL)
+			return false;
+
+		// Create progress dialogue to provide updates
+		ProgressDialogue *prog=new ProgressDialogue("Clearing tile data...", window);
+
+		// Run main operation via modifyTiles
+		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsClearModifyTilesFunctor, NULL, &mainWindowToolsClearProgressFunctor, prog);
+
+		// Tidy up
+		delete prog;
+
+		return false;
 	}
 
 	bool MainWindow::drawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
@@ -1034,6 +1061,11 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gp
 	return mainWindow->menuViewZoomFitActivate(widget);
 }
 
+gboolean mapEditorMainWindowWrapperMenuToolsClearActivate(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuToolsClearActivate(widget);
+}
+
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->drawingAreaDraw(widget, cr);
@@ -1090,4 +1122,37 @@ gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer
 gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuViewLayersHeightContoursToggled(widget);
+}
+
+void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData==NULL);
+
+	// Grab tile
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::CreateDirty);
+	if (tile==NULL)
+		return;
+
+	// Clear tile fields
+	tile->setHeight(0.0);
+	tile->setMoisture(0.0);
+	tile->setTemperature(0.0);
+	tile->setLandmassId(0);
+	for(unsigned i=0; i<MapTile::layersMax; ++i) {
+		MapTile::Layer layer={.textureId=MapTexture::IdMax, .hitmask=HitMask()};
+		tile->setLayer(i, layer);
+	}
+}
+
+void mainWindowToolsClearProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+	assert(progress>=0.0 && progress<=1.0);
+	assert(userData!=NULL);
+
+	MapEditor::ProgressDialogue *prog=(MapEditor::ProgressDialogue *)userData;
+
+	// Update progress bar
+	prog->setProgress(progress);
+
+	// Ensure progress dialogue can actually update
+	gtk_main_iteration_do(false);
 }
