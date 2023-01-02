@@ -718,7 +718,7 @@ int main(int argc, char **argv) {
 	mapData.temperatureNoise=new FbnNoise(seed+19, 8, 1.0);
 
 	const char *progressStringInit="Initializing tile parameters ";
-	Gen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &demogenInitModifyTilesFunctor, &mapData, &Gen::modifyTilesProgressString, (void *)progressStringInit);
+	Gen::modifyTiles(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, &demogenInitModifyTilesFunctor, &mapData, &utilProgressFunctorString, (void *)progressStringInit);
 	printf("\n");
 
 	delete mapData.heightNoise;
@@ -728,7 +728,7 @@ int main(int argc, char **argv) {
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats1="Collecting global statistics (1/3) ";
-	Gen::recalculateStats(mapData.map, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats1);
+	Gen::recalculateStats(mapData.map, threadCount, &utilProgressFunctorString, (void *)progressStringGlobalStats1);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -747,12 +747,12 @@ int main(int argc, char **argv) {
 
 	const char *progressStringGlaciers="Applying glacial effects ";
 	Gen::ParticleFlow glacierGen(mapData.map, 7, false);
-	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlaciers);
+	glacierGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/64.0, threadCount, &utilProgressFunctorString, (void *)progressStringGlaciers);
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats2="Collecting global statistics (2/3) ";
-	Gen::recalculateStats(mapData.map, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats2);
+	Gen::recalculateStats(mapData.map, &utilProgressFunctorString, (void *)progressStringGlobalStats2);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -768,12 +768,12 @@ int main(int argc, char **argv) {
 	// Run moisture/river calculation.
 	const char *progressStringRivers="Generating moisture/river data ";
 	Gen::ParticleFlow riverGen(mapData.map, 2, true);
-	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, 1/*.....threadCount*/, &Gen::modifyTilesProgressString, (void *)progressStringRivers);
+	riverGen.dropParticles(0, 0, mapData.width, mapData.height, 1.0/16.0, 1/*.....threadCount*/, &utilProgressFunctorString, (void *)progressStringRivers);
 	printf("\n");
 
 	// Recalculate stats such as min/max height required for future calls.
 	const char *progressStringGlobalStats3="Collecting global statistics (3/3) ";
-	Gen::recalculateStats(mapData.map, threadCount, &Gen::modifyTilesProgressString, (void *)progressStringGlobalStats3);
+	Gen::recalculateStats(mapData.map, threadCount, &utilProgressFunctorString, (void *)progressStringGlobalStats3);
 	printf("\n");
 
 	printf("	Min height %f, max height %f\n", mapData.map->minHeight, mapData.map->maxHeight);
@@ -818,7 +818,7 @@ int main(int argc, char **argv) {
 	biomesModifyTilesArray[2].userData=&mapData;
 
 	const char *progressStringBiomes="Assigning tile textures for biomes ";
-	Gen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, biomesModifyTilesArrayCount, biomesModifyTilesArray, &Gen::modifyTilesProgressString, (void *)progressStringBiomes);
+	Gen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, biomesModifyTilesArrayCount, biomesModifyTilesArray, &utilProgressFunctorString, (void *)progressStringBiomes);
 	printf("\n");
 
 	delete mapData.forestNoise;
@@ -882,7 +882,7 @@ int main(int argc, char **argv) {
 	npcModifyTilesArray[1].userData=&mapData;
 
 	const char *progressStringNpcsAnimals="Adding npcs and animals ";
-	Gen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, 1, npcModifyTilesArrayCount, npcModifyTilesArray, &Gen::modifyTilesProgressString, (void *)progressStringNpcsAnimals);
+	Gen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, 1, npcModifyTilesArrayCount, npcModifyTilesArray, &utilProgressFunctorString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
 	// Landmass (contintent/island) identification
@@ -893,11 +893,11 @@ int main(int argc, char **argv) {
 	landmassCacheBits[Gen::EdgeDetect::DirectionSouth]=63;
 
 	Gen::EdgeDetect landmassEdgeDetect(mapData.map);
-	landmassEdgeDetect.traceFast(threadCount, &Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &Gen::edgeDetectStringProgressFunctor, (void *)"Identifying landmass boundaries via edge detection ");
+	landmassEdgeDetect.traceFast(threadCount, &Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &utilProgressFunctorString, (void *)"Identifying landmass boundaries via edge detection ");
 	printf("\n");
 
 	Gen::FloodFill landmassFloodFill(mapData.map, 63);
-	landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &Gen::floodFillStringProgressFunctor, (void *)"Identifying individual landmasses via flood-fill ");
+	landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &utilProgressFunctorString, (void *)"Identifying individual landmasses via flood-fill ");
 	printf("\n");
 
 	// Run contour line detection logic
@@ -908,7 +908,7 @@ int main(int argc, char **argv) {
 	contourCacheBits[Gen::EdgeDetect::DirectionSouth]=63;
 
 	Gen::EdgeDetect heightContourEdgeDetect(mapData.map);
-	heightContourEdgeDetect.traceFastHeightContours(threadCount, 9, &Gen::edgeDetectStringProgressFunctor, (void *)"Height contour edge detection ");
+	heightContourEdgeDetect.traceFastHeightContours(threadCount, 9, &utilProgressFunctorString, (void *)"Height contour edge detection ");
 	printf("\n");
 
 	// Save map.

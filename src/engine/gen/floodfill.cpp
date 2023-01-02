@@ -14,7 +14,7 @@ namespace Engine {
 			double progressRatio;
 		};
 
-		void floodFillFillClearScratchBitModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+		void floodFillFillClearScratchBitModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		bool floodFillBitsetNBoundaryFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
@@ -28,36 +28,6 @@ namespace Engine {
 
 			// Return value of relevant bit
 			return tile->getBitsetN(bitsetIndex);
-		}
-
-		void floodFillStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-			assert(map!=NULL);
-			assert(progress>=0.0 && progress<=1.0);
-			assert(userData!=NULL);
-
-			const char *string=(const char *)userData;
-
-			// Clear old line.
-			Util::clearConsoleLine();
-
-			// Print start of new line, including users message and the percentage complete.
-			printf("%s%.3f%% ", string, progress*100.0);
-
-			// Append time elapsed so far.
-			Util::printTime(elapsedTimeMs);
-
-			// Attempt to compute estimated total time.
-			if (progress>=0.0001 && progress<=0.9999) {
-				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
-				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
-					printf(" (~");
-					Util::printTime(estRemainingTimeMs);
-					printf(" remaining)");
-				}
-			}
-
-			// Flush output manually (as we are not printing a newline).
-			fflush(stdout);
 		}
 
 		void FloodFill::fill(BoundaryFunctor *boundaryFunctor, void *boundaryUserData, FillFunctor *fillFunctor, void *fillUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
@@ -86,7 +56,7 @@ namespace Engine {
 
 			// Give a progress update
 			if (progressFunctor!=NULL)
-				progressFunctor(map, 0.0, Util::getTimeMs()-startTimeMs, progressUserData);
+				progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			// Clear scratch bits (these are used to indicate from which directions we have previously entered a tile on, to avoid retracing similar edges)
 			FloodFillFillClearScratchBitModifyTilesProgressData modifyTileFunctorData;
@@ -123,7 +93,7 @@ namespace Engine {
 							tile->setBitsetN(scratchBit, true);
 
 							if (progressFunctor!=NULL && progress%256==0)
-								progressFunctor(map, preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+								progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
 							++progress;
 
 							// We need a non-boundary tile to start filling - so check now
@@ -196,7 +166,7 @@ namespace Engine {
 									if (!loopTile->getBitsetN(scratchBit)) {
 										// Invoke progress functor if needed
 										if (progressFunctor!=NULL && progress%256==0)
-											progressFunctor(map, preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+											progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
 										++progress;
 
 										// Set scratch bit to indicate we have handled this tile
@@ -266,11 +236,10 @@ namespace Engine {
 
 			// Give a progress update
 			if (progressFunctor!=NULL)
-				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
+				progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData);
 		}
 
-		void floodFillFillClearScratchBitModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-			assert(map!=NULL);
+		void floodFillFillClearScratchBitModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(userData!=NULL);
 
 			const FloodFillFillClearScratchBitModifyTilesProgressData *functorData=(const FloodFillFillClearScratchBitModifyTilesProgressData *)userData;
@@ -279,7 +248,7 @@ namespace Engine {
 			double trueProgress=functorData->progressRatio*progress;
 
 			// Invoke user's progress functor
-			functorData->functor(map, trueProgress, elapsedTimeMs, functorData->userData);
+			functorData->functor(trueProgress, elapsedTimeMs, functorData->userData);
 		}
 
 	};

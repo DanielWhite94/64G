@@ -101,7 +101,7 @@ namespace Engine {
 				// Run data collection functor.
 				char progressString[1024];
 				sprintf(progressString, "		calculating: ");
-				Gen::modifyTiles(map, x, y, width, height, threadCount, &searchManyModifyTilesFunctor, &data, &Gen::modifyTilesProgressString, (void *)progressString);
+				Gen::modifyTiles(map, x, y, width, height, threadCount, &searchManyModifyTilesFunctor, &data, &utilProgressFunctorString, (void *)progressString);
 				printf("\n");
 
 				// Update min/max based on collected data.

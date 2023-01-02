@@ -8,10 +8,8 @@ namespace Engine {
 		void modifyTilesFunctorBitsetUnion(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to OR with each tile's existing bitset.
 		void modifyTilesFunctorBitsetIntersection(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to AND with each tile's existing bitset.
 
-		void modifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
-
 		typedef void (ModifyTilesFunctor)(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
-		typedef void (ModifyTilesProgress)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+		typedef void (ModifyTilesProgress)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		struct ModifyTilesManyEntry {
 			ModifyTilesFunctor *functor;

@@ -30,6 +30,8 @@ namespace Engine {
 		static TimeMs getTimeMs(void);
 		static void printTime(TimeMs timeMs);
 	};
+
+	void utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string
 };
 
 #endif

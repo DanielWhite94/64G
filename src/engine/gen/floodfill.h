@@ -6,7 +6,6 @@
 namespace Engine {
 	namespace Gen {
 		bool floodFillBitsetNBoundaryFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns the value of the nth bit in the tile's bitset, where n is (unsigned)(uintptr_t)userData.
-		void floodFillStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		class FloodFill {
 		public:
@@ -22,7 +21,7 @@ namespace Engine {
 			// groupId is an integer which is unique to the group which contains this tile.
 			typedef void (FillFunctor)(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
 
-			typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+			typedef void (ProgressFunctor)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 			// scratchBit should contain a unique tile bitset index which can be used freely by the fill algorithm internally
 			FloodFill(class Map *map, unsigned scratchBit): map(map), scratchBit(scratchBit) {

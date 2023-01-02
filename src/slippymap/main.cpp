@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 
 	// Generate all needed images
 	MapTiled::ImageLayerSet imageLayerSet=MapTiled::ImageLayerSetAll;
-	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, imageLayerSet, 0, &mapTiledGenerateImageProgressString, (void *)"Generating slippymap images... ")) { // ..... improve string
+	if (!MapTiled::generateImage(map, slippyZoomOffset, 0, 0, imageLayerSet, 0, &utilProgressFunctorString, (void *)"Generating slippymap images... ")) { // ..... improve string
 		printf("\nCould not generate all images\n");
 		delete map;
 		return EXIT_FAILURE;

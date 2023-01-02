@@ -11,7 +11,6 @@ namespace Engine {
 		bool edgeDetectLandSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Returns true for land tiles (those whose height exceeds sea level).
 		void edgeDetectBitsetNEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Sets a bit true in the bitset associated with each boundary tile. The bit set is determined by the userData argument (cast to unsigned via uintptr_t).
 		void edgeDetectBitsetFullEdgeFunctor(class Map *map, unsigned x, unsigned y, void *userData); // Similar to edgeDetectBitsetNEdgeFunctor except the userData is interpreted as a full 64 bit bitset to OR into to each tile's existing bitset.
-		void edgeDetectStringProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		class EdgeDetect {
 			public:
@@ -34,7 +33,7 @@ namespace Engine {
 				// This is called for each tile which is determined to be part of the edge ('inside' tiles only).
 				typedef void (EdgeFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 
-				typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+				typedef void (ProgressFunctor)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 				// Used internally by traceFast
 				struct TraceFastModifyTilesData {

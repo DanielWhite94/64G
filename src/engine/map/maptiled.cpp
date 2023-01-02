@@ -16,36 +16,6 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Map {
-		void mapTiledGenerateImageProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-			assert(map!=NULL);
-			assert(progress>=0.0 && progress<=1.0);
-			assert(userData!=NULL);
-
-			const char *string=(const char *)userData;
-
-			// Clear old line.
-			Util::clearConsoleLine();
-
-			// Print start of new line, including users message and the percentage complete.
-			printf("%s%.3f%% ", string, progress*100.0);
-
-			// Append time elapsed so far.
-			Util::printTime(elapsedTimeMs);
-
-			// Attempt to compute estimated total time.
-			if (progress>=0.0001 && progress<=0.9999) {
-				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
-				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
-					printf(" (~");
-					Util::printTime(estRemainingTimeMs);
-					printf(" remaining)");
-				}
-			}
-
-			// Flush output manually (as we are not printing a newline).
-			fflush(stdout);
-		}
-
 		MapTiled::MapTiled() {
 		}
 
@@ -179,7 +149,7 @@ namespace Engine {
 			// Invoke progress update if needed
 			assert(*imagesDone<=imagesTotal);
 			if (progressFunctor!=NULL)
-				progressFunctor(map, ((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
+				progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			// Bad zoom value?
 			if (zoom>=maxZoom)
@@ -212,7 +182,7 @@ namespace Engine {
 				// Invoke progress update if needed
 				assert(*imagesDone<=imagesTotal);
 				if (progressFunctor!=NULL)
-					progressFunctor(map, ((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
+					progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
 
 				return true;
 			}
@@ -294,7 +264,7 @@ namespace Engine {
 			// Invoke progress update if needed
 			assert(*imagesDone<=imagesTotal);
 			if (progressFunctor!=NULL)
-				progressFunctor(map, ((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
+				progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			return true;
 		}

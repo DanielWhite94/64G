@@ -53,37 +53,6 @@ namespace Engine {
 				tile->setBitset(tile->getBitset()&bitset);
 		}
 
-		void modifyTilesProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-			assert(map!=NULL);
-			assert(progress>=0.0 && progress<=1.0);
-			assert(userData!=NULL);
-
-			const char *string=(const char *)userData;
-
-			// Clear old line.
-			Util::clearConsoleLine();
-
-			// Print start of new line, including users message and the percentage complete.
-			printf("%s%.3f%% ", string, progress*100.0);
-
-			// Append time elapsed so far.
-			Util::printTime(elapsedTimeMs);
-
-			// Attempt to compute estimated total time.
-			if (progress>=0.0001 && progress<=0.9999) {
-				Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
-				if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
-					printf(" (~");
-					Util::printTime(estRemainingTimeMs);
-					printf(" remaining)");
-				}
-			}
-
-			// Flush output manually (as we are not printing a newline).
-			fflush(stdout);
-		}
-
-
 		void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functor!=NULL);
@@ -108,7 +77,7 @@ namespace Engine {
 			// Initial progress update (if needed).
 			if (progressFunctor!=NULL) {
 				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(map, 0.0, elapsedTimeMs, progressUserData);
+				progressFunctor(0.0, elapsedTimeMs, progressUserData);
 			}
 
 			// Cap thread count to sensible range
@@ -157,7 +126,7 @@ namespace Engine {
 			// Update progress.
 			if (progressFunctor!=NULL) {
 				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(map, 1.0, elapsedTimeMs, progressUserData);
+				progressFunctor(1.0, elapsedTimeMs, progressUserData);
 			}
 		}
 
@@ -200,7 +169,7 @@ namespace Engine {
 				if (giveProgressUpdates) {
 					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-threadData->common->startTimeMs;
 					double progress=(regionOffsetIndex+1.0)/regionsPerThread;
-					threadData->common->progressFunctor(threadData->common->map, progress, elapsedTimeMs, threadData->common->progressUserData);
+					threadData->common->progressFunctor(progress, elapsedTimeMs, threadData->common->progressUserData);
 				}
 			}
 		}

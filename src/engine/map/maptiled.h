@@ -8,8 +8,6 @@
 
 namespace Engine {
 	namespace Map {
-		void mapTiledGenerateImageProgressString(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
-
 		class MapTiled {
 		public:
 			static const unsigned imageSize=256;
@@ -36,7 +34,7 @@ namespace Engine {
 			static const ImageLayerSet ImageLayerSetRegionGrid=(1u<<ImageLayerRegionGrid);
 			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour|ImageLayerSetPolitical|ImageLayerSetRegionGrid;
 
-			typedef void (GenerateImageProgress)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
+			typedef void (GenerateImageProgress)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 			MapTiled();
 			~MapTiled();

@@ -26,7 +26,7 @@ namespace Engine {
 			Util::TimeMs lastProgressTimeMs=0;
 			if (progressFunctor!=NULL) {
 				Util::TimeMs currTimeMs=Util::getTimeMs();
-				progressFunctor(map, 0.0, currTimeMs-startTimeMs, progressUserData);
+				progressFunctor(0.0, currTimeMs-startTimeMs, progressUserData);
 				lastProgressTimeMs=Util::getTimeMs();
 			}
 
@@ -80,7 +80,7 @@ namespace Engine {
 						Util::TimeMs currTimeMs=Util::getTimeMs();
 						if (currTimeMs-lastProgressTimeMs>500) {
 							double progress=(rI+((double)i)/trials)/regionList.size();
-							progressFunctor(map, progress, currTimeMs-startTimeMs, progressUserData);
+							progressFunctor(progress, currTimeMs-startTimeMs, progressUserData);
 							lastProgressTimeMs=currTimeMs;
 						}
 					}
@@ -90,7 +90,7 @@ namespace Engine {
 				if (progressFunctor!=NULL) {
 					double progress=(rI+1.0)/regionList.size();
 					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTimeMs;
-					progressFunctor(map, progress, elapsedTimeMs, progressUserData);
+					progressFunctor(progress, elapsedTimeMs, progressUserData);
 				}
 
 				++rI;
