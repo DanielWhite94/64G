@@ -28,6 +28,8 @@ namespace Engine {
 		void edgeDetectTraceHeightContoursProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void edgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
+		void edgeDetectTraceFastModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+
 		bool edgeDetectHeightThresholdSampleFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
 
@@ -107,7 +109,7 @@ namespace Engine {
 			fflush(stdout);
 		}
 
-		void EdgeDetect::trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
+		void EdgeDetect::traceAccurate(unsigned scratchBits[DirectionNB], SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(sampleFunctor!=NULL);
 
 			// The following is an implementation of the Square Tracing method.
@@ -233,7 +235,26 @@ namespace Engine {
 				progressFunctor(map, 1.0, Util::getTimeMs()-startTimeMs, progressUserData);
 		}
 
-		void EdgeDetect::traceHeightContours(int contourCount, EdgeDetect::ProgressFunctor *progressFunctor, void *progressUserData) {
+		void EdgeDetect::traceFast(unsigned threadCount, SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
+			assert(sampleFunctor!=NULL);
+
+			if (edgeFunctor==NULL)
+				return;
+
+			// Custom algorithm where we mark a tile as being part of an edge if it is inside while at least one neighbour is outside
+			// (where out of bounds tiles are considered outside).
+
+			// Use modify tiles to consider every tile
+			TraceFastModifyTilesData modifyTilesData;
+			modifyTilesData.sampleFunctor=sampleFunctor;
+			modifyTilesData.sampleUserData=sampleUserData;
+			modifyTilesData.edgeFunctor=edgeFunctor;
+			modifyTilesData.edgeUserData=edgeUserData;
+
+			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &edgeDetectTraceFastModifyTilesFunctor, &modifyTilesData, progressFunctor, progressUserData);
+		}
+
+		void EdgeDetect::traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, EdgeDetect::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Check for bad contourCount
 			if (contourCount<1)
 				return;
@@ -249,7 +270,27 @@ namespace Engine {
 			// Run edge detection at various height thresholds to trace all contour lines
 			for(functorData.contourIndex=0; functorData.contourIndex<contourCount; ++functorData.contourIndex) {
 				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
-				trace(&edgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexContour, (progressFunctor!=NULL ? &edgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
+				traceAccurate(scratchBits, &edgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexContour, (progressFunctor!=NULL ? &edgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
+			}
+		}
+
+		void EdgeDetect::traceFastHeightContours(unsigned threadCount, int contourCount, EdgeDetect::ProgressFunctor *progressFunctor, void *progressUserData) {
+			// Check for bad contourCount
+			if (contourCount<1)
+				return;
+
+			// Create our own wrapper userData for progress functor
+			EdgeDetectTraceHeightContoursData functorData;
+			functorData.contourIndex=0;
+			functorData.contourCount=contourCount;
+			functorData.functor=progressFunctor;
+			functorData.userData=progressUserData;
+			functorData.startTimeMs=Util::getTimeMs();
+
+			// Run edge detection at various height thresholds to trace all contour lines
+			for(functorData.contourIndex=0; functorData.contourIndex<contourCount; ++functorData.contourIndex) {
+				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
+				traceFast(threadCount, &edgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexContour, (progressFunctor!=NULL ? &edgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
 			}
 		}
 
@@ -279,6 +320,35 @@ namespace Engine {
 
 			// Invoke user's progress functor
 			functorData->functor(map, trueProgress, elapsedTimeMs, functorData->userData);
+		}
+
+		void edgeDetectTraceFastModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(userData!=NULL);
+
+			EdgeDetect::TraceFastModifyTilesData *data=(EdgeDetect::TraceFastModifyTilesData *)userData;
+
+			// Is this tile not 'inside'? (and thus cannot be an edge)
+			if (!data->sampleFunctor(map, x, y, data->sampleUserData))
+				return;
+
+			// If a single neighbour is not 'inside' then this is an edge
+			unsigned xm1=(x==0 ? map->getWidth()-1 : x-1);
+			unsigned xp1=(x+1==map->getWidth() ? 0 : x+1);
+			unsigned ym1=(y==0 ? map->getHeight()-1 : y-1);
+			unsigned yp1=(y+1==map->getHeight() ? 0 : y+1);
+
+			if (!data->sampleFunctor(map, xm1, ym1, data->sampleUserData) ||
+			    !data->sampleFunctor(map, x+0, ym1, data->sampleUserData) ||
+			    !data->sampleFunctor(map, xp1, ym1, data->sampleUserData) ||
+			    !data->sampleFunctor(map, xm1, y+0, data->sampleUserData) ||
+			    !data->sampleFunctor(map, x+0, y+0, data->sampleUserData) ||
+			    !data->sampleFunctor(map, xp1, y+0, data->sampleUserData) ||
+			    !data->sampleFunctor(map, xm1, yp1, data->sampleUserData) ||
+			    !data->sampleFunctor(map, x+0, yp1, data->sampleUserData) ||
+			    !data->sampleFunctor(map, xp1, yp1, data->sampleUserData)) {
+				// Call user's edge functor
+				data->edgeFunctor(map, x, y, data->edgeUserData);
+			}
 		}
 	};
 };

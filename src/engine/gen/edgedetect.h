@@ -18,6 +18,7 @@ namespace Engine {
 				// This class provides algorithms to trace an edge around a group of tiles,
 				// based on a boolean function applied to each tile to determine if it
 				// should be 'inside' or 'outside' the edge.
+				// Note that when tracing we 'wrap around' the edges of the map as if it were a torus.
 
 				static const unsigned DirectionEast=0;
 				static const unsigned DirectionNorth=1;
@@ -27,6 +28,7 @@ namespace Engine {
 
 				// This should return true if tile is considered to be 'inside', and false for 'outside'
 				// (e.g. if looking for continents then land tiles should return true and ocean tiles false).
+				// Out of bounds tiles should be considered outside and return false.
 				typedef bool (SampleFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 
 				// This is called for each tile which is determined to be part of the edge ('inside' tiles only).
@@ -34,19 +36,34 @@ namespace Engine {
 
 				typedef void (ProgressFunctor)(class Map *map, double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
-				// Each scratchBits array entry should contain a unique tile bitset index which can be used freely by the trace algorithm internally.
-				EdgeDetect(class Map *map, unsigned gScratchBits[4]): map(map) {
-					memcpy(scratchBits, gScratchBits, sizeof(unsigned)*4);
+				// Used internally by traceFast
+				struct TraceFastModifyTilesData {
+					SampleFunctor *sampleFunctor;
+					void *sampleUserData;
+
+					EdgeFunctor *edgeFunctor;
+					void *edgeUserData;
+				};
+
+				EdgeDetect(class Map *map): map(map) {
 				};
 				~EdgeDetect() {};
 
-				void trace(SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
 
-				void traceHeightContours(int contourCount, ProgressFunctor *progressFunctor, void *progressUserData); // Uses tile height and bitset fields, setting bit TileBitsetIndexContour for each tile which is part of a height contour
+				// The following is an implementation of the Square Tracing method. It should produce nice crisp edges but is slow.
+				// Each scratchBits array entry should contain a unique tile bitset index which can be used freely by the trace algorithm internally.
+				// (to store which directions we have entered each tile from previously to avoid retracing)
+				void traceAccurate(unsigned scratchBits[DirectionNB], SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
+
+				// The follow is a custom algorithm designed for speed at the expense of edge quality.
+				void traceFast(unsigned threadCount, SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
+
+				// Trace a series of contours based on given number of height thresholds.
+				// For each tile which is determined to be part of a contour we set bit TileBitsetIndexContour in the tile's bitset.
+				void traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, ProgressFunctor *progressFunctor, void *progressUserData);
+				void traceFastHeightContours(unsigned threadCount, int contourCount, ProgressFunctor *progressFunctor, void *progressUserData);
 			private:
 				class Map *map;
-
-				unsigned scratchBits[DirectionNB]; // bitset indexes that can be used freely during tracing to store which directions we have entered each tile from previously (to avoid retracing)
 
 				void turnLeft(int *dx, int *dy, unsigned *dir) {
 					int temp=*dx;
