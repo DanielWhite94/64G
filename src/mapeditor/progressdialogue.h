@@ -1,5 +1,5 @@
 #ifndef MAPEDITOR_PROGRESSDIALOGUE_H
-#define MAPEDITOR_PROGRESSDIALOGUE_H value
+#define MAPEDITOR_PROGRESSDIALOGUE_H
 
 #include "../engine/util.h"
 
