@@ -8,6 +8,7 @@
 #include <new>
 
 #include "mainwindow.h"
+#include "newdialogue.h"
 #include "progressdialogue.h"
 #include "util.h"
 
@@ -712,6 +713,31 @@ namespace MapEditor {
 		if (!mapClose())
 			return false;
 
+		// Prompt user for parameters
+		NewDialogue *newDialogue;
+		try {
+			newDialogue=new NewDialogue(window);
+		} catch (std::exception& e) {
+			newDialogue=NULL;
+
+			// Update status label
+			char statusLabelStr[1024]; // TODO: better
+			sprintf(statusLabelStr, "Could not create new dialogue: %s", e.what());
+			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
+
+			return false;
+		}
+
+		unsigned mapW=4096;
+		unsigned mapH=4096;
+
+		bool newResult=newDialogue->run(&mapW, &mapH);
+
+		delete newDialogue;
+
+		if (!newResult)
+			return false;
+
 		// Prompt user for filename
 		GtkWidget *dialog=gtk_file_chooser_dialog_new("New Map", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER,
 		    "Cancel", GTK_RESPONSE_CANCEL,
@@ -730,7 +756,7 @@ namespace MapEditor {
 		// Attempt to load map
 		Util::unlinkDir(filename); // use of file chooser dialogue above seems to create an empty folder which causes Map constructor to think it is already in use
 		try {
-			map=new class Map(filename, 2048, 2048); // TODO: sizes are just a hack - needs a way for user to dictate
+			map=new class Map(filename, mapW, mapH);
 		} catch (std::exception& e) {
 			map=NULL;
 
