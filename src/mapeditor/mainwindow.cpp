@@ -47,7 +47,6 @@ gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer
 gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData);
 
 void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
-void mainWindowToolsClearProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 namespace MapEditor {
 	MainWindow::MainWindow(const char *filename) {
@@ -338,7 +337,7 @@ namespace MapEditor {
 		ProgressDialogue *prog=new ProgressDialogue("Clearing tile data...", window);
 
 		// Run main operation via modifyTiles
-		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsClearModifyTilesFunctor, NULL, &mainWindowToolsClearProgressFunctor, prog);
+		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsClearModifyTilesFunctor, NULL, &progressDialogueProgressFunctor, prog);
 
 		// Tidy up
 		delete prog;
@@ -1142,17 +1141,4 @@ void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, u
 		MapTile::Layer layer={.textureId=MapTexture::IdMax, .hitmask=HitMask()};
 		tile->setLayer(i, layer);
 	}
-}
-
-void mainWindowToolsClearProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-	assert(progress>=0.0 && progress<=1.0);
-	assert(userData!=NULL);
-
-	MapEditor::ProgressDialogue *prog=(MapEditor::ProgressDialogue *)userData;
-
-	// Update progress bar
-	prog->setProgress(progress);
-
-	// Ensure progress dialogue can actually update
-	gtk_main_iteration_do(false);
 }

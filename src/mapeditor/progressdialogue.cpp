@@ -8,6 +8,18 @@ gint progressDialogueProgressBarPulseTimer(gpointer userData);
 gboolean progressDialogueCancelButtonClicked(GtkWidget *widget, gpointer userData);
 
 namespace MapEditor {
+	void progressDialogueProgressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs, void *userData) {
+		assert(progress>=0.0 && progress<=1.0);
+		assert(userData!=NULL);
+
+		ProgressDialogue *prog=(ProgressDialogue *)userData;
+
+		// Update progress bar
+		prog->setProgress(progress);
+
+		// Ensure progress dialogue can actually update
+		gtk_main_iteration_do(false);
+	}
 
 	ProgressDialogue::ProgressDialogue(const char *text, GtkWidget *parentWindow) {
 		// Init
