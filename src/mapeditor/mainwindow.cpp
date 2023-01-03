@@ -728,10 +728,17 @@ namespace MapEditor {
 		gtk_widget_destroy(dialog);
 
 		// Attempt to load map
+		Util::unlinkDir(filename); // use of file chooser dialogue above seems to create an empty folder which causes Map constructor to think it is already in use
 		try {
 			map=new class Map(filename, 2048, 2048); // TODO: sizes are just a hack - needs a way for user to dictate
 		} catch (std::exception& e) {
 			map=NULL;
+
+			// Update status label
+			char statusLabelStr[1024]; // TODO: better
+			sprintf(statusLabelStr, "Could not create new map at: %s: %s", filename, e.what());
+			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
+
 			return false;
 		}
 
