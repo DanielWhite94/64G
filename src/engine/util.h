@@ -23,6 +23,7 @@ namespace Engine {
 		static size_t getFileSize(const char *path);
 		static bool makeDir(const char *path);
 		static bool unlinkFile(const char *path);
+		static bool unlinkDir(const char *path);
 
 		static bool isImageWhite(const char *path); // returns true if given path represents an image with all pixels white
 

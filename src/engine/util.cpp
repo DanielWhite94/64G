@@ -118,6 +118,10 @@ namespace Engine {
 		return (unlink(path)==0);
 	}
 
+	bool Util::unlinkDir(const char *path) {
+		return (rmdir(path)==0);
+	}
+
 	bool Util::isImageWhite(const char *path) {
 		assert(path!=NULL);
 
