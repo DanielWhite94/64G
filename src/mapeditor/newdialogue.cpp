@@ -54,6 +54,10 @@ namespace MapEditor {
 	}
 
 	bool NewDialogue::run(unsigned *width, unsigned *height) {
+		// Update spin buttons based on given values
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(sizeWidthSpinButton), *width);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(sizeHeightSpinButton), *height);
+
 		// Show the dialogue and wait for response
 		gtk_widget_show_all(window);
 		gint result=gtk_dialog_run(GTK_DIALOG(window));

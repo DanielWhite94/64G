@@ -12,7 +12,7 @@ namespace MapEditor {
 		NewDialogue(GtkWidget *parentWindow);
 		~NewDialogue();
 
-		bool run(unsigned *width, unsigned *height);
+		bool run(unsigned *width, unsigned *height); // width and height specify initial values and also return output if dialogue is accepted
 	private:
 		GtkWidget *window;
 		GtkWidget *sizeWidthSpinButton;
