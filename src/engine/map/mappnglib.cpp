@@ -217,7 +217,6 @@ namespace Engine {
 		}
 
 		*r=255;*g=0;*b=0;*a=255;
-		assert(false);
 	}
 
 	void MapPngLib::getColourForTileTemperature(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
