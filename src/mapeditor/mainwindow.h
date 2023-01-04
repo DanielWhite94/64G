@@ -102,6 +102,8 @@ namespace MapEditor {
 	private:
 		const char *initialMapFilenameToOpen;
 
+		bool busyOperation; // pauses things like generating MapTiled images in idleTick
+
 		bool mapNew(void);
 		bool mapOpen(const char *filename); // Returns true if successfully opened, false if choosen folder is not a valid map.
 		bool mapSave(void); // Returns false on failure to save

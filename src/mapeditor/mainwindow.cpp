@@ -63,6 +63,7 @@ void mainWindowToolsHeightTemperatureModifyTilesFunctor(unsigned threadId, class
 namespace MapEditor {
 	MainWindow::MainWindow(const char *filename) {
 		// Clear basic fields
+		busyOperation=false;
 		map=NULL;
 		zoomLevel=zoomLevelMin;
 		userCentreX=0;
@@ -224,6 +225,10 @@ namespace MapEditor {
 		if (map==NULL)
 			return;
 
+		// Skip if busy in operation
+		if (busyOperation)
+			return;
+
 		// Generate a needed image (or work towards it by generating a child image)
 		assert(mapTileToGenZoom<zoomLevelMax-zoomExtra);
 		if (!MapTiled::generateImage(map, mapTileToGenZoom, mapTileToGenX, mapTileToGenY, mapTileToGenLayerSet, 100, NULL, NULL))
@@ -348,6 +353,7 @@ namespace MapEditor {
 			return false;
 
 		// Create progress dialogue to provide updates
+		busyOperation=true;
 		ProgressDialogue *prog=new ProgressDialogue("Clearing tile data...", window);
 
 		// Run main operation via modifyTiles
@@ -355,6 +361,11 @@ namespace MapEditor {
 
 		// Tidy up
 		delete prog;
+		busyOperation=false;
+
+		return false;
+	}
+
 	bool MainWindow::menuToolsHeightTemperatureActivate(GtkWidget *widget) {
 		// Sanity check
 		if (map==NULL)
@@ -398,6 +409,7 @@ namespace MapEditor {
 			return false;
 
 		// Create progress dialogue to provide updates
+		busyOperation=true;
 		ProgressDialogue *prog=new ProgressDialogue("Generating height and temperature tile data...", window);
 
 		// Initialise map values so we can calculate these as we go
@@ -418,6 +430,7 @@ namespace MapEditor {
 		delete modifyTilesData.heightNoise;
 		delete modifyTilesData.temperatureNoise;
 		delete prog;
+		busyOperation=false;
 
 		return false;
 	}
