@@ -356,6 +356,14 @@ namespace MapEditor {
 		busyOperation=true;
 		ProgressDialogue *prog=new ProgressDialogue("Clearing tile data...", window);
 
+		// Initialise map values
+		map->minHeight=0.0;
+		map->maxHeight=0.0;
+		map->minTemperature=0.0;
+		map->maxTemperature=0.0;
+		map->minMoisture=0.0;
+		map->maxMoisture=0.0;
+
 		// Run main operation via modifyTiles
 		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsClearModifyTilesFunctor, NULL, &progressDialogueProgressFunctor, prog);
 
