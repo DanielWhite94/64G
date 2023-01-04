@@ -7,14 +7,22 @@
 #include <iostream>
 #include <new>
 
+#include "heighttemperaturedialogue.h"
 #include "mainwindow.h"
 #include "newdialogue.h"
 #include "progressdialogue.h"
 #include "util.h"
 
 #include "../engine/gen/modifytiles.h"
+#include "../engine/fbnnoise.h"
 
 const char mainWindowXmlFile[]="mainwindow.glade";
+
+struct MainWindowToolsHeightTemperatureModifyTilesData {
+	MapEditor::HeightTemperatureDialogue::Params *params;
+	FbnNoise *heightNoise;
+	FbnNoise *temperatureNoise;
+};
 
 gboolean mapEditorMainWindowWrapperWindowDeleteEvent(GtkWidget *widget, GdkEvent *event, void *userData);
 
@@ -30,6 +38,7 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomOutActivate(GtkWidget *widget, gp
 gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperMenuToolsClearActivate(GtkWidget *widget, gpointer userData);
+gboolean mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate(GtkWidget *widget, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
@@ -48,6 +57,8 @@ gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer
 gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData);
 
 void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
+
+void mainWindowToolsHeightTemperatureModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
 namespace MapEditor {
 	MainWindow::MainWindow(const char *filename) {
@@ -106,6 +117,7 @@ namespace MapEditor {
 		error|=(menuViewZoomOut=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomOut")))==NULL;
 		error|=(menuViewZoomFit=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomFit")))==NULL;
 		error|=(menuToolsClear=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsClear")))==NULL;
+		error|=(menuToolsHeightTemperature=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsHeightTemperature")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
@@ -121,6 +133,7 @@ namespace MapEditor {
 		g_signal_connect(menuViewZoomOut, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomOutActivate), (void *)this);
 		g_signal_connect(menuViewZoomFit, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomFitActivate), (void *)this);
 		g_signal_connect(menuToolsClear, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsClearActivate), (void *)this);
+		g_signal_connect(menuToolsHeightTemperature, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate), (void *)this);
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
 		g_signal_connect(drawingArea, "key-press-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyPressEvent), (void *)this);
 		g_signal_connect(drawingArea, "key-release-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent), (void *)this);
@@ -341,6 +354,69 @@ namespace MapEditor {
 		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsClearModifyTilesFunctor, NULL, &progressDialogueProgressFunctor, prog);
 
 		// Tidy up
+		delete prog;
+	bool MainWindow::menuToolsHeightTemperatureActivate(GtkWidget *widget) {
+		// Sanity check
+		if (map==NULL)
+			return false;
+
+		// Prompt user for parameters
+		HeightTemperatureDialogue *heightTempDialogue;
+		try {
+			heightTempDialogue=new HeightTemperatureDialogue(window);
+		} catch (std::exception& e) {
+			heightTempDialogue=NULL;
+
+			// Update status label
+			char statusLabelStr[1024]; // TODO: better
+			sprintf(statusLabelStr, "Could not create height temperature dialogue: %s", e.what());
+			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
+
+			return false;
+		}
+
+		HeightTemperatureDialogue::Params params={
+			.heightNoiseMin=-6000.0,
+			.heightNoiseMax=6000.0,
+			.heightNoiseSeed=18,
+			.heightNoiseOctaves=8,
+			.heightNoiseFrequency=8.0,
+			.temperatureNoiseMin=0.0,
+			.temperatureNoiseMax=20.0,
+			.temperatureNoiseSeed=20,
+			.temperatureNoiseOctaves=8,
+			.temperatureNoiseFrequency=1.0,
+			.temperatureLapseRate=5.0,
+			.temperatureLatitudeRange=60.0,
+		};
+
+		bool promptResult=heightTempDialogue->run(&params);
+
+		delete heightTempDialogue;
+
+		if (!promptResult)
+			return false;
+
+		// Create progress dialogue to provide updates
+		ProgressDialogue *prog=new ProgressDialogue("Generating height and temperature tile data...", window);
+
+		// Initialise map values so we can calculate these as we go
+		map->minHeight=DBL_MAX;
+		map->maxHeight=DBL_MIN;
+		map->minTemperature=DBL_MAX;
+		map->maxTemperature=DBL_MIN;
+
+		// Run main operation via modifyTiles
+		MainWindowToolsHeightTemperatureModifyTilesData modifyTilesData={
+			.params=&params,
+			.heightNoise=new FbnNoise(params.heightNoiseSeed, params.heightNoiseOctaves, params.heightNoiseFrequency),
+			.temperatureNoise=new FbnNoise(params.temperatureNoiseSeed, params.temperatureNoiseOctaves, params.temperatureNoiseFrequency),
+		};
+		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsHeightTemperatureModifyTilesFunctor, &modifyTilesData, &progressDialogueProgressFunctor, prog);
+
+		// Tidy up
+		delete modifyTilesData.heightNoise;
+		delete modifyTilesData.temperatureNoise;
 		delete prog;
 
 		return false;
@@ -1098,6 +1174,11 @@ gboolean mapEditorMainWindowWrapperMenuToolsClearActivate(GtkWidget *widget, gpo
 	return mainWindow->menuToolsClearActivate(widget);
 }
 
+gboolean mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuToolsHeightTemperatureActivate(widget);
+}
+
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->drawingAreaDraw(widget, cr);
@@ -1174,4 +1255,46 @@ void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, u
 		MapTile::Layer layer={.textureId=MapTexture::IdMax, .hitmask=HitMask()};
 		tile->setLayer(i, layer);
 	}
+}
+
+void mainWindowToolsHeightTemperatureModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
+	assert(map!=NULL);
+	assert(userData!=NULL);
+
+	MainWindowToolsHeightTemperatureModifyTilesData *data=(MainWindowToolsHeightTemperatureModifyTilesData *)userData;
+
+	// Grab tile
+	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::CreateDirty);
+	if (tile==NULL)
+		return;
+
+	// Calculate height
+	double normalisedHeight=(1.0+data->heightNoise->eval(x/((double)map->getWidth()), y/((double)map->getHeight())))/2.0; // [0.0,1.0]
+	const double height=data->params->heightNoiseMin+(data->params->heightNoiseMax-data->params->heightNoiseMin)*normalisedHeight;
+
+	// Calculate temperature
+	double temperature=0.0;
+
+	const double temperatureRandomOffset=(1.0+data->temperatureNoise->eval(x, y))/2.0;
+	temperature+=data->params->temperatureNoiseMin+temperatureRandomOffset*(data->params->temperatureNoiseMax-data->params->temperatureNoiseMin);
+
+	const double latitude=2.0*((double)y)/map->getHeight()-1.0;
+	assert(latitude>=-1.0 && latitude<=1.0);
+	const double poleDistance=1.0-fabs(latitude);
+	assert(poleDistance>=0.0 && poleDistance<=1.0);
+	double adjustedPoleDistance=2*poleDistance-1; // -1..1
+	assert(adjustedPoleDistance>=-1.0 && adjustedPoleDistance<=1.0);
+	temperature+=adjustedPoleDistance*data->params->temperatureLatitudeRange/2.0;
+
+	temperature-=std::max(0.0, height/1000.0)*data->params->temperatureLapseRate; // /1000 because lapse rate is in degrees/km
+
+	// Update tile
+	tile->setHeight(height);
+	tile->setTemperature(temperature);
+
+	// See if we need to update min/max values
+	map->minHeight=std::min(map->minHeight, height);
+	map->maxHeight=std::max(map->maxHeight, height);
+	map->minTemperature=std::min(map->minTemperature, temperature);
+	map->maxTemperature=std::max(map->maxTemperature, temperature);
 }
