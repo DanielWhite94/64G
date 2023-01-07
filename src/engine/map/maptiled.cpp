@@ -105,7 +105,7 @@ namespace Engine {
 			return true;
 		}
 
-		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs timeoutMs, GenerateImageProgress *progressFunctor, void *progressUserData) {
+		bool MapTiled::generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs timeoutMs, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(zoom<=maxZoom);
 
 			// Compute total number of images we need to generate worst case
@@ -131,15 +131,16 @@ namespace Engine {
 			return clearImageHelper(map, zoom, x, y, imageLayerSet, false, false);
 		}
 
-		bool MapTiled::clearImagesAll(class Map *map, ImageLayerSet imageLayerSet, ClearImageProgress *progressFunctor, void *progressUserData) {
+		bool MapTiled::clearImagesAll(class Map *map, ImageLayerSet imageLayerSet, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			bool result=true;
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 
 			// Call progress functor
-			if (progressFunctor!=NULL)
-				progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return false;
 
 			// Loop over zoom levels
+			// TODO: find closed form for this
 			unsigned totalImages=0;
 			for(unsigned zoom=0; zoom<maxZoom; ++zoom) {
 				unsigned perSide=(1u<<zoom);
@@ -161,14 +162,15 @@ namespace Engine {
 					if (progressFunctor!=NULL) {
 						assert(imagesHandled<=totalImages);
 						double progress=((double)imagesHandled)/totalImages;
-						progressFunctor(progress, Util::getTimeMs()-startTimeMs, progressUserData);
+						if (!progressFunctor(progress, Util::getTimeMs()-startTimeMs, progressUserData))
+							return false;
 					}
 				}
 			}
 
 			// Call progress functor
-			if (progressFunctor!=NULL)
-				progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return false;
 
 			return result;
 		}
@@ -198,11 +200,11 @@ namespace Engine {
 			sprintf(path, "%s/transparent.png", map->getMapTiledDir());
 		}
 
-		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs endTimeMs, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs) {
+		bool MapTiled::generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs endTimeMs, unsigned long long int *imagesDone, unsigned long long int imagesTotal, Util::ProgressFunctor *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs) {
 			// Invoke progress update if needed
 			assert(*imagesDone<=imagesTotal);
-			if (progressFunctor!=NULL)
-				progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData))
+				return false;
 
 			// Bad zoom value?
 			if (zoom>=maxZoom)
@@ -234,8 +236,8 @@ namespace Engine {
 			if (imageLayerSet==0) {
 				// Invoke progress update if needed
 				assert(*imagesDone<=imagesTotal);
-				if (progressFunctor!=NULL)
-					progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
+				if (progressFunctor!=NULL && !progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData))
+					return false;
 
 				return true;
 			}
@@ -316,8 +318,8 @@ namespace Engine {
 
 			// Invoke progress update if needed
 			assert(*imagesDone<=imagesTotal);
-			if (progressFunctor!=NULL)
-				progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData))
+				return false;
 
 			return true;
 		}

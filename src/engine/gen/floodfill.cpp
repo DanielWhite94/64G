@@ -8,13 +8,13 @@ using namespace Engine;
 namespace Engine {
 	namespace Gen {
 		struct FloodFillFillClearScratchBitModifyTilesProgressData {
-			FloodFill::ProgressFunctor *functor;
+			Util::ProgressFunctor *functor;
 			void *userData;
 
 			double progressRatio;
 		};
 
-		void floodFillFillClearScratchBitModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
+		bool floodFillFillClearScratchBitModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		bool floodFillBitsetNBoundaryFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
 			assert(map!=NULL);
@@ -30,7 +30,7 @@ namespace Engine {
 			return tile->getBitsetN(bitsetIndex);
 		}
 
-		void FloodFill::fill(BoundaryFunctor *boundaryFunctor, void *boundaryUserData, FillFunctor *fillFunctor, void *fillUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
+		void FloodFill::fill(BoundaryFunctor *boundaryFunctor, void *boundaryUserData, FillFunctor *fillFunctor, void *fillUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(boundaryFunctor!=NULL);
 			assert(fillFunctor!=NULL);
 
@@ -55,8 +55,8 @@ namespace Engine {
 			unsigned groupId=0;
 
 			// Give a progress update
-			if (progressFunctor!=NULL)
-				progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return;
 
 			// Clear scratch bits (these are used to indicate from which directions we have previously entered a tile on, to avoid retracing similar edges)
 			FloodFillFillClearScratchBitModifyTilesProgressData modifyTileFunctorData;
@@ -92,8 +92,8 @@ namespace Engine {
 							assert(tile!=NULL);
 							tile->setBitsetN(scratchBit, true);
 
-							if (progressFunctor!=NULL && progress%256==0)
-								progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+							if (progressFunctor!=NULL && progress%256==0 && !progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData))
+								return;
 							++progress;
 
 							// We need a non-boundary tile to start filling - so check now
@@ -165,8 +165,8 @@ namespace Engine {
 
 									if (!loopTile->getBitsetN(scratchBit)) {
 										// Invoke progress functor if needed
-										if (progressFunctor!=NULL && progress%256==0)
-											progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+										if (progressFunctor!=NULL && progress%256==0 && !progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData))
+											return;
 										++progress;
 
 										// Set scratch bit to indicate we have handled this tile
@@ -235,11 +235,11 @@ namespace Engine {
 			}
 
 			// Give a progress update
-			if (progressFunctor!=NULL)
-				progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return;
 		}
 
-		void floodFillFillClearScratchBitModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+		bool floodFillFillClearScratchBitModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(userData!=NULL);
 
 			const FloodFillFillClearScratchBitModifyTilesProgressData *functorData=(const FloodFillFillClearScratchBitModifyTilesProgressData *)userData;
@@ -248,7 +248,7 @@ namespace Engine {
 			double trueProgress=functorData->progressRatio*progress;
 
 			// Invoke user's progress functor
-			functorData->functor(trueProgress, elapsedTimeMs, functorData->userData);
+			return functorData->functor(trueProgress, elapsedTimeMs, functorData->userData);
 		}
 
 	};

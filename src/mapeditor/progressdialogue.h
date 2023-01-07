@@ -7,8 +7,10 @@
 
 namespace MapEditor {
 
-	// Progress functor which can be passed to Gen functions such as modifyTiles to update a ProgressDialogue passed in via userData
-	void progressDialogueProgressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs, void *userData);
+	// Progress functor which can be passed to Gen functions such as modifyTiles to update a ProgressDialogue passed in via userData.
+	// Handles updating progress bar percentage and dialogue text to show progress and timings.
+	// Also handles cancel button if enabled.
+	bool progressDialogueProgressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs, void *userData);
 
 	class ProgressDialogue {
 	public:
@@ -24,7 +26,7 @@ namespace MapEditor {
 		gint progressBarPulseTimer();
 		gboolean cancelButtonClicked(GtkWidget *widget);
 
-		void progressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs);
+		bool progressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs);
 	private:
 		GtkWidget *window;
 		GtkWidget *progressBar;

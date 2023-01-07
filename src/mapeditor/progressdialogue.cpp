@@ -11,14 +11,14 @@ gint progressDialogueProgressBarPulseTimer(gpointer userData);
 gboolean progressDialogueCancelButtonClicked(GtkWidget *widget, gpointer userData);
 
 namespace MapEditor {
-	void progressDialogueProgressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs, void *userData) {
+	bool progressDialogueProgressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs, void *userData) {
 		assert(progress>=0.0 && progress<=1.0);
 		assert(userData!=NULL);
 
 		ProgressDialogue *prog=(ProgressDialogue *)userData;
 
 		// This is simply a wrapper
-		prog->progressFunctor(progress, elapsedTimeMs);
+		return prog->progressFunctor(progress, elapsedTimeMs);
 	}
 
 	ProgressDialogue::ProgressDialogue(const char *text, GtkWidget *parentWindow) {
@@ -123,7 +123,7 @@ namespace MapEditor {
 		return TRUE;
 	}
 
-	void ProgressDialogue::progressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs) {
+	bool ProgressDialogue::progressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs) {
 		// Calculate some stuff
 		char elapsedTimeStr[16];
 		Engine::Util::sprintTime(elapsedTimeStr, elapsedTimeMs);
@@ -145,6 +145,8 @@ namespace MapEditor {
 
 		// Ensure progress dialogue can actually update
 		utilDoGtkEvents();
+
+		return !getCancelled();
 	}
 };
 

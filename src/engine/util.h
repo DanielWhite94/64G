@@ -6,6 +6,10 @@
 namespace Engine {
 	class Util {
 	public:
+		typedef long long int TimeMs;
+
+		typedef bool (ProgressFunctor)(double progress, Util::TimeMs elapsedTimeMs, void *userData); // return true to continue, false to cancel the operation
+
 		static int floordiv(int n, int d);
 
 		static double angleFromXYToXY(double x1, double y1, double x2, double y2);
@@ -27,7 +31,6 @@ namespace Engine {
 
 		static bool isImageWhite(const char *path); // returns true if given path represents an image with all pixels white
 
-		typedef long long int TimeMs;
 		static TimeMs getTimeMs(void);
 		static void printTime(TimeMs timeMs);
 		static void sprintTime(char *str, TimeMs timeMs); // str should have space for at least 16 characters (null byte included)
@@ -35,7 +38,7 @@ namespace Engine {
 		static TimeMs calculateTimeRemaining(double progress, TimeMs elapsedTimeMs); // progress in range [0,1], if cannot estimate then returns -1
 	};
 
-	void utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string
+	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string
 };
 
 #endif

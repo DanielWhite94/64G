@@ -1,6 +1,7 @@
 #ifndef ENGINE_GEN_FLOODFILL_H
 #define ENGINE_GEN_FLOODFILL_H
 
+#include "../util.h"
 #include "../map/map.h"
 
 namespace Engine {
@@ -21,14 +22,12 @@ namespace Engine {
 			// groupId is an integer which is unique to the group which contains this tile.
 			typedef void (FillFunctor)(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
 
-			typedef void (ProgressFunctor)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
-
 			// scratchBit should contain a unique tile bitset index which can be used freely by the fill algorithm internally
 			FloodFill(class Map *map, unsigned scratchBit): map(map), scratchBit(scratchBit) {
 			};
 			~FloodFill() {};
 
-			void fill(BoundaryFunctor *boundaryFunctor, void *boundaryUserData, FillFunctor *fillFunctor, void *fillUserData, ProgressFunctor *progressFunctor, void *progressUserData);
+			void fill(BoundaryFunctor *boundaryFunctor, void *boundaryUserData, FillFunctor *fillFunctor, void *fillUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 		private:
 			class Map *map;
 

@@ -35,7 +35,7 @@ namespace Engine {
 			dataArray[threadId].maxMoisture=std::max(dataArray[threadId].maxMoisture, tile->getMoisture());
 		}
 
-		void recalculateStats(class Map *map, unsigned threadCount, Gen::ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void recalculateStats(class Map *map, unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 
 			// Initialize thread data.

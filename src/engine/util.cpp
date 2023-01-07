@@ -214,7 +214,7 @@ namespace Engine {
 		return remainingTimeMs;
 	}
 
-	void utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 		assert(progress>=0.0 && progress<=1.0);
 		assert(userData!=NULL);
 
@@ -239,6 +239,8 @@ namespace Engine {
 
 		// Flush output manually (as we are not printing a newline).
 		fflush(stdout);
+
+		return true;
 	}
 
 };

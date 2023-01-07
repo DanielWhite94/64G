@@ -9,7 +9,7 @@ namespace Engine {
 		void modifyTilesFunctorBitsetIntersection(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData); // Interprets userData as a bitset (via uintptr_t) to AND with each tile's existing bitset.
 
 		typedef void (ModifyTilesFunctor)(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
-		typedef void (ModifyTilesProgress)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
+		typedef bool (ModifyTilesProgress)(double progress, Util::TimeMs elapsedTimeMs, void *userData); // return true to continue, false to cancel the operation
 
 		struct ModifyTilesManyEntry {
 			ModifyTilesFunctor *functor;

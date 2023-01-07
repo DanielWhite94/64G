@@ -370,6 +370,7 @@ namespace MapEditor {
 		// Create progress dialogue to provide updates
 		operationBegin();
 		ProgressDialogue *prog=new ProgressDialogue("1/2: Clearing tile data...", window);
+		prog->setShowCancelButton(true);
 
 		// Initialise map values
 		map->minHeight=0.0;
@@ -438,6 +439,7 @@ namespace MapEditor {
 		// Create progress dialogue to provide updates
 		operationBegin();
 		ProgressDialogue *prog=new ProgressDialogue("1/2: Generating height and temperature tile data...", window);
+		prog->setShowCancelButton(true);
 
 		// Initialise map values so we can calculate these as we go
 		map->minHeight=DBL_MAX;

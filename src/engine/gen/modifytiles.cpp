@@ -1,3 +1,4 @@
+#include <atomic>
 #include <cassert>
 #include <thread>
 
@@ -17,6 +18,7 @@ namespace Engine {
 			unsigned x, y, width, height; // args passed into modifyTiles
 
 			unsigned threadCount;
+			std::atomic<bool> stopFlag;
 
 			ModifyTilesProgress *progressFunctor;
 			void *progressUserData;
@@ -77,7 +79,8 @@ namespace Engine {
 			// Initial progress update (if needed).
 			if (progressFunctor!=NULL) {
 				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(0.0, elapsedTimeMs, progressUserData);
+				if (!progressFunctor(0.0, elapsedTimeMs, progressUserData))
+					return;
 			}
 
 			// Cap thread count to sensible range
@@ -99,6 +102,7 @@ namespace Engine {
 			threadCommonData.progressFunctor=progressFunctor;
 			threadCommonData.progressUserData=progressUserData;
 			threadCommonData.startTimeMs=startTime;
+			threadCommonData.stopFlag=false;
 
 			ModifyTilesManyThreadData *threadData=(ModifyTilesManyThreadData *)malloc(sizeof(ModifyTilesManyThreadData)*threadCount); // TODO: check return
 			for(unsigned i=0; i<threadCount; ++i) {
@@ -126,7 +130,8 @@ namespace Engine {
 			// Update progress.
 			if (progressFunctor!=NULL) {
 				Util::TimeMs elapsedTimeMs=Util::getTimeMs()-startTime;
-				progressFunctor(1.0, elapsedTimeMs, progressUserData);
+				if (!progressFunctor(1.0, elapsedTimeMs, progressUserData))
+					return;
 			}
 		}
 
@@ -148,7 +153,7 @@ namespace Engine {
 
 			// Loop over regions assigned to us
 			bool giveProgressUpdates=(threadData->threadId==threadData->common->threadCount-1 && threadData->common->progressFunctor!=NULL);
-			for(unsigned regionOffsetIndex=0; regionOffsetIndex<regionsPerThread; ++regionOffsetIndex) {
+			for(unsigned regionOffsetIndex=0; regionOffsetIndex<regionsPerThread && !threadData->common->stopFlag; ++regionOffsetIndex) {
 				// Calculate region x/y
 				unsigned regionIndex=regionStartIndex+regionOffsetIndex;
 				unsigned regionX=regionX0+(regionIndex%(regionX1-regionX0));
@@ -158,7 +163,7 @@ namespace Engine {
 				unsigned baseTileY=regionY*MapRegion::tilesSize;
 
 				// Loop over all tiles within this region
-				for(unsigned tileY=0; tileY<MapRegion::tilesSize; ++tileY)
+				for(unsigned tileY=0; tileY<MapRegion::tilesSize && !threadData->common->stopFlag; ++tileY)
 					for(unsigned tileX=0; tileX<MapRegion::tilesSize; ++tileX) {
 						// Loop over functors
 						for(size_t functorId=0; functorId<threadData->common->functorArrayCount; ++functorId)
@@ -169,7 +174,10 @@ namespace Engine {
 				if (giveProgressUpdates) {
 					Util::TimeMs elapsedTimeMs=Util::getTimeMs()-threadData->common->startTimeMs;
 					double progress=(regionOffsetIndex+1.0)/regionsPerThread;
-					threadData->common->progressFunctor(progress, elapsedTimeMs, threadData->common->progressUserData);
+					if (!threadData->common->progressFunctor(progress, elapsedTimeMs, threadData->common->progressUserData)) {
+						threadData->common->stopFlag=true;
+						return;
+					}
 				}
 			}
 		}

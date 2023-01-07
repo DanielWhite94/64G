@@ -12,21 +12,21 @@ namespace Engine {
 			unsigned contourIndex, contourCount;
 			double heightThreshold;
 
-			EdgeDetect::ProgressFunctor *functor;
+			Util::ProgressFunctor *functor;
 			void *userData;
 
 			Util::TimeMs startTimeMs;
 		};
 
 		struct EdgeDetectTraceClearScratchBitsModifyTilesProgressData {
-			EdgeDetect::ProgressFunctor *functor;
+			Util::ProgressFunctor *functor;
 			void *userData;
 
 			double progressRatio;
 		};
 
-		void edgeDetectTraceHeightContoursProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
-		void edgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
+		bool edgeDetectTraceHeightContoursProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
+		bool edgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		void edgeDetectTraceFastModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
@@ -79,7 +79,7 @@ namespace Engine {
 			tile->setBitset(tile->getBitset()|bitset);
 		}
 
-		void EdgeDetect::traceAccurate(unsigned scratchBits[DirectionNB], SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
+		void EdgeDetect::traceAccurate(unsigned scratchBits[DirectionNB], SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(sampleFunctor!=NULL);
 
 			// The following is an implementation of the Square Tracing method.
@@ -94,8 +94,8 @@ namespace Engine {
 			unsigned long long progress=0.0;
 
 			// Give a progress update
-			if (progressFunctor!=NULL)
-				progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return;
 
 			// Clear scratch bits (these are used to indicate from which directions we have previously entered a tile on, to avoid retracing similar edges)
 			EdgeDetectTraceClearScratchBitsModifyTilesProgressData modifyTileFunctorData;
@@ -122,8 +122,8 @@ namespace Engine {
 					for(startY=tileY0; startY<tileY1; ++startY) {
 						for(startX=tileX0; startX<tileX1; ++startX) {
 							// Give a progress update
-							if (progressFunctor!=NULL && progress%256==0)
-								progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData);
+							if (progressFunctor!=NULL && progress%256==0 && !progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData))
+								return;
 							++progress;
 
 							// We require an 'inside' tile to start tracing.
@@ -201,11 +201,11 @@ namespace Engine {
 			}
 
 			// Give a progress update
-			if (progressFunctor!=NULL)
-				progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData);
+			if (progressFunctor!=NULL && !progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return;
 		}
 
-		void EdgeDetect::traceFast(unsigned threadCount, SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData) {
+		void EdgeDetect::traceFast(unsigned threadCount, SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(sampleFunctor!=NULL);
 
 			if (edgeFunctor==NULL)
@@ -224,7 +224,7 @@ namespace Engine {
 			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &edgeDetectTraceFastModifyTilesFunctor, &modifyTilesData, progressFunctor, progressUserData);
 		}
 
-		void EdgeDetect::traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, EdgeDetect::ProgressFunctor *progressFunctor, void *progressUserData) {
+		void EdgeDetect::traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Check for bad contourCount
 			if (contourCount<1)
 				return;
@@ -244,7 +244,7 @@ namespace Engine {
 			}
 		}
 
-		void EdgeDetect::traceFastHeightContours(unsigned threadCount, int contourCount, EdgeDetect::ProgressFunctor *progressFunctor, void *progressUserData) {
+		void EdgeDetect::traceFastHeightContours(unsigned threadCount, int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Check for bad contourCount
 			if (contourCount<1)
 				return;
@@ -264,7 +264,7 @@ namespace Engine {
 			}
 		}
 
-		void edgeDetectTraceHeightContoursProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+		bool edgeDetectTraceHeightContoursProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(userData!=NULL);
 
 			const EdgeDetectTraceHeightContoursData *functorData=(const EdgeDetectTraceHeightContoursData *)userData;
@@ -275,10 +275,10 @@ namespace Engine {
 			Util::TimeMs trueElapsedTimeMs=Util::getTimeMs()-functorData->startTimeMs;
 
 			// Call user progress functor (which cannot be NULL as we would not be executing this progress functor in the first place)
-			functorData->functor(trueProgress, trueElapsedTimeMs, functorData->userData);
+			return functorData->functor(trueProgress, trueElapsedTimeMs, functorData->userData);
 		}
 
-		void edgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+		bool edgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 			assert(userData!=NULL);
 
 			const EdgeDetectTraceClearScratchBitsModifyTilesProgressData *functorData=(const EdgeDetectTraceClearScratchBitsModifyTilesProgressData *)userData;
@@ -287,7 +287,7 @@ namespace Engine {
 			double trueProgress=functorData->progressRatio*progress;
 
 			// Invoke user's progress functor
-			functorData->functor(trueProgress, elapsedTimeMs, functorData->userData);
+			return functorData->functor(trueProgress, elapsedTimeMs, functorData->userData);
 		}
 
 		void edgeDetectTraceFastModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {

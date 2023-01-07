@@ -3,6 +3,7 @@
 
 #include <cstring>
 
+#include "../util.h"
 #include "../map/map.h"
 
 namespace Engine {
@@ -33,8 +34,6 @@ namespace Engine {
 				// This is called for each tile which is determined to be part of the edge ('inside' tiles only).
 				typedef void (EdgeFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
 
-				typedef void (ProgressFunctor)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
-
 				// Used internally by traceFast
 				struct TraceFastModifyTilesData {
 					SampleFunctor *sampleFunctor;
@@ -52,15 +51,15 @@ namespace Engine {
 				// The following is an implementation of the Square Tracing method. It should produce nice crisp edges but is slow.
 				// Each scratchBits array entry should contain a unique tile bitset index which can be used freely by the trace algorithm internally.
 				// (to store which directions we have entered each tile from previously to avoid retracing)
-				void traceAccurate(unsigned scratchBits[DirectionNB], SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
+				void traceAccurate(unsigned scratchBits[DirectionNB], SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
 				// The follow is a custom algorithm designed for speed at the expense of edge quality.
-				void traceFast(unsigned threadCount, SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, ProgressFunctor *progressFunctor, void *progressUserData);
+				void traceFast(unsigned threadCount, SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
 				// Trace a series of contours based on given number of height thresholds.
 				// For each tile which is determined to be part of a contour we set bit TileBitsetIndexContour in the tile's bitset.
-				void traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, ProgressFunctor *progressFunctor, void *progressUserData);
-				void traceFastHeightContours(unsigned threadCount, int contourCount, ProgressFunctor *progressFunctor, void *progressUserData);
+				void traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
+				void traceFastHeightContours(unsigned threadCount, int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 			private:
 				class Map *map;
 
