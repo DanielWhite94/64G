@@ -200,12 +200,16 @@ namespace Engine {
 	Util::TimeMs Util::calculateTimeRemaining(double progress, TimeMs elapsedTimeMs) {
 		assert(progress>=0.0 && progress<=1.0);
 
-		if (progress<0.0001 || progress>0.9999)
+		if (progress<0.0001)
 			return 0;
+		if (progress>0.9999)
+			return -1;
 
 		Util::TimeMs remainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
-		if (remainingTimeMs<1000 || remainingTimeMs>=365ll*24ll*60ll*60ll*1000ll)
+		if (remainingTimeMs<1000)
 			return 0;
+		if (remainingTimeMs>=365ll*24ll*60ll*60ll*1000ll)
+			return -1;
 
 		return remainingTimeMs;
 	}
@@ -227,7 +231,7 @@ namespace Engine {
 
 		// Attempt to compute estimated total time.
 		Util::TimeMs remainingTimeMs=Util::calculateTimeRemaining(progress, elapsedTimeMs);
-		if (remainingTimeMs!=0) {
+		if (remainingTimeMs>=0) {
 			printf(" (~");
 			Util::printTime(remainingTimeMs);
 			printf(" remaining)");

@@ -132,7 +132,7 @@ namespace MapEditor {
 
 		// Generate string and update dialogue text
 		char str[1024]; // TODO: this better
-		if (remainingTimeMs!=0) {
+		if (remainingTimeMs>=0) {
 			char remainingTimeStr[16];
 			Engine::Util::sprintTime(remainingTimeStr, remainingTimeMs);
 			sprintf(str, "%s %.3f%% %s (~%s remaining)", userText, progress*100.0, elapsedTimeStr, remainingTimeStr);

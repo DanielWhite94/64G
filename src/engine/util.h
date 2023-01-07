@@ -32,7 +32,7 @@ namespace Engine {
 		static void printTime(TimeMs timeMs);
 		static void sprintTime(char *str, TimeMs timeMs); // str should have space for at least 16 characters (null byte included)
 
-		static TimeMs calculateTimeRemaining(double progress, TimeMs elapsedTimeMs); // progress in range [0,1], if cannot estimate then returns 0
+		static TimeMs calculateTimeRemaining(double progress, TimeMs elapsedTimeMs); // progress in range [0,1], if cannot estimate then returns -1
 	};
 
 	void utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string
