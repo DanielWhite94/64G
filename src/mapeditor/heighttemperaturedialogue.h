@@ -23,6 +23,8 @@ namespace MapEditor {
 			double temperatureNoiseFrequency;
 			double temperatureLapseRate;
 			double temperatureLatitudeRange;
+
+			unsigned threads;
 		};
 
 		HeightTemperatureDialogue(GtkWidget *parentWindow);
@@ -43,6 +45,7 @@ namespace MapEditor {
 		GtkWidget *temperatureNoiseFrequencySpinButton;
 		GtkWidget *temperatureLapseRateSpinButton;
 		GtkWidget *temperatureLatitudeRangeSpinButton;
+		GtkWidget *otherThreadsSpinButton;
 	};
 
 };

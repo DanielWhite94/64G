@@ -39,6 +39,7 @@ namespace MapEditor {
 		error|=(temperatureNoiseFrequencySpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureNoiseFrequencySpinButton")))==NULL;
 		error|=(temperatureLapseRateSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureLapseRateSpinButton")))==NULL;
 		error|=(temperatureLatitudeRangeSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureLatitudeRangeSpinButton")))==NULL;
+		error|=(otherThreadsSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "otherThreadsSpinButton")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
@@ -77,6 +78,7 @@ namespace MapEditor {
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(temperatureNoiseFrequencySpinButton), params->temperatureNoiseFrequency);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(temperatureLapseRateSpinButton), params->temperatureLapseRate);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(temperatureLatitudeRangeSpinButton), params->temperatureLatitudeRange);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(otherThreadsSpinButton), params->threads);
 
 		// Show the dialogue and wait for response
 		gtk_widget_show_all(window);
@@ -99,6 +101,7 @@ namespace MapEditor {
 		params->temperatureNoiseFrequency=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseFrequencySpinButton));
 		params->temperatureLapseRate=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLapseRateSpinButton));
 		params->temperatureLatitudeRange=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLatitudeRangeSpinButton));
+		params->threads=gtk_spin_button_get_value(GTK_SPIN_BUTTON(otherThreadsSpinButton));
 
 		return true;
 	}

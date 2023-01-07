@@ -427,6 +427,7 @@ namespace MapEditor {
 			.temperatureNoiseFrequency=1.0,
 			.temperatureLapseRate=5.0,
 			.temperatureLatitudeRange=60.0,
+			.threads=4,
 		};
 
 		bool promptResult=heightTempDialogue->run(&params);
@@ -453,7 +454,7 @@ namespace MapEditor {
 			.heightNoise=new FbnNoise(params.heightNoiseSeed, params.heightNoiseOctaves, params.heightNoiseFrequency),
 			.temperatureNoise=new FbnNoise(params.temperatureNoiseSeed, params.temperatureNoiseOctaves, params.temperatureNoiseFrequency),
 		};
-		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsHeightTemperatureModifyTilesFunctor, &modifyTilesData, &progressDialogueProgressFunctor, prog);
+		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), params.threads, &mainWindowToolsHeightTemperatureModifyTilesFunctor, &modifyTilesData, &progressDialogueProgressFunctor, prog);
 		delete modifyTilesData.heightNoise;
 		delete modifyTilesData.temperatureNoise;
 
