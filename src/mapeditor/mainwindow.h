@@ -18,7 +18,10 @@ namespace MapEditor {
 		void show();
 		void hide();
 
-		void tick(void);
+		// Performs regular tasks such as rendering
+		void timerTick(void);
+
+		// Called when possible to do long running background tasks such as generating MapTiled images
 		void idleTick(void);
 
 		bool deleteEvent(GtkWidget *widget, GdkEvent *event);
@@ -102,7 +105,10 @@ namespace MapEditor {
 	private:
 		const char *initialMapFilenameToOpen;
 
-		bool busyOperation; // pauses things like generating MapTiled images in idleTick
+		int timerTickSource;
+		int idleTickSource;
+
+		unsigned operationCounter; // if 0 then no operation
 
 		bool mapNew(void);
 		bool mapOpen(const char *filename); // Returns true if successfully opened, false if choosen folder is not a valid map.
@@ -122,6 +128,11 @@ namespace MapEditor {
 		void updatePositionLabel(void);
 
 		cairo_surface_t *getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer);
+
+		// These are used to pause timer and idle tick functions during intensive operations.
+		// operationBegin can be called while an operation is already in progress - the operation is only considered complete when operationEnd has been called a matching number of times.
+		void operationBegin(void);
+		void operationEnd(void);
 	};
 };
 

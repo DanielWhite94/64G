@@ -16,6 +16,8 @@
 #include "../engine/gen/modifytiles.h"
 #include "../engine/fbnnoise.h"
 
+const int mainWindowTickIntervalMs=100;
+
 const char mainWindowXmlFile[]="mainwindow.glade";
 
 struct MainWindowToolsHeightTemperatureModifyTilesData {
@@ -23,6 +25,9 @@ struct MainWindowToolsHeightTemperatureModifyTilesData {
 	FbnNoise *heightNoise;
 	FbnNoise *temperatureNoise;
 };
+
+gint mainWindowTick(gpointer data);
+gint mainWindowIdleTick(gpointer data);
 
 gboolean mapEditorMainWindowWrapperWindowDeleteEvent(GtkWidget *widget, GdkEvent *event, void *userData);
 
@@ -63,7 +68,6 @@ void mainWindowToolsHeightTemperatureModifyTilesFunctor(unsigned threadId, class
 namespace MapEditor {
 	MainWindow::MainWindow(const char *filename) {
 		// Clear basic fields
-		busyOperation=false;
 		map=NULL;
 		zoomLevel=zoomLevelMin;
 		userCentreX=0;
@@ -81,6 +85,10 @@ namespace MapEditor {
 		mapTileToGenLayerSet=MapTiled::ImageLayerSetAll;
 
 		initialMapFilenameToOpen=filename;
+
+		operationCounter=0;
+		timerTickSource=0;
+		idleTickSource=0;
 
 		// Use GtkBuilder to build our interface from the XML file.
 		GtkBuilder *builder=gtk_builder_new();
@@ -165,9 +173,20 @@ namespace MapEditor {
 		updateTitle();
 		updatePositionLabel();
 		gtk_label_set_text(GTK_LABEL(statusLabel), "No map open");
+
+		// Connect timers
+		timerTickSource=g_timeout_add(mainWindowTickIntervalMs, &mainWindowTick, (void *)this);
+		idleTickSource=g_idle_add(&mainWindowIdleTick, (void *)this);
 	}
 
 	MainWindow::~MainWindow() {
+		// Disconnect timers
+		g_source_remove(timerTickSource);
+		timerTickSource=0;
+		g_source_remove(idleTickSource);
+		idleTickSource=0;
+		operationCounter=0;
+
 		// Destroy window (and all other child widgets)
 		if (window!=NULL)
 			gtk_widget_destroy(window);
@@ -183,7 +202,7 @@ namespace MapEditor {
 		gtk_widget_hide(window);
 	}
 
-	void MainWindow::tick(void) {
+	void MainWindow::timerTick(void) {
 		// If this is the first tick, we may need to open a map
 		if (lastTickTimeMs==0 && initialMapFilenameToOpen!=NULL)
 			mapOpen(initialMapFilenameToOpen);
@@ -223,10 +242,6 @@ namespace MapEditor {
 	void MainWindow::idleTick(void) {
 		// No map?
 		if (map==NULL)
-			return;
-
-		// Skip if busy in operation
-		if (busyOperation)
 			return;
 
 		// Generate a needed image (or work towards it by generating a child image)
@@ -353,7 +368,7 @@ namespace MapEditor {
 			return false;
 
 		// Create progress dialogue to provide updates
-		busyOperation=true;
+		operationBegin();
 		ProgressDialogue *prog=new ProgressDialogue("1/2: Clearing tile data...", window);
 
 		// Initialise map values
@@ -373,7 +388,7 @@ namespace MapEditor {
 
 		// Tidy up
 		delete prog;
-		busyOperation=false;
+		operationEnd();
 
 		return false;
 	}
@@ -421,7 +436,7 @@ namespace MapEditor {
 			return false;
 
 		// Create progress dialogue to provide updates
-		busyOperation=true;
+		operationBegin();
 		ProgressDialogue *prog=new ProgressDialogue("1/2: Generating height and temperature tile data...", window);
 
 		// Initialise map values so we can calculate these as we go
@@ -446,7 +461,7 @@ namespace MapEditor {
 
 		// Tidy up
 		delete prog;
-		busyOperation=false;
+		operationEnd();
 
 		return false;
 	}
@@ -1146,7 +1161,47 @@ namespace MapEditor {
 
 		return surface;
 	}
+
+	void MainWindow::operationBegin(void) {
+		// If starting an operation then remove tick and idle timers
+		if (operationCounter==0) {
+			g_source_remove(timerTickSource);
+			timerTickSource=0;
+			g_source_remove(idleTickSource);
+			idleTickSource=0;
+		}
+
+		// Update counter
+		++operationCounter;
+	}
+
+	void MainWindow::operationEnd(void) {
+		// Sanity check
+		if (operationCounter==0)
+			return;
+
+		// Update counter
+		--operationCounter;
+
+		// If end of operation then reconnect tick and idle timers
+		if (operationCounter==0) {
+			timerTickSource=g_timeout_add(mainWindowTickIntervalMs, &mainWindowTick, (void *)this);
+			idleTickSource=g_idle_add(&mainWindowIdleTick, (void *)this);
+		}
+	}
 };
+
+gint mainWindowTick(gpointer data) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)data;
+	mainWindow->timerTick();
+	return TRUE;
+}
+
+gint mainWindowIdleTick(gpointer data) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)data;
+	mainWindow->idleTick();
+	return TRUE;
+}
 
 gboolean mapEditorMainWindowWrapperWindowDeleteEvent(GtkWidget *widget, GdkEvent *event, void *userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;

@@ -9,9 +9,6 @@ namespace MapEditor {
 		Main(const char *pathToOpen);
 		~Main();
 
-		void tick(void);
-		void idleTick(void);
-
 	private:
 		MainWindow *mainWindow;
 	};
