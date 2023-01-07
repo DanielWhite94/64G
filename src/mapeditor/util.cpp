@@ -41,4 +41,9 @@ namespace MapEditor {
 
 		return result;
 	}
+
+	void utilDoGtkEvents(void) {
+		for(unsigned i=0; i<4 && gtk_events_pending(); ++i)
+			gtk_main_iteration_do(false);
+	}
 };
