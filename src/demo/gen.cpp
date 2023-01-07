@@ -901,12 +901,6 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Run contour line detection logic
-	unsigned contourCacheBits[Gen::EdgeDetect::DirectionNB];
-	contourCacheBits[Gen::EdgeDetect::DirectionEast]=60;
-	contourCacheBits[Gen::EdgeDetect::DirectionNorth]=61;
-	contourCacheBits[Gen::EdgeDetect::DirectionWest]=62;
-	contourCacheBits[Gen::EdgeDetect::DirectionSouth]=63;
-
 	Gen::EdgeDetect heightContourEdgeDetect(mapData.map);
 	heightContourEdgeDetect.traceFastHeightContours(threadCount, 9, &utilProgressFunctorString, (void *)"Height contour edge detection ");
 	printf("\n");
