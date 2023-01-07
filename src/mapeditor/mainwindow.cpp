@@ -7,6 +7,7 @@
 #include <iostream>
 #include <new>
 
+#include "cleardialogue.h"
 #include "heighttemperaturedialogue.h"
 #include "mainwindow.h"
 #include "newdialogue.h"
