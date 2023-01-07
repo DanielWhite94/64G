@@ -23,6 +23,8 @@ namespace MapEditor {
 
 		gint progressBarPulseTimer();
 		gboolean cancelButtonClicked(GtkWidget *widget);
+
+		void progressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs);
 	private:
 		GtkWidget *window;
 		GtkWidget *progressBar;
@@ -31,6 +33,8 @@ namespace MapEditor {
 
 		GtkWidget *cancelButton;
 		bool cancelled;
+
+		char *userText;
 	};
 
 };

@@ -1,6 +1,9 @@
 #include <cassert>
+#include <cstring>
 
 #include "progressdialogue.h"
+#include "util.h"
+#include "../engine/util.h"
 
 using namespace MapEditor;
 
@@ -14,11 +17,8 @@ namespace MapEditor {
 
 		ProgressDialogue *prog=(ProgressDialogue *)userData;
 
-		// Update progress bar
-		prog->setProgress(progress);
-
-		// Ensure progress dialogue can actually update
-		gtk_main_iteration_do(false);
+		// This is simply a wrapper
+		prog->progressFunctor(progress, elapsedTimeMs);
 	}
 
 	ProgressDialogue::ProgressDialogue(const char *text, GtkWidget *parentWindow) {
@@ -26,6 +26,7 @@ namespace MapEditor {
 		window=NULL;
 		progressBar=NULL;
 		cancelled=false;
+		userText=NULL;
 
 		// Create dialogue and widgets
 		window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -54,6 +55,10 @@ namespace MapEditor {
 		g_signal_connect(cancelButton, "clicked", G_CALLBACK(progressDialogueCancelButtonClicked), this);
 		gtk_box_pack_start(GTK_BOX(box), cancelButton, true, true, 0);
 
+		// Make a copy of the user's text
+		userText=(char *)malloc(strlen(text)+1); // TODO: check return
+		strcpy(userText, text);
+
 		// Set progress bar text
 		setText(text);
 
@@ -66,6 +71,7 @@ namespace MapEditor {
 	}
 
 	ProgressDialogue::~ProgressDialogue() {
+		// Close window and destroy all widgets
 		gtk_widget_destroy(window);
 
 		// Disconnect pulse timer
@@ -73,6 +79,9 @@ namespace MapEditor {
 			g_source_remove(pulseTimer);
 			pulseTimer=0;
 		}
+
+		// Free memory
+		free(userText);
 	}
 
 	bool ProgressDialogue::getCancelled(void) {
@@ -112,6 +121,30 @@ namespace MapEditor {
 		cancelled=true;
 
 		return TRUE;
+	}
+
+	void ProgressDialogue::progressFunctor(double progress, Engine::Util::TimeMs elapsedTimeMs) {
+		// Calculate some stuff
+		char elapsedTimeStr[16];
+		Engine::Util::sprintTime(elapsedTimeStr, elapsedTimeMs);
+
+		Engine::Util::TimeMs remainingTimeMs=Engine::Util::calculateTimeRemaining(progress, elapsedTimeMs);
+
+		// Generate string and update dialogue text
+		char str[1024]; // TODO: this better
+		if (remainingTimeMs!=0) {
+			char remainingTimeStr[16];
+			Engine::Util::sprintTime(remainingTimeStr, remainingTimeMs);
+			sprintf(str, "%s %.3f%% %s (~%s remaining)", userText, progress*100.0, elapsedTimeStr, remainingTimeStr);
+		} else
+			sprintf(str, "%s %.3f%% %s", userText, progress*100.0, elapsedTimeStr);
+		setText(str);
+
+		// Update progress bar
+		setProgress(progress);
+
+		// Ensure progress dialogue can actually update
+		utilDoGtkEvents();
 	}
 };
 
