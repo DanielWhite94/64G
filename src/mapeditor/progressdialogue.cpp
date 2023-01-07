@@ -85,7 +85,14 @@ namespace MapEditor {
 	}
 
 	void ProgressDialogue::setProgress(double value) {
+		// Update widget
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), value);
+
+		// Disconnect pulse timer
+		if (pulseTimer>0) {
+			g_source_remove(pulseTimer);
+			pulseTimer=0;
+		}
 	}
 
 	void ProgressDialogue::setText(const char *str) {
