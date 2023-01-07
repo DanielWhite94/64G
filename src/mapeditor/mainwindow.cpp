@@ -354,7 +354,7 @@ namespace MapEditor {
 
 		// Create progress dialogue to provide updates
 		busyOperation=true;
-		ProgressDialogue *prog=new ProgressDialogue("Clearing tile data...", window);
+		ProgressDialogue *prog=new ProgressDialogue("1/2: Clearing tile data...", window);
 
 		// Initialise map values
 		map->minHeight=0.0;
@@ -366,6 +366,10 @@ namespace MapEditor {
 
 		// Run main operation via modifyTiles
 		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsClearModifyTilesFunctor, NULL, &progressDialogueProgressFunctor, prog);
+
+		// Clear cached images
+		prog->setText("2/2: Clearing cached map images...");
+		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);
 
 		// Tidy up
 		delete prog;
@@ -418,7 +422,7 @@ namespace MapEditor {
 
 		// Create progress dialogue to provide updates
 		busyOperation=true;
-		ProgressDialogue *prog=new ProgressDialogue("Generating height and temperature tile data...", window);
+		ProgressDialogue *prog=new ProgressDialogue("1/2: Generating height and temperature tile data...", window);
 
 		// Initialise map values so we can calculate these as we go
 		map->minHeight=DBL_MAX;
@@ -433,10 +437,14 @@ namespace MapEditor {
 			.temperatureNoise=new FbnNoise(params.temperatureNoiseSeed, params.temperatureNoiseOctaves, params.temperatureNoiseFrequency),
 		};
 		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsHeightTemperatureModifyTilesFunctor, &modifyTilesData, &progressDialogueProgressFunctor, prog);
-
-		// Tidy up
 		delete modifyTilesData.heightNoise;
 		delete modifyTilesData.temperatureNoise;
+
+		// Clear cached images
+		prog->setText("2/2: Clearing cached map images...");
+		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);
+
+		// Tidy up
 		delete prog;
 		busyOperation=false;
 
