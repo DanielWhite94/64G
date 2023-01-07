@@ -56,11 +56,10 @@ namespace MapEditor {
 		gtk_box_pack_start(GTK_BOX(box), cancelButton, true, true, 0);
 
 		// Make a copy of the user's text
-		userText=(char *)malloc(strlen(text)+1); // TODO: check return
-		strcpy(userText, text);
-
-		// Set progress bar text
 		setText(text);
+
+		// Set progress bar text initially
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(progressBar), userText);
 
 		// Add a timer to regularly pulse the progress bar
 		pulseTimer=g_timeout_add(150, &progressDialogueProgressBarPulseTimer, this);
@@ -107,7 +106,8 @@ namespace MapEditor {
 	void ProgressDialogue::setText(const char *str) {
 		assert(str!=NULL);
 
-		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(progressBar), str);
+		userText=(char *)realloc(userText, strlen(str)+1); // TODO: check return
+		strcpy(userText, str);
 	}
 
 	gint ProgressDialogue::progressBarPulseTimer() {
@@ -138,7 +138,7 @@ namespace MapEditor {
 			sprintf(str, "%s %.3f%% %s (~%s remaining)", userText, progress*100.0, elapsedTimeStr, remainingTimeStr);
 		} else
 			sprintf(str, "%s %.3f%% %s", userText, progress*100.0, elapsedTimeStr);
-		setText(str);
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(progressBar), str);
 
 		// Update progress bar
 		setProgress(progress);
