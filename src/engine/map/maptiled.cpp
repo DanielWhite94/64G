@@ -125,6 +125,59 @@ namespace Engine {
 			return MapTiled::generateImageHelper(map, zoom, x, y, imageLayerSet, endTimeMs, &imagesDone, imagesTotal, progressFunctor, progressUserData, Util::getTimeMs());
 		}
 
+		bool MapTiled::clearImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet) {
+			assert(zoom<=maxZoom);
+
+			return clearImageHelper(map, zoom, x, y, imageLayerSet, false, false);
+		}
+
+		bool MapTiled::clearImagesAll(class Map *map, ImageLayerSet imageLayerSet, ClearImageProgress *progressFunctor, void *progressUserData) {
+			bool result=true;
+			Util::TimeMs startTimeMs=Util::getTimeMs();
+
+			// Call progress functor
+			if (progressFunctor!=NULL)
+				progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData);
+
+			// Loop over zoom levels
+			unsigned totalImages=0;
+			for(unsigned zoom=0; zoom<maxZoom; ++zoom) {
+				unsigned perSide=(1u<<zoom);
+				totalImages+=perSide*perSide;
+			}
+			unsigned imagesHandled=0;
+
+			for(unsigned zoom=0; zoom<maxZoom; ++zoom) {
+				// Loop over in X direction
+				unsigned maxXY=(1u<<zoom);
+				for(unsigned x=0; x<maxXY; ++x) {
+					// Loop over in Y direction
+					for(unsigned y=0; y<maxXY; ++y) {
+						result&=clearImage(map, zoom, x, y, imageLayerSet);
+						++imagesHandled;
+					}
+
+					// Call progress functor
+					if (progressFunctor!=NULL) {
+						assert(imagesHandled<=totalImages);
+						double progress=((double)imagesHandled)/totalImages;
+						progressFunctor(progress, Util::getTimeMs()-startTimeMs, progressUserData);
+					}
+				}
+			}
+
+			// Call progress functor
+			if (progressFunctor!=NULL)
+				progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData);
+
+			return result;
+		}
+
+		bool MapTiled::clearImagesRegion(class Map *map, unsigned regionX, unsigned regionY, ImageLayerSet imageLayerSet) {
+			// Clear MapTiled image which matches this region 1:1 and all those affected by it
+			return clearImageHelper(map, maxZoom, regionX, regionY, imageLayerSet, true, true);
+		}
+
 		void MapTiled::getZoomPath(const class Map *map, unsigned zoom, char path[1024]) {
 			sprintf(path, "%s/%u", map->getMapTiledDir(), zoom);
 		}
@@ -267,6 +320,48 @@ namespace Engine {
 				progressFunctor(((double)*imagesDone)/imagesTotal, Util::getTimeMs()-startTimeMs, progressUserData);
 
 			return true;
+		}
+
+		bool MapTiled::clearImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, bool recurseChild, bool recurseParent) {
+			bool result=true;
+
+			// First handle the given image itself
+			for(ImageLayer layer=0; layer<ImageLayerNB; ++layer) {
+				// Check if we even need to clear this layer
+				if (!(imageLayerSet & (1u<<layer)))
+					continue;
+
+				// Get path for this image
+				char path[1024];
+				getZoomXYPath(map, zoom, x, y, layer, path);
+
+				// Delete image (if it even exists)
+				result&=Util::unlinkFile(path);
+			}
+
+			// Handle 'child' images if needed
+			if (recurseChild && zoom+1<maxZoom) {
+				unsigned cx=x*2;
+				unsigned cy=y*2;
+				unsigned pz=zoom+1;
+				result&=clearImageHelper(map, pz, cx+0, cy+0, imageLayerSet, true, false);
+				result&=clearImageHelper(map, pz, cx+0, cy+1, imageLayerSet, true, false);
+				result&=clearImageHelper(map, pz, cx+1, cy+0, imageLayerSet, true, false);
+				result&=clearImageHelper(map, pz, cx+1, cy+1, imageLayerSet, true, false);
+
+			}
+
+			// Handle 'parent' images if needed
+			if (recurseParent && zoom>0) {
+				unsigned px=x/2;
+				unsigned py=y/2;
+				unsigned pz=zoom-1;
+				result&=clearImageHelper(map, pz, px, py, imageLayerSet, false, true);
+			}
+
+			return result;
+
+			return result;
 		}
 
 	};

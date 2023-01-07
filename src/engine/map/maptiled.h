@@ -35,6 +35,7 @@ namespace Engine {
 			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour|ImageLayerSetPolitical|ImageLayerSetRegionGrid;
 
 			typedef void (GenerateImageProgress)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
+			typedef void (ClearImageProgress)(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 			MapTiled();
 			~MapTiled();
@@ -49,6 +50,11 @@ namespace Engine {
 			// If timeoutMs is not 0 and has been exceed, once at least one new image has been generated the function will return early, potentially unfinished.
 			static bool generateImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs timeoutMs, GenerateImageProgress *progressFunctor, void *progressUserData);
 
+			// The following functions delete pre-generated/cached MapTiled images and should be called if changes have been made to the Map.
+			static bool clearImage(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet); // clear only the images (one per layer) for this exact x/y/zoom combination
+			static bool clearImagesAll(class Map *map, ImageLayerSet imageLayerSet, ClearImageProgress *progressFunctor, void *progressUserData); // clear all images
+			static bool clearImagesRegion(class Map *map, unsigned regionX, unsigned regionY, ImageLayerSet imageLayerSet); // clear all images which could be affected by changing the given region
+
 			static void getZoomPath(const class Map *map, unsigned zoom, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXPath(const class Map *map, unsigned zoom, unsigned x, char path[1024]); // TODO: improve hardcoded size
 			static void getZoomXYPath(const class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayer layer, char path[1024]); // TODO: improve hardcoded size
@@ -57,6 +63,8 @@ namespace Engine {
 
 		private:
 			static bool generateImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, Util::TimeMs endTimeMs, unsigned long long int *imagesDone, unsigned long long int imagesTotal, GenerateImageProgress *progressFunctor, void *progressUserData, Util::TimeMs startTimeMs);
+
+			static bool clearImageHelper(class Map *map, unsigned zoom, unsigned x, unsigned y, ImageLayerSet imageLayerSet, bool recurseChild, bool recurseParent);
 		};
 	};
 };
