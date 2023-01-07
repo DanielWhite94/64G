@@ -197,6 +197,19 @@ namespace Engine {
 			sprintf(str, "%llis", timeS);
 	}
 
+	Util::TimeMs Util::calculateTimeRemaining(double progress, TimeMs elapsedTimeMs) {
+		assert(progress>=0.0 && progress<=1.0);
+
+		if (progress<0.0001 || progress>0.9999)
+			return 0;
+
+		Util::TimeMs remainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
+		if (remainingTimeMs<1000 || remainingTimeMs>=365ll*24ll*60ll*60ll*1000ll)
+			return 0;
+
+		return remainingTimeMs;
+	}
+
 	void utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 		assert(progress>=0.0 && progress<=1.0);
 		assert(userData!=NULL);
@@ -213,13 +226,11 @@ namespace Engine {
 		Util::printTime(elapsedTimeMs);
 
 		// Attempt to compute estimated total time.
-		if (progress>=0.0001 && progress<=0.9999) {
-			Util::TimeMs estRemainingTimeMs=elapsedTimeMs*(1.0/progress-1.0);
-			if (estRemainingTimeMs>=1000 && estRemainingTimeMs<365ll*24ll*60ll*60ll*1000ll) {
-				printf(" (~");
-				Util::printTime(estRemainingTimeMs);
-				printf(" remaining)");
-			}
+		Util::TimeMs remainingTimeMs=Util::calculateTimeRemaining(progress, elapsedTimeMs);
+		if (remainingTimeMs!=0) {
+			printf(" (~");
+			Util::printTime(remainingTimeMs);
+			printf(" remaining)");
 		}
 
 		// Flush output manually (as we are not printing a newline).
