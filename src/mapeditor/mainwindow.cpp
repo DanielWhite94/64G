@@ -367,6 +367,32 @@ namespace MapEditor {
 		if (map==NULL)
 			return false;
 
+		// Prompt user for parameters
+		ClearDialogue *clearDialogue;
+		try {
+			clearDialogue=new ClearDialogue(window);
+		} catch (std::exception& e) {
+			clearDialogue=NULL;
+
+			// Update status label
+			char statusLabelStr[1024]; // TODO: better
+			sprintf(statusLabelStr, "Could not create clear dialogue: %s", e.what());
+			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
+
+			return false;
+		}
+
+		ClearDialogue::Params params={
+			.threads=4,
+		};
+
+		bool promptResult=clearDialogue->run(&params);
+
+		delete clearDialogue;
+
+		if (!promptResult)
+			return false;
+
 		// Create progress dialogue to provide updates
 		operationBegin();
 		ProgressDialogue *prog=new ProgressDialogue("1/2: Clearing tile data...", window);
@@ -381,7 +407,7 @@ namespace MapEditor {
 		map->maxMoisture=0.0;
 
 		// Run main operation via modifyTiles
-		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), 1, &mainWindowToolsClearModifyTilesFunctor, NULL, &progressDialogueProgressFunctor, prog);
+		Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), params.threads, &mainWindowToolsClearModifyTilesFunctor, NULL, &progressDialogueProgressFunctor, prog);
 
 		// Clear cached images
 		prog->setText("2/2: Clearing cached map images...");
