@@ -1111,6 +1111,9 @@ namespace MapEditor {
 		gtk_widget_set_sensitive(menuFileSave, (mapOpen && mapChanges));
 		gtk_widget_set_sensitive(menuFileSaveAs, mapOpen);
 		gtk_widget_set_sensitive(menuFileClose, mapOpen);
+
+		gtk_widget_set_sensitive(menuToolsClear, mapOpen);
+		gtk_widget_set_sensitive(menuToolsHeightTemperature, mapOpen);
 	}
 
 	void MainWindow::updateTitle(void) {
