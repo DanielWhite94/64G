@@ -30,6 +30,7 @@ namespace Engine {
 		typedef long long int TimeMs;
 		static TimeMs getTimeMs(void);
 		static void printTime(TimeMs timeMs);
+		static void sprintTime(char *str, TimeMs timeMs); // str should have space for at least 16 characters (null byte included)
 	};
 
 	void utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string

@@ -2,6 +2,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include <cmath>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -150,39 +151,50 @@ namespace Engine {
 	}
 
 	void Util::printTime(TimeMs timeMs) {
-		const TimeMs minuteFactor=60;
-		const TimeMs hourFactor=minuteFactor*60;
-		const TimeMs dayFactor=hourFactor*24;
+		char str[16];
+		sprintTime(str, timeMs);
+		printf("%s\n", str);
+	}
+
+	void Util::sprintTime(char *str, TimeMs timeMs) {
+		const long long int minuteFactor=60;
+		const long long int hourFactor=minuteFactor*60;
+		const long long int dayFactor=hourFactor*24;
 
 		// Convert to seconds.
-		timeMs/=1000;
+		long long int timeS=timeMs/1000;
 
 		// Print time.
+		char sub[16];
+		str[0]='\0';
 		bool output=false;
 
-		if (timeMs>=dayFactor) {
-			TimeMs days=timeMs/dayFactor;
-			timeMs-=days*dayFactor;
-			printf("%llud", days);
+		if (timeS>=dayFactor) {
+			TimeMs days=timeS/dayFactor;
+			timeS-=days*dayFactor;
+			sprintf(sub, "%llud", days);
+			strcat(str, sub);
 			output=true;
 		}
 
-		if (timeMs>=hourFactor) {
-			TimeMs hours=timeMs/hourFactor;
-			timeMs-=hours*hourFactor;
-			printf("%llih", hours);
+		if (timeS>=hourFactor) {
+			TimeMs hours=timeS/hourFactor;
+			timeS-=hours*hourFactor;
+			sprintf(sub, "%llih", hours);
+			strcat(str, sub);
 			output=true;
 		}
 
-		if (timeMs>=minuteFactor) {
-			TimeMs minutes=timeMs/minuteFactor;
-			timeMs-=minutes*minuteFactor;
-			printf("%llim", minutes);
+		if (timeS>=minuteFactor) {
+			TimeMs minutes=timeS/minuteFactor;
+			timeS-=minutes*minuteFactor;
+			sprintf(sub, "%llim", minutes);
+			strcat(str, sub);
 			output=true;
 		}
 
-		if (timeMs>0 || !output)
-			printf("%llis", timeMs);
+		if (timeS>0 || !output)
+			sprintf(str, "%llis", timeS);
 	}
 
 	void utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
