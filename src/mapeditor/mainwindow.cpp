@@ -1398,7 +1398,7 @@ void mainWindowToolsHeightTemperatureModifyTilesFunctor(unsigned threadId, class
 	// Calculate temperature
 	double temperature=0.0;
 
-	const double temperatureRandomOffset=(1.0+data->temperatureNoise->eval(x, y))/2.0;
+	const double temperatureRandomOffset=(1.0+data->temperatureNoise->eval(x/((double)map->getWidth()), y/((double)map->getHeight())))/2.0;
 	temperature+=data->params->temperatureNoiseMin+temperatureRandomOffset*(data->params->temperatureNoiseMax-data->params->temperatureNoiseMin);
 
 	const double latitude=2.0*((double)y)/map->getHeight()-1.0;

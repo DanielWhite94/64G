@@ -327,7 +327,7 @@ void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x
 	double normalisedHeight=mapData->heightNoise->eval(x/((double)mapData->width), y/((double)mapData->height)); // [-1,1.0]
 	const double height=normalisedHeight*6000.0; // [-6000,6000]
 
-	const double temperatureRandomOffset=mapData->temperatureNoise->eval(x, y);
+	const double temperatureRandomOffset=mapData->temperatureNoise->eval(x/((double)mapData->width), y/((double)mapData->height));
 
 	const double latitude=2.0*((double)y)/mapData->height-1.0;
 	assert(latitude>=-1.0 && latitude<=1.0);
