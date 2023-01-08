@@ -30,6 +30,8 @@ namespace MapEditor {
 		HeightTemperatureDialogue(GtkWidget *parentWindow);
 		~HeightTemperatureDialogue();
 
+		void getParams(Params *params);
+
 		bool run(Params *params); // params specify initial values and also returns outputs if dialogue is accepted
 	private:
 		GtkWidget *window;

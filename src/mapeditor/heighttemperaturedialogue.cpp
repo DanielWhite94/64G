@@ -64,6 +64,22 @@ namespace MapEditor {
 		gtk_widget_destroy(window);
 	}
 
+	void HeightTemperatureDialogue::getParams(Params *params) {
+		params->heightNoiseMin=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseMinSpinButton));
+		params->heightNoiseMax=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseMaxSpinButton));
+		params->heightNoiseSeed=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseSeedSpinButton));
+		params->heightNoiseOctaves=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseOctavesSpinButton));
+		params->heightNoiseFrequency=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseFrequencySpinButton));
+		params->temperatureNoiseMin=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseMinSpinButton));
+		params->temperatureNoiseMax=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseMaxSpinButton));
+		params->temperatureNoiseSeed=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseSeedSpinButton));
+		params->temperatureNoiseOctaves=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseOctavesSpinButton));
+		params->temperatureNoiseFrequency=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseFrequencySpinButton));
+		params->temperatureLapseRate=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLapseRateSpinButton));
+		params->temperatureLatitudeRange=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLatitudeRangeSpinButton));
+		params->threads=gtk_spin_button_get_value(GTK_SPIN_BUTTON(otherThreadsSpinButton));
+	}
+
 	bool HeightTemperatureDialogue::run(Params *params) {
 		// Update spin buttons based on given values
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(heightNoiseMinSpinButton), params->heightNoiseMin);
@@ -89,19 +105,7 @@ namespace MapEditor {
 			return false;
 
 		// Grab values to return
-		params->heightNoiseMin=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseMinSpinButton));
-		params->heightNoiseMax=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseMaxSpinButton));
-		params->heightNoiseSeed=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseSeedSpinButton));
-		params->heightNoiseOctaves=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseOctavesSpinButton));
-		params->heightNoiseFrequency=gtk_spin_button_get_value(GTK_SPIN_BUTTON(heightNoiseFrequencySpinButton));
-		params->temperatureNoiseMin=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseMinSpinButton));
-		params->temperatureNoiseMax=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseMaxSpinButton));
-		params->temperatureNoiseSeed=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseSeedSpinButton));
-		params->temperatureNoiseOctaves=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseOctavesSpinButton));
-		params->temperatureNoiseFrequency=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseFrequencySpinButton));
-		params->temperatureLapseRate=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLapseRateSpinButton));
-		params->temperatureLatitudeRange=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLatitudeRangeSpinButton));
-		params->threads=gtk_spin_button_get_value(GTK_SPIN_BUTTON(otherThreadsSpinButton));
+		getParams(params);
 
 		return true;
 	}
