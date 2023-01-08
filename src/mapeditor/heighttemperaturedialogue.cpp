@@ -221,16 +221,47 @@ namespace MapEditor {
 
 		// Create noise
 		Engine::FbnNoise *heightNoise=new Engine::FbnNoise(params.heightNoiseSeed, params.heightNoiseOctaves, params.heightNoiseFrequency);
+		Engine::FbnNoise *temperatureNoise=new Engine::FbnNoise(params.temperatureNoiseSeed, params.temperatureNoiseOctaves, params.temperatureNoiseFrequency);
 
-		// Generate height data
+		// Generate height and temperature data
 		previewCacheMaxHeight=DBL_MIN;
+		previewCacheMinTemperature=DBL_MAX;
+		previewCacheMaxTemperature=DBL_MIN;
 		for(unsigned y=0; y<256; ++y) {
 			for(unsigned x=0; x<256; ++x) {
+				// Calculate height
 				double heightNoiseValue=(1.0+heightNoise->eval(x/256.0, y/256.0))/2.0; // [0.0,1.0]
-				previewCacheHeightValues[y][x]=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
+				double height=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
 
-				if (previewCacheHeightValues[y][x]>previewCacheMaxHeight)
-					previewCacheMaxHeight=previewCacheHeightValues[y][x];
+				previewCacheHeightValues[y][x]=height;
+
+				// Check for new max height
+				if (height>previewCacheMaxHeight)
+					previewCacheMaxHeight=height;
+
+				// Calculate temperature
+				double temperature=0.0;
+
+				const double temperatureNoiseValue=(1.0+temperatureNoise->eval(x/256.0, y/256.0))/2.0;
+				temperature+=params.temperatureNoiseMin+temperatureNoiseValue*(params.temperatureNoiseMax-params.temperatureNoiseMin);
+
+				const double latitude=y/128.0-1.0; // [-1,1]
+				assert(latitude>=-1.0 && latitude<=1.0);
+				const double poleDistance=1.0-fabs(latitude); // [0,1]
+				assert(poleDistance>=0.0 && poleDistance<=1.0);
+				double adjustedPoleDistance=2*poleDistance-1; // [-1,1]
+				assert(adjustedPoleDistance>=-1.0 && adjustedPoleDistance<=1.0);
+				temperature+=adjustedPoleDistance*params.temperatureLatitudeRange/2.0;
+
+				temperature-=std::max(0.0, height/1000.0)*params.temperatureLapseRate; // /1000 because lapse rate is in degrees/km
+
+				previewCacheTemperatureValues[y][x]=temperature;
+
+				// Check for new min/max temperature
+				if (temperature>previewCacheMaxTemperature)
+					previewCacheMaxTemperature=temperature;
+				if (temperature<previewCacheMinTemperature)
+					previewCacheMinTemperature=temperature;
 			}
 		}
 
@@ -239,6 +270,7 @@ namespace MapEditor {
 
 		// Tidy up
 		delete heightNoise;
+		delete temperatureNoise;
 
 		// Clear dirty flag
 		previewCacheDirty=false;
@@ -304,8 +336,58 @@ namespace MapEditor {
 	}
 
 	gboolean HeightTemperatureDialogue::previewTemperatureDrawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
-		cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-		cairo_paint(cr);
+		// Ensure data is up to date
+		previewCalculateData();
+
+		// Loop over pixels of the drawing area
+		for(unsigned y=0; y<256; ++y) {
+			for(unsigned x=0; x<256; ++x) {
+				// Grab temperature
+				const double temperature=previewCacheTemperatureValues[y][x];
+
+				// Choose colour
+				double r=0.0;
+				double g=0.0;
+				double b=0.0;
+
+				double temperatureNormalised=(temperature-previewCacheMinTemperature)/(previewCacheMaxTemperature-previewCacheMinTemperature);
+				unsigned temperatureScaled=floor(temperatureNormalised*(4*256-1));
+
+				if (temperatureScaled<256) {
+					// 0x0000FF -> 0x00FFFF
+					r=0/255.0;
+					g=temperatureScaled/255.0;
+					b=255/255.0;
+				} else if (temperatureScaled<512) {
+					// 0x00FFFF -> 0x00FF00
+					temperatureScaled-=256;
+					r=0/255.0;
+					g=255/255.0;
+					b=(255-temperatureScaled)/255.0;
+				} else if (temperatureScaled<768) {
+					// 0x00FF00 -> 0xFFFF00
+					temperatureScaled-=512;
+					r=temperatureScaled/255.0;
+					g=255/255.0;
+					b=0/255.0;
+				} else {
+					// 0xFFFF00 -> 0xFF0000
+					temperatureScaled-=768;
+					r=255/255.0;
+					g=(255-temperatureScaled)/255.0;
+					b=0/255.0;
+				}
+
+				assert(r>=0.0 && r<=1.0);
+				assert(g>=0.0 && g<=1.0);
+				assert(b>=0.0 && b<=1.0);
+
+				// Draw pixel
+				cairo_set_source_rgb(cr, r, g, b);
+				cairo_rectangle(cr, x, y, 1, 1);
+				cairo_fill(cr);
+			}
+		}
 
 		return false;
 	}

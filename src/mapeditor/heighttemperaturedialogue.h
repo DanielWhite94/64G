@@ -75,7 +75,9 @@ namespace MapEditor {
 
 		bool previewCacheDirty;
 		double previewCacheHeightValues[256][256];
+		double previewCacheTemperatureValues[256][256];
 		double previewCacheMaxHeight;
+		double previewCacheMinTemperature, previewCacheMaxTemperature;
 		double previewCacheSeaLevel;
 
 		void parametersChanged(void); // called when parameter values (except Threads) change
