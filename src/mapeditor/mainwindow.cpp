@@ -15,6 +15,7 @@
 #include "util.h"
 
 #include "../engine/gen/modifytiles.h"
+#include "../engine/gen/search.h"
 #include "../engine/fbnnoise.h"
 
 const int mainWindowTickIntervalMs=100;
@@ -454,6 +455,7 @@ namespace MapEditor {
 			.temperatureNoiseFrequency=1.0,
 			.temperatureLapseRate=5.0,
 			.temperatureLatitudeRange=60.0,
+			.landCoverage=0.4,
 			.threads=4,
 		};
 
@@ -466,7 +468,7 @@ namespace MapEditor {
 
 		// Create progress dialogue to provide updates
 		operationBegin();
-		ProgressDialogue *prog=new ProgressDialogue("1/2: Generating height and temperature tile data...", window);
+		ProgressDialogue *prog=new ProgressDialogue("1/3: Generating height and temperature tile data...", window);
 		prog->setShowCancelButton(true);
 
 		// Initialise map values so we can calculate these as we go
@@ -486,8 +488,12 @@ namespace MapEditor {
 		delete modifyTilesData.temperatureNoise;
 
 		// Clear cached images
-		prog->setText("2/2: Clearing cached map images...");
+		prog->setText("2/3: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);
+
+		// Determine sea level
+		prog->setText("3/3: Determining sea level...");
+		map->seaLevel=Gen::search(map, 0, 0, map->getWidth(), map->getHeight(), params.threads, 63, params.landCoverage, 0.45, map->minHeight, map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
 
 		// Tidy up
 		delete prog;

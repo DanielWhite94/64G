@@ -21,6 +21,7 @@ namespace MapEditor {
 	void heightTemperatureDialogueTemperatureNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
 	void heightTemperatureDialogueTemperatureLapseRateSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
 	void heightTemperatureDialogueTemperatureLatitudeRangeSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueOtherLandCoverageSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
 
 	gboolean heightTemperatureDialoguePreviewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
 	gboolean heightTemperatureDialoguePreviewTemperatureDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
@@ -57,6 +58,7 @@ namespace MapEditor {
 		error|=(temperatureNoiseFrequencySpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureNoiseFrequencySpinButton")))==NULL;
 		error|=(temperatureLapseRateSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureLapseRateSpinButton")))==NULL;
 		error|=(temperatureLatitudeRangeSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureLatitudeRangeSpinButton")))==NULL;
+		error|=(otherLandCoverageSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "otherLandCoverageSpinButton")))==NULL;
 		error|=(otherThreadsSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "otherThreadsSpinButton")))==NULL;
 		error|=(previewHeightDrawingArea=GTK_WIDGET(gtk_builder_get_object(builder, "previewHeightDrawingArea")))==NULL;
 		error|=(previewTemperatureDrawingArea=GTK_WIDGET(gtk_builder_get_object(builder, "previewTemperatureDrawingArea")))==NULL;
@@ -76,6 +78,7 @@ namespace MapEditor {
 		g_signal_connect(temperatureNoiseFrequencySpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureNoiseFrequencySpinButtonValueChanged), (void *)this);
 		g_signal_connect(temperatureLapseRateSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureLapseRateSpinButtonValueChanged), (void *)this);
 		g_signal_connect(temperatureLatitudeRangeSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureLatitudeRangeSpinButtonValueChanged), (void *)this);
+		g_signal_connect(otherLandCoverageSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueOtherLandCoverageSpinButtonValueChanged), (void *)this);
 
 		g_signal_connect(previewHeightDrawingArea, "draw", G_CALLBACK(heightTemperatureDialoguePreviewHeightDrawingAreaDraw), (void *)this);
 		g_signal_connect(previewTemperatureDrawingArea, "draw", G_CALLBACK(heightTemperatureDialoguePreviewTemperatureDrawingAreaDraw), (void *)this);
@@ -112,6 +115,7 @@ namespace MapEditor {
 		params->temperatureNoiseFrequency=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureNoiseFrequencySpinButton));
 		params->temperatureLapseRate=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLapseRateSpinButton));
 		params->temperatureLatitudeRange=gtk_spin_button_get_value(GTK_SPIN_BUTTON(temperatureLatitudeRangeSpinButton));
+		params->landCoverage=gtk_spin_button_get_value(GTK_SPIN_BUTTON(otherLandCoverageSpinButton))/100.0;
 		params->threads=gtk_spin_button_get_value(GTK_SPIN_BUTTON(otherThreadsSpinButton));
 	}
 
@@ -129,6 +133,7 @@ namespace MapEditor {
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(temperatureNoiseFrequencySpinButton), params->temperatureNoiseFrequency);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(temperatureLapseRateSpinButton), params->temperatureLapseRate);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(temperatureLatitudeRangeSpinButton), params->temperatureLatitudeRange);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(otherLandCoverageSpinButton), params->landCoverage*100.0);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(otherThreadsSpinButton), params->threads);
 
 		// Show the dialogue and wait for response
@@ -190,6 +195,10 @@ namespace MapEditor {
 	}
 
 	void HeightTemperatureDialogue::temperatureLatitudeRangeSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::otherLandCoverageSpinButtonValueChanged(GtkSpinButton *spinButton) {
 		parametersChanged();
 	}
 
@@ -369,6 +378,13 @@ namespace MapEditor {
 
 		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
 		dialogue->temperatureLatitudeRangeSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueOtherLandCoverageSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->otherLandCoverageSpinButtonValueChanged(spinButton);
 	}
 
 	gboolean heightTemperatureDialoguePreviewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {

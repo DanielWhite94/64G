@@ -24,6 +24,7 @@ namespace MapEditor {
 			double temperatureLapseRate;
 			double temperatureLatitudeRange;
 
+			double landCoverage; // in range [0,1]
 			unsigned threads;
 		};
 
@@ -46,6 +47,7 @@ namespace MapEditor {
 		void temperatureNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton);
 		void temperatureLapseRateSpinButtonValueChanged(GtkSpinButton *spinButton);
 		void temperatureLatitudeRangeSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void otherLandCoverageSpinButtonValueChanged(GtkSpinButton *spinButton);
 
 		gboolean previewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr);
 		gboolean previewTemperatureDrawingAreaDraw(GtkWidget *widget, cairo_t *cr);
@@ -65,6 +67,7 @@ namespace MapEditor {
 		GtkWidget *temperatureNoiseFrequencySpinButton;
 		GtkWidget *temperatureLapseRateSpinButton;
 		GtkWidget *temperatureLatitudeRangeSpinButton;
+		GtkWidget *otherLandCoverageSpinButton;
 		GtkWidget *otherThreadsSpinButton;
 
 		GtkWidget *previewHeightDrawingArea;
