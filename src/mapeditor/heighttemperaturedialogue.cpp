@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <exception>
@@ -234,6 +235,7 @@ namespace MapEditor {
 				double height=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
 
 				previewCacheHeightValues[y][x]=height;
+				previewCacheHeightList[y*256+x]=height;
 
 				// Check for new max height
 				if (height>previewCacheMaxHeight)
@@ -265,8 +267,9 @@ namespace MapEditor {
 			}
 		}
 
-		// For now assume sea level of 0
-		previewCacheSeaLevel=0.0;
+		// Calculate seah level
+		std::sort(std::begin(previewCacheHeightList), std::end(previewCacheHeightList), std::greater<double>{});
+		previewCacheSeaLevel=previewCacheHeightList[((int)floor(params.landCoverage*65535))];
 
 		// Tidy up
 		delete heightNoise;
