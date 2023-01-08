@@ -297,27 +297,27 @@ namespace MapEditor {
 
 					if (heightScaled<128) {
 						// 0x008800 -> 0x888800
-						r=heightScaled/256.0;
+						r=heightScaled/255.0;
 						g=0.5;
 						b=0.0;
 					} else if (heightScaled<256) {
 						// 0x888800 -> 0x880000
 						heightScaled-=128;
 						r=0.5;
-						g=0.5-heightScaled/256.0;
+						g=0.5-heightScaled/255.0;
 						b=0.0;
 					} else if (heightScaled<384) {
 						// 0x880000 -> 0x888888
 						heightScaled-=256;
 						r=0.5;
-						g=heightScaled/256.0;
-						b=heightScaled/256.0;
+						g=heightScaled/255.0;
+						b=heightScaled/255.0;
 					} else {
 						// 0x888888 -> 0xFFFFFF
 						heightScaled-=384;
-						r=0.5+heightScaled/256.0;
-						g=0.5+heightScaled/256.0;
-						b=0.5+heightScaled/256.0;
+						r=0.5+heightScaled/255.0;
+						g=0.5+heightScaled/255.0;
+						b=0.5+heightScaled/255.0;
 					}
 				}
 
