@@ -487,13 +487,12 @@ namespace MapEditor {
 		delete modifyTilesData.heightNoise;
 		delete modifyTilesData.temperatureNoise;
 
+		// Determine sea level
+		prog->setText("2/3: Determining sea level...");
 		map->seaLevel=Gen::search(map, 0, 0, map->getWidth(), map->getHeight(), params.threads, false, 63, params.landCoverage, 0.45, map->minHeight, map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
 		// Clear cached images
-		prog->setText("2/3: Clearing cached map images...");
+		prog->setText("3/3: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);
-
-		// Determine sea level
-		prog->setText("3/3: Determining sea level...");
 
 		// Tidy up
 		delete prog;
