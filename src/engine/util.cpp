@@ -153,7 +153,7 @@ namespace Engine {
 	void Util::printTime(TimeMs timeMs) {
 		char str[16];
 		sprintTime(str, timeMs);
-		printf("%s\n", str);
+		printf("%s", str);
 	}
 
 	void Util::sprintTime(char *str, TimeMs timeMs) {
