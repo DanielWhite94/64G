@@ -737,8 +737,10 @@ int main(int argc, char **argv) {
 
 	/*
 	// Calculate sea level.
-	printf("Searching for sea level (with desired land coverage %.2f%%) (1/3)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, true, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
+	char progressStringSeaLevel1[1024]; // TODO: better
+	sprintf(progressStringSeaLevel1, "Searching for sea level (with desired land coverage %.2f%%) (1/3) ", desiredLandFraction*100.0);
+	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL, &utilProgressFunctorString, (void *)progressStringSeaLevel2);
+	printf("\n");
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run glacier calculation.
@@ -761,8 +763,10 @@ int main(int argc, char **argv) {
 	*/
 
 	// Calculate sea level.
-	printf("Searching for sea level (with desired land coverage %.2f%%) (2/3)...\n", desiredLandFraction*100.0);
-	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, true, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
+	char progressStringSeaLevel2[1024]; // TODO: better
+	sprintf(progressStringSeaLevel2, "Searching for sea level (with desired land coverage %.2f%%) (2/3) ", desiredLandFraction*100.0);
+	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL, &utilProgressFunctorString, (void *)progressStringSeaLevel2);
+	printf("\n");
 	printf("	Sea level %f\n", mapData.map->seaLevel);
 
 	// Run moisture/river calculation.
@@ -797,13 +801,16 @@ int main(int argc, char **argv) {
 		{.threshold=desiredForestFraction, .epsilon=0.005, .sampleMin=-1.0, .sampleMax=1.0, .sampleCount=63, .getFunctor=&Gen::searchGetFunctorNoise, .getUserData=mapData.forestNoise},
 	};
 
-	Gen::searchMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, true, sizeof(searchManyArray)/sizeof(searchManyArray[0]), searchManyArray);
+	char progressStringSearchMany[4096]; // TODO: better
+	sprintf(progressStringSearchMany, "	Searching ");
+	Gen::searchMany(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, sizeof(searchManyArray)/sizeof(searchManyArray[0]), searchManyArray, &utilProgressFunctorString, (void *)progressStringSearchMany);
 	mapData.map->seaLevel=searchManyArray[0].result;
 	mapData.map->alpineLevel=searchManyArray[1].result;
 	mapData.coldThreshold=searchManyArray[2].result;
 	mapData.hotThreshold=searchManyArray[3].result;
 	mapData.riverMoistureThreshold=searchManyArray[4].result;
 	mapData.map->forestLevel=searchManyArray[5].result;
+	printf("\n");
 
 	printf("	Sea level %f, alpine level %f, cold temperature %f, hot temperature %f, river moisture threshold %f, forest level %f\n", mapData.map->seaLevel, mapData.map->alpineLevel, mapData.coldThreshold, mapData.hotThreshold, mapData.riverMoistureThreshold, mapData.map->forestLevel);
 

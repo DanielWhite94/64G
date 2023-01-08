@@ -489,7 +489,8 @@ namespace MapEditor {
 
 		// Determine sea level
 		prog->setText("2/3: Determining sea level...");
-		map->seaLevel=Gen::search(map, 0, 0, map->getWidth(), map->getHeight(), params.threads, false, 63, params.landCoverage, 0.45, map->minHeight, map->maxHeight, &Gen::searchGetFunctorHeight, NULL);
+		map->seaLevel=Gen::search(map, 0, 0, map->getWidth(), map->getHeight(), params.threads, 63, params.landCoverage, 0.45, map->minHeight, map->maxHeight, &Gen::searchGetFunctorHeight, NULL, &progressDialogueProgressFunctor, prog);
+
 		// Clear cached images
 		prog->setText("3/3: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);

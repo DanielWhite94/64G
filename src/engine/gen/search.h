@@ -45,8 +45,8 @@ namespace Engine {
 			double result;  // result written back into here
 		};
 
-		double search(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, bool verbose, int n, double threshold, double epsilon, double sampleMin, double sampleMax, SearchGetFunctor *getFunctor, void *getUserData); // Returns (approximate) height/moisture etc value for which threshold fraction of the tiles in the given region are lower than said value.
-		void searchMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, bool verbose, size_t entryArrayCount, SearchManyEntry entryArray[]); // Same as running several search operations
+		double search(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, int n, double threshold, double epsilon, double sampleMin, double sampleMax, SearchGetFunctor *getFunctor, void *getUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData); // Returns (approximate) height/moisture etc value for which threshold fraction of the tiles in the given region are lower than said value.
+		void searchMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, size_t entryArrayCount, SearchManyEntry entryArray[], Util::ProgressFunctor *progressFunctor, void *progressUserData); // Same as running several search operations
 
 		int searchValueToSample(const SearchDataEntry *entry, double value);
 		double searchSampleToValue(const SearchDataEntry *entry, int sample);

@@ -14,7 +14,18 @@ namespace Engine {
 			size_t count;
 		};
 
-		double search(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, bool verbose, int n, double threshold, double epsilon, double sampleMin, double sampleMax, SearchGetFunctor *getFunctor, void *getUserData) {
+		struct SearchManyModifyTilesProgressData {
+			int iter, iterMax;
+
+			Util::TimeMs startTimeMs;
+
+			Util::ProgressFunctor *progressFunctor;
+			void *progressUserData;
+		};
+
+		bool searchManyModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
+
+		double search(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, int n, double threshold, double epsilon, double sampleMin, double sampleMax, SearchGetFunctor *getFunctor, void *getUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(n>0);
 			assert(0.0<=threshold<=1.0);
@@ -29,12 +40,12 @@ namespace Engine {
 			searchManyEntry.getFunctor=getFunctor;
 			searchManyEntry.getUserData=getUserData;
 
-			searchMany(map, x, y, width, height, threadCount, verbose, 1, &searchManyEntry);
+			searchMany(map, x, y, width, height, threadCount, 1, &searchManyEntry, progressFunctor, progressUserData);
 
 			return searchManyEntry.result;
 		}
 
-		void searchMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, bool verbose, size_t entryArrayCount, SearchManyEntry entryArray[]) {
+		void searchMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, size_t entryArrayCount, SearchManyEntry entryArray[], Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 
 			Util::TimeMs startTimeMs=Util::getTimeMs();
@@ -88,26 +99,16 @@ namespace Engine {
 					entry->sampleTotal=0;
 				}
 
-				// Output
-				if (verbose) {
-					printf("	Iteration %i/%i:\n", iter+1, trueIterMax);
-					for(size_t i=0; i<data.count; ++i) {
-						SearchDataEntry *entry=&data.entries[i];
-						if (entry->sampleRange/2.0<=entry->epsilon)
-							printf("		%2llu: %f\n", (unsigned long long)i, (entry->sampleMin+entry->sampleMax)/2.0); // already finished
-						else
-							printf("		%2llu: [%f, %f] (range %f, epsilon %f)\n", (unsigned long long)i, entry->sampleMin, entry->sampleMax, entry->sampleRange, entry->epsilon);
-					}
-				}
-
 				// Run data collection functor.
-				if (verbose) {
-					char progressString[1024];
-					sprintf(progressString, "		calculating: ");
-					Gen::modifyTiles(map, x, y, width, height, threadCount, &searchManyModifyTilesFunctor, &data, &utilProgressFunctorString, (void *)progressString);
-					printf("\n");
-				} else
-					Gen::modifyTiles(map, x, y, width, height, threadCount, &searchManyModifyTilesFunctor, &data, NULL, NULL);
+				SearchManyModifyTilesProgressData progressData={
+					.iter=iter,
+					.iterMax=trueIterMax,
+					.startTimeMs=startTimeMs,
+					.progressFunctor=progressFunctor,
+					.progressUserData=progressUserData,
+				};
+
+				Gen::modifyTiles(map, x, y, width, height, threadCount, &searchManyModifyTilesFunctor, &data, (progressFunctor!=NULL ? &searchManyModifyTilesProgressFunctor : NULL), &progressData);
 
 				// Update min/max based on collected data.
 				// TODO: this can be improved by looping to find window which contains the fraction we want, then updating min/max together and breaking
@@ -144,17 +145,6 @@ namespace Engine {
 			for(size_t i=0; i<data.count; ++i) {
 				SearchDataEntry *entry=&data.entries[i];
 				entryArray[i].result=(entry->sampleMin+entry->sampleMax)/2.0;
-			}
-
-			if (verbose) {
-				printf("	Final intervals (took ");
-				Util::printTime(Util::getTimeMs()-startTimeMs);
-				printf("):\n");
-				for(size_t i=0; i<data.count; ++i) {
-					// Write out final range.
-					SearchDataEntry *entry=&data.entries[i];
-					printf("		%2llu: %f [%f, %f] (range %f, 2*epsilon %f)\n", (unsigned long long)i, entryArray[i].result, entry->sampleMin, entry->sampleMax, entry->sampleMax-entry->sampleMin, 2*entry->epsilon);
-				}
 			}
 		}
 
@@ -249,6 +239,19 @@ namespace Engine {
 			const FbnNoise *noise=(const FbnNoise *)userData;
 
 			return noise->eval(x/((double)map->getWidth()), y/((double)map->getHeight()));
+		}
+
+		bool searchManyModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
+			assert(userData!=NULL);
+
+			SearchManyModifyTilesProgressData *data=(SearchManyModifyTilesProgressData *)userData;
+
+			// Calculate true progress and elapsed time
+			double trueProgress=(data->iter+progress)/data->iterMax;
+			Util::TimeMs trueElapsedTimeMs=Util::getTimeMs()-data->startTimeMs;
+
+			// Call user's functor
+			return data->progressFunctor(trueProgress, trueElapsedTimeMs, data->progressUserData);
 		}
 	};
 };
