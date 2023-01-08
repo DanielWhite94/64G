@@ -79,6 +79,14 @@ namespace Engine {
 			return fileData->landmassId;
 		}
 
+		uint32_t MapTile::getScratchInt(void) const {
+			return fileData->scratchInt;
+		}
+
+		float MapTile::getScratchFloat(void) const {
+			return fileData->scratchFloat;
+		}
+
 		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
 			HitMask hitMask;
 
@@ -128,6 +136,14 @@ namespace Engine {
 
 		void MapTile::setLandmassId(uint16_t landmassId) {
 			fileData->landmassId=landmassId;
+		}
+
+		void MapTile::setScratchInt(uint32_t gScratchInt) {
+			fileData->scratchInt=gScratchInt;
+		}
+
+		void MapTile::setScratchFloat(float gScratchFloat) {
+			fileData->scratchFloat=gScratchFloat;
 		}
 
 		bool MapTile::addObject(MapObject *object) {

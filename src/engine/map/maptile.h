@@ -22,6 +22,10 @@ namespace Engine {
 				double height, moisture, temperature;
 				uint64_t bitset;
 				uint16_t landmassId;
+				union {
+					uint32_t scratchInt;
+					float scratchFloat;
+				};
 			};
 
 			MapTile();
@@ -40,6 +44,8 @@ namespace Engine {
 			uint64_t getBitset(void) const;
 			bool getBitsetN(unsigned n) const;
 			uint16_t getLandmassId(void) const;
+			uint32_t getScratchInt(void) const;
+			float getScratchFloat(void) const;
 
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
@@ -50,6 +56,8 @@ namespace Engine {
 			void setBitset(uint64_t bitset);
 			void setBitsetN(unsigned n, bool value);
 			void setLandmassId(uint16_t landmassId);
+			void setScratchInt(uint32_t scratchInt);
+			void setScratchFloat(float scratchFloat);
 
 			bool addObject(MapObject *object);
 			void removeObject(MapObject *object);
