@@ -31,6 +31,7 @@ namespace MapEditor {
 
 		// Init
 		window=NULL;
+		previewCacheDirty=true;
 
 		// Use GtkBuilder to build our interface from the XML file.
 		GtkBuilder *builder=gtk_builder_new();
@@ -136,9 +137,6 @@ namespace MapEditor {
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(otherLandCoverageSpinButton), params->landCoverage*100.0);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(otherThreadsSpinButton), params->threads);
 
-		// Generate preview data
-		previewCalculateData();
-
 		// Show the dialogue and wait for response
 		gtk_widget_show_all(window);
 		gint result=gtk_dialog_run(GTK_DIALOG(window));
@@ -206,13 +204,17 @@ namespace MapEditor {
 	}
 
 	void HeightTemperatureDialogue::parametersChanged(void) {
-		previewCalculateData();
+		previewCacheDirty=true;
 
 		gtk_widget_queue_draw(previewHeightDrawingArea);
 		gtk_widget_queue_draw(previewTemperatureDrawingArea);
 	}
 
 	void HeightTemperatureDialogue::previewCalculateData(void) {
+		// If no changes then nothing to do
+		if (!previewCacheDirty)
+			return;
+
 		// Grab current parameters
 		Params params;
 		getParams(&params);
@@ -237,9 +239,15 @@ namespace MapEditor {
 
 		// Tidy up
 		delete heightNoise;
+
+		// Clear dirty flag
+		previewCacheDirty=false;
 	}
 
 	gboolean HeightTemperatureDialogue::previewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+		// Ensure data is up to date
+		previewCalculateData();
+
 		// Loop over pixels of the drawing area
 		for(unsigned y=0; y<256; ++y) {
 			for(unsigned x=0; x<256; ++x) {
