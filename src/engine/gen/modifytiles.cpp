@@ -20,7 +20,7 @@ namespace Engine {
 			unsigned threadCount;
 			std::atomic<bool> stopFlag;
 
-			ModifyTilesProgress *progressFunctor;
+			Util::ProgressFunctor *progressFunctor;
 			void *progressUserData;
 			Util::TimeMs startTimeMs;
 		};
@@ -55,7 +55,7 @@ namespace Engine {
 				tile->setBitset(tile->getBitset()&bitset);
 		}
 
-		void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, ModifyTilesFunctor *functor, void *functorUserData, ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void modifyTiles(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, ModifyTilesFunctor *functor, void *functorUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functor!=NULL);
 
@@ -66,7 +66,7 @@ namespace Engine {
 			modifyTilesMany(map, x, y, width, height, threadCount, 1, &functorEntry, progressFunctor, progressUserData);
 		}
 
-		void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, size_t functorArrayCount, ModifyTilesManyEntry functorArray[], ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void modifyTilesMany(class Map *map, unsigned x, unsigned y, unsigned width, unsigned height, unsigned threadCount, size_t functorArrayCount, ModifyTilesManyEntry functorArray[], Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(functorArrayCount>0);
 			assert(functorArray!=NULL);

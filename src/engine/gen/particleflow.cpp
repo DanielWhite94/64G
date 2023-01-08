@@ -11,7 +11,7 @@ using namespace Engine;
 namespace Engine {
 	namespace Gen {
 
-		void ParticleFlow::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, unsigned threadCount, Gen::ModifyTilesProgress *progressFunctor, void *progressUserData) {
+		void ParticleFlow::dropParticles(unsigned x0, unsigned y0, unsigned x1, unsigned y1, double coverage, unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(map!=NULL);
 			assert(x0<=x1);
 			assert(y0<=y1);
