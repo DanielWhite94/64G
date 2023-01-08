@@ -738,7 +738,7 @@ int main(int argc, char **argv) {
 	/*
 	// Calculate sea level.
 	char progressStringSeaLevel1[1024]; // TODO: better
-	sprintf(progressStringSeaLevel1, "Searching for sea level (with desired land coverage %.2f%%) (1/3) ", desiredLandFraction*100.0);
+	sprintf(progressStringSeaLevel1, "Searching for sea level (with desired land coverage %.2f%%) ", desiredLandFraction*100.0);
 	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL, &utilProgressFunctorString, (void *)progressStringSeaLevel2);
 	printf("\n");
 	printf("	Sea level %f\n", mapData.map->seaLevel);
@@ -764,7 +764,7 @@ int main(int argc, char **argv) {
 
 	// Calculate sea level.
 	char progressStringSeaLevel2[1024]; // TODO: better
-	sprintf(progressStringSeaLevel2, "Searching for sea level (with desired land coverage %.2f%%) (2/3) ", desiredLandFraction*100.0);
+	sprintf(progressStringSeaLevel2, "Searching for sea level (with desired land coverage %.2f%%) ", desiredLandFraction*100.0);
 	mapData.map->seaLevel=Gen::search(mapData.map, 0, 0, mapData.width, mapData.height, threadCount, 63, desiredLandFraction, 0.45, mapData.map->minHeight, mapData.map->maxHeight, &Gen::searchGetFunctorHeight, NULL, &utilProgressFunctorString, (void *)progressStringSeaLevel2);
 	printf("\n");
 	printf("	Sea level %f\n", mapData.map->seaLevel);
