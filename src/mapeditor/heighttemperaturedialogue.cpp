@@ -136,6 +136,9 @@ namespace MapEditor {
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(otherLandCoverageSpinButton), params->landCoverage*100.0);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(otherThreadsSpinButton), params->threads);
 
+		// Generate preview data
+		previewCalculateData();
+
 		// Show the dialogue and wait for response
 		gtk_widget_show_all(window);
 		gint result=gtk_dialog_run(GTK_DIALOG(window));
@@ -203,11 +206,13 @@ namespace MapEditor {
 	}
 
 	void HeightTemperatureDialogue::parametersChanged(void) {
+		previewCalculateData();
+
 		gtk_widget_queue_draw(previewHeightDrawingArea);
 		gtk_widget_queue_draw(previewTemperatureDrawingArea);
 	}
 
-	gboolean HeightTemperatureDialogue::previewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+	void HeightTemperatureDialogue::previewCalculateData(void) {
 		// Grab current parameters
 		Params params;
 		getParams(&params);
@@ -215,35 +220,39 @@ namespace MapEditor {
 		// Create noise
 		Engine::FbnNoise *heightNoise=new Engine::FbnNoise(params.heightNoiseSeed, params.heightNoiseOctaves, params.heightNoiseFrequency);
 
-		// Determine 'map' constants
-		double seaLevel=0.0;
-		double maxHeight=DBL_MIN;
+		// Generate height data
+		previewCacheMaxHeight=DBL_MIN;
 		for(unsigned y=0; y<256; ++y) {
 			for(unsigned x=0; x<256; ++x) {
-				// Calculate height
 				double heightNoiseValue=(1.0+heightNoise->eval(x/256.0, y/256.0))/2.0; // [0.0,1.0]
-				const double height=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
+				previewCacheHeightValues[y][x]=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
 
-				// New max height?
-				if (height>maxHeight)
-					maxHeight=height;
+				if (previewCacheHeightValues[y][x]>previewCacheMaxHeight)
+					previewCacheMaxHeight=previewCacheHeightValues[y][x];
 			}
 		}
 
+		// For now assume sea level of 0
+		previewCacheSeaLevel=0.0;
+
+		// Tidy up
+		delete heightNoise;
+	}
+
+	gboolean HeightTemperatureDialogue::previewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
 		// Loop over pixels of the drawing area
 		for(unsigned y=0; y<256; ++y) {
 			for(unsigned x=0; x<256; ++x) {
-				// Calculate height
-				double heightNoiseValue=(1.0+heightNoise->eval(x/256.0, y/256.0))/2.0; // [0.0,1.0]
-				const double height=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
+				// Grab height
+				const double height=previewCacheHeightValues[y][x];
 
 				// Choose colour
 				double r=0.0;
 				double g=0.0;
 				double b=1.0;
 
-				if (height>seaLevel) {
-					double heightNormalised=(height-seaLevel)/(maxHeight-seaLevel);
+				if (height>previewCacheSeaLevel) {
+					double heightNormalised=(height-previewCacheSeaLevel)/(previewCacheMaxHeight-previewCacheSeaLevel);
 					unsigned heightScaled=floor(heightNormalised*(2*256-1));
 
 					if (heightScaled<128) {
@@ -282,9 +291,6 @@ namespace MapEditor {
 				cairo_fill(cr);
 			}
 		}
-
-		// Tidy up
-		delete heightNoise;
 
 		return false;
 	}

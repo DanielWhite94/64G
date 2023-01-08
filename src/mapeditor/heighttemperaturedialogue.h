@@ -73,7 +73,13 @@ namespace MapEditor {
 		GtkWidget *previewHeightDrawingArea;
 		GtkWidget *previewTemperatureDrawingArea;
 
+		double previewCacheHeightValues[256][256];
+		double previewCacheMaxHeight;
+		double previewCacheSeaLevel;
+
 		void parametersChanged(void); // called when parameter values (except Threads) change
+
+		void previewCalculateData(void);
 	};
 
 };
