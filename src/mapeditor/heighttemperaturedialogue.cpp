@@ -1,12 +1,30 @@
 #include <cassert>
+#include <cmath>
 #include <exception>
 #include <stdexcept>
 
 #include "heighttemperaturedialogue.h"
+#include "../engine/fbnnoise.h"
 
 using namespace MapEditor;
 
 namespace MapEditor {
+	void heightTemperatureDialogueHeightNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueHeightNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueHeightNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueHeightNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueHeightNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueTemperatureNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueTemperatureNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueTemperatureNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueTemperatureNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueTemperatureNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueTemperatureLapseRateSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+	void heightTemperatureDialogueTemperatureLatitudeRangeSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData);
+
+	gboolean heightTemperatureDialoguePreviewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
+	gboolean heightTemperatureDialoguePreviewTemperatureDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
+
 	HeightTemperatureDialogue::HeightTemperatureDialogue(GtkWidget *parentWindow) {
 		const char xmlFile[]="heighttemperaturedialogue.glade";
 
@@ -40,10 +58,27 @@ namespace MapEditor {
 		error|=(temperatureLapseRateSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureLapseRateSpinButton")))==NULL;
 		error|=(temperatureLatitudeRangeSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "temperatureLatitudeRangeSpinButton")))==NULL;
 		error|=(otherThreadsSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "otherThreadsSpinButton")))==NULL;
+		error|=(previewHeightDrawingArea=GTK_WIDGET(gtk_builder_get_object(builder, "previewHeightDrawingArea")))==NULL;
+		error|=(previewTemperatureDrawingArea=GTK_WIDGET(gtk_builder_get_object(builder, "previewTemperatureDrawingArea")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
 		// Connect manual signals
+		g_signal_connect(heightNoiseMinSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueHeightNoiseMinSpinButtonValueChanged), (void *)this);
+		g_signal_connect(heightNoiseMaxSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueHeightNoiseMaxSpinButtonValueChanged), (void *)this);
+		g_signal_connect(heightNoiseSeedSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueHeightNoiseSeedSpinButtonValueChanged), (void *)this);
+		g_signal_connect(heightNoiseOctavesSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueHeightNoiseOctavesSpinButtonValueChanged), (void *)this);
+		g_signal_connect(heightNoiseFrequencySpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueHeightNoiseFrequencySpinButtonValueChanged), (void *)this);
+		g_signal_connect(temperatureNoiseMinSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureNoiseMinSpinButtonValueChanged), (void *)this);
+		g_signal_connect(temperatureNoiseMaxSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureNoiseMaxSpinButtonValueChanged), (void *)this);
+		g_signal_connect(temperatureNoiseSeedSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureNoiseSeedSpinButtonValueChanged), (void *)this);
+		g_signal_connect(temperatureNoiseOctavesSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureNoiseOctavesSpinButtonValueChanged), (void *)this);
+		g_signal_connect(temperatureNoiseFrequencySpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureNoiseFrequencySpinButtonValueChanged), (void *)this);
+		g_signal_connect(temperatureLapseRateSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureLapseRateSpinButtonValueChanged), (void *)this);
+		g_signal_connect(temperatureLatitudeRangeSpinButton, "value-changed", G_CALLBACK(heightTemperatureDialogueTemperatureLatitudeRangeSpinButtonValueChanged), (void *)this);
+
+		g_signal_connect(previewHeightDrawingArea, "draw", G_CALLBACK(heightTemperatureDialoguePreviewHeightDrawingAreaDraw), (void *)this);
+		g_signal_connect(previewTemperatureDrawingArea, "draw", G_CALLBACK(heightTemperatureDialoguePreviewTemperatureDrawingAreaDraw), (void *)this);
 
 		// Add OK and Cancel buttons
 		gtk_dialog_add_button(GTK_DIALOG(window), "Cancel", GTK_RESPONSE_CANCEL);
@@ -108,6 +143,242 @@ namespace MapEditor {
 		getParams(params);
 
 		return true;
+	}
+
+	void HeightTemperatureDialogue::heightNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::heightNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::heightNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::heightNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::heightNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::temperatureNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::temperatureNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::temperatureNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::temperatureNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::temperatureNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::temperatureLapseRateSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::temperatureLatitudeRangeSpinButtonValueChanged(GtkSpinButton *spinButton) {
+		parametersChanged();
+	}
+
+	void HeightTemperatureDialogue::parametersChanged(void) {
+		gtk_widget_queue_draw(previewHeightDrawingArea);
+		gtk_widget_queue_draw(previewTemperatureDrawingArea);
+	}
+
+	gboolean HeightTemperatureDialogue::previewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+		// Grab current parameters
+		Params params;
+		getParams(&params);
+
+		// Create noise
+		Engine::FbnNoise *heightNoise=new Engine::FbnNoise(params.heightNoiseSeed, params.heightNoiseOctaves, params.heightNoiseFrequency);
+
+		// Determine 'map' constants
+		double seaLevel=0.0;
+		double maxHeight=DBL_MIN;
+		for(unsigned y=0; y<256; ++y) {
+			for(unsigned x=0; x<256; ++x) {
+				// Calculate height
+				double heightNoiseValue=(1.0+heightNoise->eval(x/256.0, y/256.0))/2.0; // [0.0,1.0]
+				const double height=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
+
+				// New max height?
+				if (height>maxHeight)
+					maxHeight=height;
+			}
+		}
+
+		// Loop over pixels of the drawing area
+		for(unsigned y=0; y<256; ++y) {
+			for(unsigned x=0; x<256; ++x) {
+				// Calculate height
+				double heightNoiseValue=(1.0+heightNoise->eval(x/256.0, y/256.0))/2.0; // [0.0,1.0]
+				const double height=params.heightNoiseMin+(params.heightNoiseMax-params.heightNoiseMin)*heightNoiseValue;
+
+				// Choose colour
+				double r=0.0;
+				double g=0.0;
+				double b=1.0;
+
+				if (height>seaLevel) {
+					double heightNormalised=(height-seaLevel)/(maxHeight-seaLevel);
+					unsigned heightScaled=floor(heightNormalised*(2*256-1));
+
+					if (heightScaled<128) {
+						// 0x008800 -> 0x888800
+						r=heightScaled/256.0;
+						g=0.5;
+						b=0.0;
+					} else if (heightScaled<256) {
+						// 0x888800 -> 0x880000
+						heightScaled-=128;
+						r=0.5;
+						g=0.5-heightScaled/256.0;
+						b=0.0;
+					} else if (heightScaled<384) {
+						// 0x880000 -> 0x888888
+						heightScaled-=256;
+						r=0.5;
+						g=heightScaled/256.0;
+						b=heightScaled/256.0;
+					} else {
+						// 0x888888 -> 0xFFFFFF
+						heightScaled-=384;
+						r=0.5+heightScaled/256.0;
+						g=0.5+heightScaled/256.0;
+						b=0.5+heightScaled/256.0;
+					}
+				}
+
+				assert(r>=0.0 && r<=1.0);
+				assert(g>=0.0 && g<=1.0);
+				assert(b>=0.0 && b<=1.0);
+
+				// Draw pixel
+				cairo_set_source_rgb(cr, r, g, b);
+				cairo_rectangle(cr, x, y, 1, 1);
+				cairo_fill(cr);
+			}
+		}
+
+		// Tidy up
+		delete heightNoise;
+
+		return false;
+	}
+
+	gboolean HeightTemperatureDialogue::previewTemperatureDrawingAreaDraw(GtkWidget *widget, cairo_t *cr) {
+		cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+		cairo_paint(cr);
+
+		return false;
+	}
+
+	void heightTemperatureDialogueHeightNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->heightNoiseMinSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueHeightNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->heightNoiseMaxSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueHeightNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->heightNoiseSeedSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueHeightNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->heightNoiseOctavesSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueHeightNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->heightNoiseFrequencySpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueTemperatureNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->temperatureNoiseMinSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueTemperatureNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->temperatureNoiseMaxSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueTemperatureNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->temperatureNoiseSeedSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueTemperatureNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->temperatureNoiseOctavesSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueTemperatureNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->temperatureNoiseFrequencySpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueTemperatureLapseRateSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->temperatureLapseRateSpinButtonValueChanged(spinButton);
+	}
+
+	void heightTemperatureDialogueTemperatureLatitudeRangeSpinButtonValueChanged(GtkSpinButton *spinButton, gpointer userData) {
+		assert(userData!=NULL);
+
+		HeightTemperatureDialogue *dialogue=(HeightTemperatureDialogue *)userData;
+		dialogue->temperatureLatitudeRangeSpinButtonValueChanged(spinButton);
+	}
+
+	gboolean heightTemperatureDialoguePreviewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {
+		MapEditor::HeightTemperatureDialogue *dialogue=(MapEditor::HeightTemperatureDialogue *)userData;
+		return dialogue->previewHeightDrawingAreaDraw(widget, cr);
+	}
+
+	gboolean heightTemperatureDialoguePreviewTemperatureDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {
+		MapEditor::HeightTemperatureDialogue *dialogue=(MapEditor::HeightTemperatureDialogue *)userData;
+		return dialogue->previewTemperatureDrawingAreaDraw(widget, cr);
 	}
 
 };

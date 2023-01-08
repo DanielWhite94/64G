@@ -33,8 +33,26 @@ namespace MapEditor {
 		void getParams(Params *params);
 
 		bool run(Params *params); // params specify initial values and also returns outputs if dialogue is accepted
+
+		void heightNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void heightNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void heightNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void heightNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void heightNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton);
+		void temperatureNoiseMinSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void temperatureNoiseMaxSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void temperatureNoiseSeedSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void temperatureNoiseOctavesSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void temperatureNoiseFrequencySpinButtonValueChanged(GtkSpinButton *spinButton);
+		void temperatureLapseRateSpinButtonValueChanged(GtkSpinButton *spinButton);
+		void temperatureLatitudeRangeSpinButtonValueChanged(GtkSpinButton *spinButton);
+
+		gboolean previewHeightDrawingAreaDraw(GtkWidget *widget, cairo_t *cr);
+		gboolean previewTemperatureDrawingAreaDraw(GtkWidget *widget, cairo_t *cr);
+
 	private:
 		GtkWidget *window;
+
 		GtkWidget *heightNoiseMinSpinButton;
 		GtkWidget *heightNoiseMaxSpinButton;
 		GtkWidget *heightNoiseSeedSpinButton;
@@ -48,6 +66,11 @@ namespace MapEditor {
 		GtkWidget *temperatureLapseRateSpinButton;
 		GtkWidget *temperatureLatitudeRangeSpinButton;
 		GtkWidget *otherThreadsSpinButton;
+
+		GtkWidget *previewHeightDrawingArea;
+		GtkWidget *previewTemperatureDrawingArea;
+
+		void parametersChanged(void); // called when parameter values (except Threads) change
 	};
 
 };
