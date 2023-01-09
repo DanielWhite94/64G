@@ -210,6 +210,14 @@
                                 <property name="use-underline">True</property>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="menuViewLayersPaths">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Paths</property>
+                                <property name="use-underline">True</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>

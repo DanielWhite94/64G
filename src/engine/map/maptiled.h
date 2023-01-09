@@ -19,9 +19,10 @@ namespace Engine {
 			static const ImageLayer	ImageLayerHeight=2;
 			static const ImageLayer	ImageLayerMoisture=3;
 			static const ImageLayer	ImageLayerHeightContour=4;
-			static const ImageLayer	ImageLayerPolitical=5;
-			static const ImageLayer	ImageLayerRegionGrid=6;
-			static const ImageLayer	ImageLayerNB=7;
+			static const ImageLayer	ImageLayerPath=5;
+			static const ImageLayer	ImageLayerPolitical=6;
+			static const ImageLayer	ImageLayerRegionGrid=7;
+			static const ImageLayer	ImageLayerNB=8;
 
 			typedef unsigned ImageLayerSet;
 			static const ImageLayerSet ImageLayerSetNone=0;
@@ -30,9 +31,10 @@ namespace Engine {
 			static const ImageLayerSet ImageLayerSetHeight=(1u<<ImageLayerHeight);
 			static const ImageLayerSet ImageLayerSetMoisture=(1u<<ImageLayerMoisture);
 			static const ImageLayerSet ImageLayerSetHeightContour=(1u<<ImageLayerHeightContour);
+			static const ImageLayerSet ImageLayerSetPath=(1u<<ImageLayerPath);
 			static const ImageLayerSet ImageLayerSetPolitical=(1u<<ImageLayerPolitical);
 			static const ImageLayerSet ImageLayerSetRegionGrid=(1u<<ImageLayerRegionGrid);
-			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour|ImageLayerSetPolitical|ImageLayerSetRegionGrid;
+			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour|ImageLayerSetPath|ImageLayerSetPolitical|ImageLayerSetRegionGrid;
 
 			MapTiled();
 			~MapTiled();

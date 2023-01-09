@@ -60,6 +60,8 @@ namespace MapEditor {
 		bool menuViewLayersToggled(GtkWidget *widget);
 		bool menuViewLayersHeightContoursIsActive(void);
 		bool menuViewLayersHeightContoursToggled(GtkWidget *widget);
+		bool menuViewLayersPathsIsActive(void);
+		bool menuViewLayersPathsToggled(GtkWidget *widget);
 
 		GtkWidget *window;
 		GtkWidget *menuFileNew;
@@ -85,6 +87,7 @@ namespace MapEditor {
 		GtkWidget *menuViewLayersMoisture;
 		GtkWidget *menuViewLayersPolitical;
 		GtkWidget *menuViewLayersHeightContours;
+		GtkWidget *menuViewLayersPaths;
 
 		class Map *map;
 

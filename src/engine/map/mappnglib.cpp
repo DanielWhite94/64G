@@ -186,6 +186,9 @@ namespace Engine {
 			case MapTiled::ImageLayerHeightContour:
 				return MapPngLib::getColourForTileHeightContour(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
+			case MapTiled::ImageLayerPath:
+				return MapPngLib::getColourForTilePath(map, mapTileX, mapTileY, tile, r, g, b, a);
+			break;
 			case MapTiled::ImageLayerPolitical:
 				return MapPngLib::getColourForTilePolitical(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
@@ -323,6 +326,14 @@ namespace Engine {
 		// Use black pixels for the contour lines themselves, transparent for everything else
 		*r=*g=*b=0;
 		*a=(tile->getBitsetN(Gen::TileBitsetIndexContour) ? 255 : 0);
+	}
+
+	void MapPngLib::getColourForTilePath(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		// Use blue/cyan pixels for the paths themselves, transparent for everything else
+		*r=0;
+		*g=48;
+		*b=255;
+		*a=(tile->getBitsetN(Gen::TileBitsetIndexPath) ? 255 : 0);
 	}
 
 	void MapPngLib::getColourForTilePolitical(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {

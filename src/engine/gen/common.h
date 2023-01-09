@@ -6,6 +6,7 @@ namespace Engine {
 
 		const unsigned TileBitsetIndexContour=0;
 		const unsigned TileBitsetIndexLandmassBorder=1;
+		const unsigned TileBitsetIndexPath=2;
 
 	};
 };

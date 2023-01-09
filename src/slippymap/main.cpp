@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
-	fprintf(slippymapJs, "var layerPolitical=L.tileLayer('maptiled/{z}/{x}/{y}-5.png', {\n");
+	fprintf(slippymapJs, "var layerPath=L.tileLayer('maptiled/{z}/{x}/{y}-5.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
 	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
@@ -124,7 +124,18 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "});\n");
 	fprintf(slippymapJs, "\n");
 
-	fprintf(slippymapJs, "var layerRegionGrid=L.tileLayer('maptiled/{z}/{x}/{y}-6.png', {\n");
+	fprintf(slippymapJs, "var layerPolitical=L.tileLayer('maptiled/{z}/{x}/{y}-6.png', {\n");
+	fprintf(slippymapJs, "	attribution: 'me',\n");
+	fprintf(slippymapJs, "	minZoom: 2,\n");
+	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
+	fprintf(slippymapJs, "	minNativeZoom: 0,\n");
+	fprintf(slippymapJs, "	maxNativeZoom: %u,\n", slippyMaxNativeZoom);
+	fprintf(slippymapJs, "	zoomOffset: %u,\n", slippyZoomOffset);
+	fprintf(slippymapJs, "	errorTileUrl: 'maptiled/blank.png'\n");
+	fprintf(slippymapJs, "});\n");
+	fprintf(slippymapJs, "\n");
+
+	fprintf(slippymapJs, "var layerRegionGrid=L.tileLayer('maptiled/{z}/{x}/{y}-7.png', {\n");
 	fprintf(slippymapJs, "	attribution: 'me',\n");
 	fprintf(slippymapJs, "	minZoom: 2,\n");
 	fprintf(slippymapJs, "	maxZoom: %u,\n", slippyMaxNativeZoom+4);
@@ -144,6 +155,7 @@ int main(int argc, char *argv[]) {
 	fprintf(slippymapJs, "};\n");
 	fprintf(slippymapJs, "var overlays={\n");
 	fprintf(slippymapJs, "	\"Contours\": layerContour,\n");
+	fprintf(slippymapJs, "	\"Paths\": layerPath,\n");
 	fprintf(slippymapJs, "	\"Regions\": layerRegionGrid,\n");
 	fprintf(slippymapJs, "};\n");
 	fprintf(slippymapJs, "L.control.layers(baseLayers, overlays).addTo(map);\n");
