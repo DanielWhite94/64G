@@ -13,16 +13,49 @@ namespace Engine {
 
 		void pathFindClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
+		float pathFindDistanceFunctorDistance(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
+			assert(map!=NULL);
+			assert(userData==NULL);
+
+			return 1.0;
+		}
+
+		float pathFindDistanceFunctorDistanceWeight(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
+			assert(map!=NULL);
+			assert(userData==NULL);
+
+			// Grab both tiles
+			MapTile *tile1=map->getTileAtOffset(x1, y1, Engine::Map::Map::GetTileFlag::None);
+			MapTile *tile2=map->getTileAtOffset(x2, y2, Engine::Map::Map::GetTileFlag::None);
+			if (tile1==NULL || tile2==NULL)
+				return 0.0;
+
+			// Grab tile heights and if below sea level then cannot traverse
+			double h1=tile1->getHeight();
+			double h2=tile2->getHeight();
+			if (h1<=map->seaLevel || h2<=map->seaLevel)
+				return 0.0;
+
+			// Compute weight/distance
+			double distance=1.0; // due to moving 1m between adjacent tiles
+
+			distance+=(h1-h2)*(h1-h2); // penalise changes in altitude
+
+			return distance;
+		}
+
 		void PathFind::clear(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &pathFindClearModifyTilesFunctor, NULL, progressFunctor, progressUserData);
 		}
 
-		void PathFind::searchFull(unsigned endX, unsigned endY, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+		void PathFind::searchFull(unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Simply used searchGoal with impossible goal (beyond map boundaries)
-			searchGoal(Map::Map::regionsSize*MapRegion::tilesSize+128, Map::Map::regionsSize*MapRegion::tilesSize+128, endX, endY, progressFunctor, progressUserData);
+			searchGoal(Map::Map::regionsSize*MapRegion::tilesSize+128, Map::Map::regionsSize*MapRegion::tilesSize+128, endX, endY, distanceFunctor, distanceUserData, progressFunctor, progressUserData);
 		}
 
-		bool PathFind::searchGoal(unsigned startX, unsigned startY, unsigned endX, unsigned endY, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+		bool PathFind::searchGoal(unsigned startX, unsigned startY, unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+			assert(distanceFunctor!=NULL);
+
 			// Init
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 
@@ -69,7 +102,7 @@ namespace Engine {
 				nx=(entry.x+map->getWidth()-1)%map->getWidth();
 				ny=entry.y;
 				nd=getTileScratchValue(nx, ny);
-				delta=searchComputeLocalDistance(entry.x, entry.y, nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
@@ -85,7 +118,7 @@ namespace Engine {
 				nx=(entry.x+1)%map->getWidth();
 				ny=entry.y;
 				nd=getTileScratchValue(nx, ny);
-				delta=searchComputeLocalDistance(entry.x, entry.y, nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
@@ -101,7 +134,7 @@ namespace Engine {
 				nx=entry.x;
 				ny=(entry.y+map->getHeight()-1)%map->getHeight();
 				nd=getTileScratchValue(nx, ny);
-				delta=searchComputeLocalDistance(entry.x, entry.y, nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
@@ -117,7 +150,7 @@ namespace Engine {
 				nx=entry.x;
 				ny=(entry.y+1)%map->getHeight();
 				nd=getTileScratchValue(nx, ny);
-				delta=searchComputeLocalDistance(entry.x, entry.y, nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
@@ -142,7 +175,7 @@ namespace Engine {
 			return false;
 		}
 
-		bool PathFind::trace(unsigned startX, unsigned startY, PathFindFunctor *functor, void *functorUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+		bool PathFind::trace(unsigned startX, unsigned startY, TraceFunctor *functor, void *functorUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Init
 			Util::TimeMs startTimeMs=Util::getTimeMs();
 
@@ -260,27 +293,6 @@ namespace Engine {
 
 			// Update tile
 			tile->setScratchFloat(value);
-		}
-
-		float PathFind::searchComputeLocalDistance(int x1, int y1, int x2, int y2) {
-			// Grab both tiles
-			MapTile *tile1=map->getTileAtOffset(x1, y1, Engine::Map::Map::GetTileFlag::None);
-			MapTile *tile2=map->getTileAtOffset(x2, y2, Engine::Map::Map::GetTileFlag::None);
-			if (tile1==NULL || tile2==NULL)
-				return 0.0;
-
-			// Grab tile heights and if below sea level then cannot traverse
-			double h1=tile1->getHeight();
-			double h2=tile2->getHeight();
-			if (h1<=map->seaLevel || h2<=map->seaLevel)
-				return 0.0;
-
-			// Compute weight/distance
-			double distance=1.0; // due to moving 1m between adjacent tiles
-
-			distance+=(h1-h2)*(h1-h2); // penalise changes in altitude
-
-			return distance;
 		}
 
 		bool operator<(PathFind::QueueEntry const &lhs, PathFind::QueueEntry const &rhs) {
