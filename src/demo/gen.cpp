@@ -12,6 +12,7 @@
 #include "../engine/gen/floodfill.h"
 #include "../engine/gen/modifytiles.h"
 #include "../engine/gen/particleflow.h"
+#include "../engine/gen/pathfind.h"
 #include "../engine/gen/search.h"
 #include "../engine/gen/stats.h"
 #include "../engine/gen/town.h"

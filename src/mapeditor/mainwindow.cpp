@@ -14,7 +14,9 @@
 #include "progressdialogue.h"
 #include "util.h"
 
+#include "../engine/gen/common.h"
 #include "../engine/gen/modifytiles.h"
+#include "../engine/gen/pathfind.h"
 #include "../engine/gen/search.h"
 #include "../engine/fbnnoise.h"
 
