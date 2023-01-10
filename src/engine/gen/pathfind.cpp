@@ -9,7 +9,8 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Gen {
-		bool operator<(PathFind::QueueEntry const &lhs, PathFind::QueueEntry const &rhs);
+		bool operator<(PathFind::SearchFullQueueEntry const &lhs, PathFind::SearchFullQueueEntry const &rhs);
+		bool operator<(PathFind::SearchGoalQueueEntry const &lhs, PathFind::SearchGoalQueueEntry const &rhs);
 
 		void pathFindClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
@@ -49,8 +50,116 @@ namespace Engine {
 		}
 
 		void PathFind::searchFull(unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
-			// Simply used searchGoal with impossible goal (beyond map boundaries)
-			searchGoal(Map::Map::regionsSize*MapRegion::tilesSize+128, Map::Map::regionsSize*MapRegion::tilesSize+128, endX, endY, distanceFunctor, distanceUserData, progressFunctor, progressUserData);
+			assert(distanceFunctor!=NULL);
+
+			// Init
+			Util::TimeMs startTimeMs=Util::getTimeMs();
+
+			// Give a progress update
+			if (progressFunctor!=NULL && !progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return;
+
+			// Create priority queue which will store nodes/tiles which need processing
+			std::priority_queue<PathFind::SearchFullQueueEntry> queue;
+
+			// Begin at destination tile and work backwards
+			// So by definition this tile has distance 0.0
+			setTileScratchValue(endX, endY, 0.0);
+
+			PathFind::SearchFullQueueEntry endEntry={
+				.x=(uint16_t)endX,
+				.y=(uint16_t)endY,
+				.distance=(float)0.0,
+			};
+			queue.push(endEntry);
+
+			// Process nodes/tiles until we reach destination or run out of tiles
+			while(!queue.empty()) {
+				// Pop lowest distance entry
+				PathFind::SearchFullQueueEntry entry=queue.top();
+				queue.pop();
+
+				// Handle neighbours
+				unsigned nx, ny;
+				float nd;
+				float newd;
+				float delta;
+
+				// Left neighbour
+				nx=(entry.x+map->getWidth()-1)%map->getWidth();
+				ny=entry.y;
+				nd=getTileScratchValue(nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
+				newd=entry.distance+delta;
+				if (delta>0.0 && newd<nd) {
+					setTileScratchValue(nx, ny, newd);
+					PathFind::SearchFullQueueEntry newEntry={
+						.x=(uint16_t)nx,
+						.y=(uint16_t)ny,
+						.distance=newd,
+					};
+					queue.push(newEntry);
+				}
+
+				// Right neighbour
+				nx=(entry.x+1)%map->getWidth();
+				ny=entry.y;
+				nd=getTileScratchValue(nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
+				newd=entry.distance+delta;
+				if (delta>0.0 && newd<nd) {
+					setTileScratchValue(nx, ny, newd);
+					PathFind::SearchFullQueueEntry newEntry={
+						.x=(uint16_t)nx,
+						.y=(uint16_t)ny,
+						.distance=newd,
+					};
+					queue.push(newEntry);
+				}
+
+				// Above neighbour
+				nx=entry.x;
+				ny=(entry.y+map->getHeight()-1)%map->getHeight();
+				nd=getTileScratchValue(nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
+				newd=entry.distance+delta;
+				if (delta>0.0 && newd<nd) {
+					setTileScratchValue(nx, ny, newd);
+					PathFind::SearchFullQueueEntry newEntry={
+						.x=(uint16_t)nx,
+						.y=(uint16_t)ny,
+						.distance=newd,
+					};
+					queue.push(newEntry);
+				}
+
+				// Below neighbour
+				nx=entry.x;
+				ny=(entry.y+1)%map->getHeight();
+				nd=getTileScratchValue(nx, ny);
+				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
+				newd=entry.distance+delta;
+				if (delta>0.0 && newd<nd) {
+					setTileScratchValue(nx, ny, newd);
+					PathFind::SearchFullQueueEntry newEntry={
+						.x=(uint16_t)nx,
+						.y=(uint16_t)ny,
+						.distance=newd,
+					};
+					queue.push(newEntry);
+				}
+
+				// Give a progress update
+				// (passing progress=0.0 still at least pulses the bar to show activity - even if we don't have a good estimate of the progress)
+				if (progressFunctor!=NULL && !progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData))
+					return;
+			}
+
+			// Give a progress update
+			if (progressFunctor!=NULL && !progressFunctor(1.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				return;
+
+			return;
 		}
 
 		bool PathFind::searchGoal(unsigned startX, unsigned startY, unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
@@ -64,13 +173,13 @@ namespace Engine {
 				return false;
 
 			// Create priority queue which will store nodes/tiles which need processing
-			std::priority_queue<PathFind::QueueEntry> queue;
+			std::priority_queue<PathFind::SearchGoalQueueEntry> queue;
 
 			// Begin at destination tile and work backwards
 			// So by definition this tile has distance 0.0
 			setTileScratchValue(endX, endY, 0.0);
 
-			PathFind::QueueEntry endEntry={
+			PathFind::SearchGoalQueueEntry endEntry={
 				.x=(uint16_t)endX,
 				.y=(uint16_t)endY,
 				.distance=(float)0.0,
@@ -80,7 +189,7 @@ namespace Engine {
 			// Process nodes/tiles until we reach destination or run out of tiles
 			while(!queue.empty()) {
 				// Pop lowest distance entry
-				PathFind::QueueEntry entry=queue.top();
+				PathFind::SearchGoalQueueEntry entry=queue.top();
 				queue.pop();
 
 				// Have we reached target start tile?
@@ -106,7 +215,7 @@ namespace Engine {
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::QueueEntry newEntry={
+					PathFind::SearchGoalQueueEntry newEntry={
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
@@ -122,7 +231,7 @@ namespace Engine {
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::QueueEntry newEntry={
+					PathFind::SearchGoalQueueEntry newEntry={
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
@@ -138,7 +247,7 @@ namespace Engine {
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::QueueEntry newEntry={
+					PathFind::SearchGoalQueueEntry newEntry={
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
@@ -154,7 +263,7 @@ namespace Engine {
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::QueueEntry newEntry={
+					PathFind::SearchGoalQueueEntry newEntry={
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
@@ -295,7 +404,12 @@ namespace Engine {
 			tile->setScratchFloat(value);
 		}
 
-		bool operator<(PathFind::QueueEntry const &lhs, PathFind::QueueEntry const &rhs) {
+		bool operator<(PathFind::SearchFullQueueEntry const &lhs, PathFind::SearchFullQueueEntry const &rhs) {
+			// Note: this is reversed as we want to choose minimum distance entry from queue rather than maximum
+			return lhs.distance>rhs.distance;
+		}
+
+		bool operator<(PathFind::SearchGoalQueueEntry const &lhs, PathFind::SearchGoalQueueEntry const &rhs) {
 			// Note: this is reversed as we want to choose minimum distance entry from queue rather than maximum
 			return lhs.distance>rhs.distance;
 		}

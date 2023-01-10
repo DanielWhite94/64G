@@ -14,7 +14,12 @@ namespace Engine {
 			// This class provides algorithms to find paths across the Map based on a given weight function for traversing tiles.
 			// Note that it uses the tile's scratch field to store distance to the end tile.
 
-			struct QueueEntry {
+			struct SearchFullQueueEntry {
+				uint16_t x, y;
+				float distance;
+			};
+
+			struct SearchGoalQueueEntry {
 				uint16_t x, y;
 				float distance;
 			};
