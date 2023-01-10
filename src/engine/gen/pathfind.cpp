@@ -79,6 +79,11 @@ namespace Engine {
 				PathFind::SearchFullQueueEntry entry=queue.top();
 				queue.pop();
 
+				// If distance recorded in the tile is lower than the distance stored in the struct then this tile was added to the queue again but with a lower distance.
+				// Therefore the entry with this lower distance will have already been processed by now and so we can skip processing this tile again.
+				if (getTileScratchValue(entry.x, entry.y)<entry.distance)
+					continue;
+
 				// Handle neighbours
 				unsigned nx, ny;
 				float nd;
@@ -191,6 +196,11 @@ namespace Engine {
 				// Pop lowest distance entry
 				PathFind::SearchGoalQueueEntry entry=queue.top();
 				queue.pop();
+
+				// If distance recorded in the tile is lower than the distance stored in the struct then this tile was added to the queue again but with a lower distance.
+				// Therefore the entry with this lower distance will have already been processed by now and so we can skip processing this tile again.
+				if (getTileScratchValue(entry.x, entry.y)<entry.distance)
+					continue;
 
 				// Have we reached target start tile?
 				if (entry.x==startX && entry.y==startY) {
