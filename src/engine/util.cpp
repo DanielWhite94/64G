@@ -193,8 +193,11 @@ namespace Engine {
 			output=true;
 		}
 
-		if (timeS>0 || !output)
-			sprintf(str, "%llis", timeS);
+		if (timeS>0 || !output) {
+			sprintf(sub, "%llis", timeS);
+			strcat(str, sub);
+			output=true;
+		}
 	}
 
 	Util::TimeMs Util::calculateTimeRemaining(double progress, TimeMs elapsedTimeMs) {
