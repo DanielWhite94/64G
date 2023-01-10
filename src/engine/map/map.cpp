@@ -291,6 +291,9 @@ namespace Engine {
 		Map::~Map() {
 			unsigned i;
 
+			// Ensure any changes are saved (including stuff like metadata and regions)
+			save();
+
 			// Remove regions.
 			while(regionsCount>0)
 				regionUnload(regionsCount-1);
