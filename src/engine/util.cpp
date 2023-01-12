@@ -217,6 +217,30 @@ namespace Engine {
 		return remainingTimeMs;
 	}
 
+	unsigned Util::wrappingDistX(unsigned x1, unsigned x2, unsigned mapW) {
+		unsigned temp;
+		if (x1>x2) {
+			temp=x1;
+			x1=x2;
+			x2=temp;
+		}
+		return std::min(x2-x1, x1+mapW-x2);
+	}
+
+	unsigned Util::wrappingDistY(unsigned y1, unsigned y2, unsigned mapH) {
+		unsigned temp;
+		if (y1>y2) {
+			temp=y1;
+			y1=y2;
+			y2=temp;
+		}
+		return std::min(y2-y1, y1+mapH-y2);
+	}
+
+	unsigned Util::wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2, unsigned mapW, unsigned mapH) {
+		return wrappingDistX(x1, x2, mapW)+wrappingDistY(y1, y2, mapH);
+	}
+
 	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 		assert(progress>=0.0 && progress<=1.0);
 		assert(userData!=NULL);

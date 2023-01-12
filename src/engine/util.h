@@ -36,6 +36,10 @@ namespace Engine {
 		static void sprintTime(char *str, TimeMs timeMs); // str should have space for at least 16 characters (null byte included)
 
 		static TimeMs calculateTimeRemaining(double progress, TimeMs elapsedTimeMs); // progress in range [0,1], if cannot estimate then returns -1
+
+		static unsigned wrappingDistX(unsigned x1, unsigned x2, unsigned mapW); // distance between x1 and x2 (considers wrapping around the edge as an option)
+		static unsigned wrappingDistY(unsigned y1, unsigned y2, unsigned mapH);
+		static unsigned wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2, unsigned mapW, unsigned mapH); // sum of x and y distances (e.g. manhattan/taxicab distance)
 	};
 
 	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string
