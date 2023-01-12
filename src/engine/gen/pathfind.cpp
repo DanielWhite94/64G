@@ -81,8 +81,10 @@ namespace Engine {
 
 				// If distance recorded in the tile is lower than the distance stored in the struct then this tile was added to the queue again but with a lower distance.
 				// Therefore the entry with this lower distance will have already been processed by now and so we can skip processing this tile again.
-				if (getTileScratchValue(entry.x, entry.y)<entry.distance)
+				float tileDistance=getTileScratchValue(entry.x, entry.y);
+				if (tileDistance<entry.distance)
 					continue;
+				assert(entry.distance==tileDistance);
 
 				// Handle neighbours
 				unsigned nx, ny;
@@ -199,8 +201,10 @@ namespace Engine {
 
 				// If distance recorded in the tile is lower than the distance stored in the struct then this tile was added to the queue again but with a lower distance.
 				// Therefore the entry with this lower distance will have already been processed by now and so we can skip processing this tile again.
-				if (getTileScratchValue(entry.x, entry.y)<entry.distance)
+				float tileDistance=getTileScratchValue(entry.x, entry.y);
+				if (tileDistance<entry.distance)
 					continue;
+				assert(entry.distance==tileDistance);
 
 				// Have we reached target start tile?
 				if (entry.x==startX && entry.y==startY) {
