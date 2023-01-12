@@ -40,7 +40,7 @@ namespace Engine {
 			// Compute weight/distance
 			double distance=1.0; // due to moving 1m between adjacent tiles
 
-			distance+=(h1-h2)*(h1-h2); // penalise changes in altitude
+			distance+=2.0*std::abs(h1-h2); // penalise changes in altitude
 
 			return distance;
 		}
