@@ -140,7 +140,7 @@
                       <object class="GtkMenuItem">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Layers</property>
+                        <property name="label" translatable="yes">Base Layer</property>
                         <property name="use-underline">True</property>
                         <child type="submenu">
                           <object class="GtkMenu">
@@ -150,7 +150,7 @@
                               <object class="GtkRadioMenuItem" id="menuViewLayersBase">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Base</property>
+                                <property name="label" translatable="yes">Standard</property>
                                 <property name="use-underline">True</property>
                                 <property name="active">True</property>
                                 <property name="draw-as-radio">True</property>
@@ -196,30 +196,30 @@
                                 <property name="group">menuViewLayersBase</property>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkSeparatorMenuItem">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkCheckMenuItem" id="menuViewLayersHeightContours">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Height Contours</property>
-                                <property name="use-underline">True</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkCheckMenuItem" id="menuViewLayersPaths">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Paths</property>
-                                <property name="use-underline">True</property>
-                              </object>
-                            </child>
                           </object>
                         </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="menuViewLayersHeightContours">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Show Height Contours</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="menuViewLayersPaths">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Show Paths</property>
+                        <property name="use-underline">True</property>
                       </object>
                     </child>
                     <child>
