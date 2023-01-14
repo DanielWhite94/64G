@@ -99,6 +99,9 @@ namespace Engine {
 			queue.push(endEntry);
 
 			// Process nodes/tiles until we reach destination or run out of tiles
+			unsigned long long totalTiles=map->getWidth()*map->getHeight();
+			unsigned long long handledTiles=0;
+
 			while(!queue.empty()) {
 				// Pop lowest distance entry
 				PathFind::SearchFullQueueEntry entry=queue.top();
@@ -182,8 +185,11 @@ namespace Engine {
 				}
 
 				// Give a progress update
-				// (passing progress=0.0 still at least pulses the bar to show activity - even if we don't have a good estimate of the progress)
-				if (progressFunctor!=NULL && !progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData))
+				// TODO: improve this (currently works well then at some point suddenly jumps to 100% as we realise we don't have to handle every tile in the region)
+				++handledTiles;
+				double progress=((double)handledTiles)/totalTiles;
+				progress=std::min(progress, 1.0);
+				if (progressFunctor!=NULL && !progressFunctor(progress, Util::getTimeMs()-startTimeMs, progressUserData))
 					return;
 			}
 
