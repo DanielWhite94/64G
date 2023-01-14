@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <queue>
@@ -194,6 +195,9 @@ namespace Engine {
 			queue.push(endEntry);
 
 			// Process nodes/tiles until we reach destination or run out of tiles
+			unsigned progressCounter=0; // number of nodes/tiles we have processed
+			unsigned progressMax=Util::wrappingDist(startX, startY, endX, endY, map->getWidth(), map->getHeight()); // distance between start and end tiles - used as a loose upper bound to estimate progress
+			unsigned progressMin=progressMax; // distance for closest node/tile found so far
 			while(!queue.empty()) {
 				// Pop lowest distance entry
 				PathFind::SearchGoalQueueEntry entry=queue.top();
@@ -286,9 +290,17 @@ namespace Engine {
 				}
 
 				// Give a progress update
-				// (passing progress=0.0 still at least pulses the bar to show activity - even if we don't have a good estimate of the progress)
-				if (progressFunctor!=NULL && !progressFunctor(0.0, Util::getTimeMs()-startTimeMs, progressUserData))
-					return false;
+				// This is an estimate based on how far we are from the goal vs how far away we were when we started.
+				unsigned progressCurrent=Util::wrappingDist(startX, startY, entry.x, entry.y, map->getWidth(), map->getHeight());
+				if (progressCurrent<progressMin)
+					progressMin=progressCurrent;
+
+				if (progressCounter++%128==0) {
+					double progress=1.0-((double)progressMin)/progressMax;
+					progress=std::clamp(progress, 0.0, 1.0);
+					if (progressFunctor!=NULL && !progressFunctor(progress, Util::getTimeMs()-startTimeMs, progressUserData))
+						return false;
+				}
 			}
 
 			// Give a progress update
