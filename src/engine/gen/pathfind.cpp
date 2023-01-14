@@ -46,6 +46,30 @@ namespace Engine {
 			return distance;
 		}
 
+		float pathFindSearchGoalDistanceHeuristicZero(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
+			return 0.0;
+		}
+
+		float pathFindSearchGoalDistanceHeuristicDistance(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
+			// Only consider manhatten/taxicab distance
+			return Util::wrappingDist(x1, y1, x2, y2, map->getWidth(), map->getHeight());
+		}
+
+		float pathFindSearchGoalDistanceHeuristicDistanceWeight(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
+			double distance=0.0;
+
+			// Add manhatten/taxicab distance
+			distance+=Util::wrappingDist(x1, y1, x2, y2, map->getWidth(), map->getHeight());
+
+			// Compare height of two tiles and add the relevant penalaty
+			MapTile *t1=map->getTileAtOffset(x1, y1, Engine::Map::Map::GetTileFlag::None);
+			MapTile *t2=map->getTileAtOffset(x2, y2, Engine::Map::Map::GetTileFlag::None);
+			if (t1!=NULL && t2!=NULL)
+				distance+=2.0*std::abs(t1->getHeight()-t2->getHeight()); // penalise changes in altitude
+
+			return distance;
+		}
+
 		void PathFind::clear(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &pathFindClearModifyTilesFunctor, NULL, progressFunctor, progressUserData);
 		}
@@ -170,8 +194,9 @@ namespace Engine {
 			return;
 		}
 
-		bool PathFind::searchGoal(unsigned startX, unsigned startY, unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+		bool PathFind::searchGoal(unsigned startX, unsigned startY, unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, HeuristicFunctor *heuristicFunctor, void *heuristicUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(distanceFunctor!=NULL);
+			assert(heuristicFunctor!=NULL);
 
 			// Init
 			Util::TimeMs startTimeMs=Util::getTimeMs();
@@ -191,6 +216,7 @@ namespace Engine {
 				.x=(uint16_t)endX,
 				.y=(uint16_t)endY,
 				.distance=(float)0.0,
+				.estimate=0.0, // not correct but doesn't matter as will always be processed first regardless
 			};
 			queue.push(endEntry);
 
@@ -237,6 +263,7 @@ namespace Engine {
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
+						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
 					};
 					queue.push(newEntry);
 				}
@@ -253,6 +280,7 @@ namespace Engine {
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
+						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
 					};
 					queue.push(newEntry);
 				}
@@ -269,6 +297,7 @@ namespace Engine {
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
+						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
 					};
 					queue.push(newEntry);
 				}
@@ -285,6 +314,7 @@ namespace Engine {
 						.x=(uint16_t)nx,
 						.y=(uint16_t)ny,
 						.distance=newd,
+						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
 					};
 					queue.push(newEntry);
 				}
@@ -437,7 +467,7 @@ namespace Engine {
 
 		bool operator<(PathFind::SearchGoalQueueEntry const &lhs, PathFind::SearchGoalQueueEntry const &rhs) {
 			// Note: this is reversed as we want to choose minimum distance entry from queue rather than maximum
-			return lhs.distance>rhs.distance;
+			return lhs.estimate>rhs.estimate;
 		}
 
 		void pathFindClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
