@@ -424,6 +424,7 @@ namespace MapEditor {
 		// Clear cached images
 		prog->setText("2/2: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);
+		updateDrawingArea();
 
 		// Tidy up
 		delete prog;
@@ -504,6 +505,7 @@ namespace MapEditor {
 		// Clear cached images
 		prog->setText("3/3: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);
+		updateDrawingArea();
 
 		// Tidy up
 		delete prog;
@@ -556,6 +558,7 @@ namespace MapEditor {
 		// Clear cached images
 		prog->setText("2/2: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetHeightContour, &progressDialogueProgressFunctor, prog);
+		updateDrawingArea();
 
 		// Tidy up
 		delete prog;
