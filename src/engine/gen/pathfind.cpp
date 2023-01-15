@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <limits>
 #include <queue>
 
@@ -39,9 +40,9 @@ namespace Engine {
 				return 0.0;
 
 			// Compute weight/distance
-			double distance=1.0; // due to moving 1m between adjacent tiles
+			double distance=0.1; // due to moving 1m between adjacent tiles
 
-			distance+=2.0*std::abs(h1-h2); // penalise changes in altitude
+			distance+=2.0*std::fabs(h1-h2); // penalise changes in altitude
 
 			return distance;
 		}
@@ -65,7 +66,7 @@ namespace Engine {
 			MapTile *t1=map->getTileAtOffset(x1, y1, Engine::Map::Map::GetTileFlag::None);
 			MapTile *t2=map->getTileAtOffset(x2, y2, Engine::Map::Map::GetTileFlag::None);
 			if (t1!=NULL && t2!=NULL)
-				distance+=2.0*std::abs(t1->getHeight()-t2->getHeight()); // penalise changes in altitude
+				distance+=2.0*std::fabs(t1->getHeight()-t2->getHeight()); // penalise changes in altitude
 
 			return distance;
 		}
