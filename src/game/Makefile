@@ -2,7 +2,7 @@ CPP = clang++
 CFLAGS = -Wall -std=c++20 -Wno-c99-designator
 LFLAGS = -lm -lpng -lpthread -lglut -lGLU -lGL
 
-OBJS = main.o
+OBJS = main.o window.o
 
 debug: CFLAGS += -O0 -g -ggdb3
 release: CFLAGS += -O3 -DNDEBUG
