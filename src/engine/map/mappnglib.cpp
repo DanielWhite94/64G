@@ -171,17 +171,17 @@ namespace Engine {
 		assert(b!=NULL);
 
 		switch(layer) {
-			case MapTiled::ImageLayerBase:
-				return MapPngLib::getColourForTileBase(map, mapTileX, mapTileY, tile, r, g, b, a);
+			case MapTiled::ImageLayerHeight:
+				return MapPngLib::getColourForTileHeight(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerTemperature:
 				return MapPngLib::getColourForTileTemperature(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
-			case MapTiled::ImageLayerHeight:
-				return MapPngLib::getColourForTileHeight(map, mapTileX, mapTileY, tile, r, g, b, a);
-			break;
 			case MapTiled::ImageLayerMoisture:
 				return MapPngLib::getColourForTileMoisture(map, mapTileX, mapTileY, tile, r, g, b, a);
+			break;
+			case MapTiled::ImageLayerTexture:
+				return MapPngLib::getColourForTileTexture(map, mapTileX, mapTileY, tile, r, g, b, a);
 			break;
 			case MapTiled::ImageLayerHeightContour:
 				return MapPngLib::getColourForTileHeightContour(map, mapTileX, mapTileY, tile, r, g, b, a);
@@ -199,62 +199,6 @@ namespace Engine {
 
 		assert(false);
 		*r=*g=*b=*a=0;
-	}
-
-	void MapPngLib::getColourForTileBase(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
-		// Loop over layers from top to bottom looking for one with a texture set
-		for(int z=MapTile::layersMax-1; z>=0; --z) {
-			const MapTile::Layer *layer=tile->getLayer(z);
-
-			if (layer->textureId!=MapTexture::IdMax) {
-				const MapTexture *texture=map->getTexture(layer->textureId);
-				if (texture!=NULL) {
-					*r=texture->getMapColourR();
-					*g=texture->getMapColourG();
-					*b=texture->getMapColourB();
-					*a=255;
-					return;
-				} else
-					assert(false);
-			}
-		}
-
-		*r=255;*g=0;*b=0;*a=255;
-	}
-
-	void MapPngLib::getColourForTileTemperature(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
-		*a=255;
-
-		// Grab temperature and normalise to [0, 1]
-		double temperature=tile->getTemperature();
-		double temperatureNormalised=(temperature-map->minTemperature)/(map->maxTemperature-map->minTemperature);
-
-		// Scale temperature up to [0, 1023]
-		unsigned temperatureScaled=floor(temperatureNormalised*(4*256-1));
-		if (temperatureScaled<256) {
-			// 0x0000FF -> 0x00FFFF
-			*r=0;
-			*g=temperatureScaled;
-			*b=255;
-		} else if (temperatureScaled<512) {
-			// 0x00FFFF -> 0x00FF00
-			temperatureScaled-=256;
-			*r=0;
-			*g=255;
-			*b=255-temperatureScaled;
-		} else if (temperatureScaled<768) {
-			// 0x00FF00 -> 0xFFFF00
-			temperatureScaled-=512;
-			*r=temperatureScaled;
-			*g=255;
-			*b=0;
-		} else {
-			// 0xFFFF00 -> 0xFF0000
-			temperatureScaled-=768;
-			*r=255;
-			*g=255-temperatureScaled;
-			*b=0;
-		}
 	}
 
 	void MapPngLib::getColourForTileHeight(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
@@ -300,6 +244,41 @@ namespace Engine {
 		}
 	}
 
+	void MapPngLib::getColourForTileTemperature(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		*a=255;
+
+		// Grab temperature and normalise to [0, 1]
+		double temperature=tile->getTemperature();
+		double temperatureNormalised=(temperature-map->minTemperature)/(map->maxTemperature-map->minTemperature);
+
+		// Scale temperature up to [0, 1023]
+		unsigned temperatureScaled=floor(temperatureNormalised*(4*256-1));
+		if (temperatureScaled<256) {
+			// 0x0000FF -> 0x00FFFF
+			*r=0;
+			*g=temperatureScaled;
+			*b=255;
+		} else if (temperatureScaled<512) {
+			// 0x00FFFF -> 0x00FF00
+			temperatureScaled-=256;
+			*r=0;
+			*g=255;
+			*b=255-temperatureScaled;
+		} else if (temperatureScaled<768) {
+			// 0x00FF00 -> 0xFFFF00
+			temperatureScaled-=512;
+			*r=temperatureScaled;
+			*g=255;
+			*b=0;
+		} else {
+			// 0xFFFF00 -> 0xFF0000
+			temperatureScaled-=768;
+			*r=255;
+			*g=255-temperatureScaled;
+			*b=0;
+		}
+	}
+
 	void MapPngLib::getColourForTileMoisture(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
@@ -320,6 +299,27 @@ namespace Engine {
 		*r=255-moistureScaled;
 		*g=255-moistureScaled;
 		*b=255;
+	}
+
+	void MapPngLib::getColourForTileTexture(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+		// Loop over layers from top to bottom looking for one with a texture set
+		for(int z=MapTile::layersMax-1; z>=0; --z) {
+			const MapTile::Layer *layer=tile->getLayer(z);
+
+			if (layer->textureId!=MapTexture::IdMax) {
+				const MapTexture *texture=map->getTexture(layer->textureId);
+				if (texture!=NULL) {
+					*r=texture->getMapColourR();
+					*g=texture->getMapColourG();
+					*b=texture->getMapColourB();
+					*a=255;
+					return;
+				} else
+					assert(false);
+			}
+		}
+
+		*r=255;*g=0;*b=0;*a=255;
 	}
 
 	void MapPngLib::getColourForTileHeightContour(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {

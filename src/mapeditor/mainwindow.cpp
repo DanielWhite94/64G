@@ -124,10 +124,10 @@ namespace MapEditor {
 		error|=(menuViewShowRegionGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowRegionGrid")))==NULL;
 		error|=(menuViewShowTileGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowTileGrid")))==NULL;
 		error|=(menuViewShowKmGrid=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewShowKmGrid")))==NULL;
-		error|=(menuViewLayersBase=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersBase")))==NULL;
-		error|=(menuViewLayersTemperature=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersTemperature")))==NULL;
 		error|=(menuViewLayersHeight=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersHeight")))==NULL;
+		error|=(menuViewLayersTemperature=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersTemperature")))==NULL;
 		error|=(menuViewLayersMoisture=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersMoisture")))==NULL;
+		error|=(menuViewLayersTexture=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersTexture")))==NULL;
 		error|=(menuViewLayersPolitical=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersPolitical")))==NULL;
 		error|=(menuViewLayersHeightContours=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersHeightContours")))==NULL;
 		error|=(menuViewLayersPaths=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewLayersPaths")))==NULL;
@@ -161,10 +161,10 @@ namespace MapEditor {
 		g_signal_connect(menuViewShowRegionGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowRegionGridToggled), (void *)this);
 		g_signal_connect(menuViewShowTileGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowTileGridToggled), (void *)this);
 		g_signal_connect(menuViewShowKmGrid, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuViewShowKmGridToggled), (void *)this);
-		g_signal_connect(menuViewLayersBase, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
-		g_signal_connect(menuViewLayersTemperature, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersHeight, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
+		g_signal_connect(menuViewLayersTemperature, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersMoisture, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
+		g_signal_connect(menuViewLayersTexture, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersPolitical, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersToggled), (void *)this);
 		g_signal_connect(menuViewLayersHeightContours, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersHeightContoursToggled), (void *)this);
 		g_signal_connect(menuViewLayersPaths, "toggled", G_CALLBACK(mapEditorMainWindowWrapperMenuLayersPathsToggled), (void *)this);
@@ -925,13 +925,13 @@ namespace MapEditor {
 	MapTiled::ImageLayer MainWindow::menuViewLayersGetActiveLayer(void) {
 		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewLayersTemperature)))
 			return MapTiled::ImageLayerTemperature;
-		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewLayersHeight)))
-			return MapTiled::ImageLayerHeight;
 		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewLayersMoisture)))
 			return MapTiled::ImageLayerMoisture;
+		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewLayersTexture)))
+			return MapTiled::ImageLayerTexture;
 		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewLayersPolitical)))
 			return MapTiled::ImageLayerPolitical;
-		return MapTiled::ImageLayerBase;
+		return MapTiled::ImageLayerHeight;
 	}
 
 	bool MainWindow::menuViewLayersToggled(GtkWidget *widget) {
