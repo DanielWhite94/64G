@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cfloat>
+#include <cstdlib>
 
 #include "stats.h"
 
