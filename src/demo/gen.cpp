@@ -894,12 +894,6 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Landmass (contintent/island) identification
-	unsigned landmassCacheBits[Gen::EdgeDetect::DirectionNB];
-	landmassCacheBits[Gen::EdgeDetect::DirectionEast]=60;
-	landmassCacheBits[Gen::EdgeDetect::DirectionNorth]=61;
-	landmassCacheBits[Gen::EdgeDetect::DirectionWest]=62;
-	landmassCacheBits[Gen::EdgeDetect::DirectionSouth]=63;
-
 	Gen::EdgeDetect landmassEdgeDetect(mapData.map);
 	landmassEdgeDetect.traceFast(threadCount, &Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &utilProgressFunctorString, (void *)"Identifying landmass boundaries via edge detection ");
 	printf("\n");
