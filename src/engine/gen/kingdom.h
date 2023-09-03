@@ -7,8 +7,6 @@
 namespace Engine {
 	namespace Gen {
 
-		void kingdomIdentifyTerritoriesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
-
 		class Kingdom {
 		public:
 			// This class provides algorithms to generate 'kingdoms' - areas of the map under control of a particular race/group

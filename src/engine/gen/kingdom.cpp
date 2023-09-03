@@ -21,22 +21,9 @@ namespace Engine {
 			void *progressUserData;
 		};
 
+		void kingdomIdentifyTerritoriesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
 		bool kingdomIdentifyTerritoriesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void kingdomIdentifyTerritoriesModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
-
-		void kingdomIdentifyTerritoriesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData) {
-			assert(map!=NULL);
-			assert(userData==NULL);
-
-			// Grab tile.
-			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::CreateDirty);
-			if (tile==NULL)
-				return;
-
-			// Set tile's landmass id
-			// Note: we do +1 so that id 0 is reserved for 'border' tiles
-			tile->setLandmassId(groupId+1);
-		}
 
 		void Kingdom::identifyTerritories(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Create progress data struct
@@ -63,6 +50,20 @@ namespace Engine {
 			progressData.progressMultiplier=4.0/7.0;
 			Gen::FloodFill landmassFloodFill(map, 63);
 			landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &kingdomIdentifyTerritoriesFloodFillLandmassFillFunctor, NULL, &kingdomIdentifyTerritoriesProgressFunctor, &progressData);
+		}
+
+		void kingdomIdentifyTerritoriesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData) {
+			assert(map!=NULL);
+			assert(userData==NULL);
+
+			// Grab tile.
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::CreateDirty);
+			if (tile==NULL)
+				return;
+
+			// Set tile's landmass id
+			// Note: we do +1 so that id 0 is reserved for 'border' tiles
+			tile->setLandmassId(groupId+1);
 		}
 
 		bool kingdomIdentifyTerritoriesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
