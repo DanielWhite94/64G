@@ -147,10 +147,10 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkRadioMenuItem" id="menuViewLayersBase">
+                              <object class="GtkRadioMenuItem" id="menuViewLayersHeight">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Standard</property>
+                                <property name="label" translatable="yes">Height</property>
                                 <property name="use-underline">True</property>
                                 <property name="active">True</property>
                                 <property name="draw-as-radio">True</property>
@@ -163,17 +163,7 @@
                                 <property name="label" translatable="yes">Temperature</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menuViewLayersBase</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkRadioMenuItem" id="menuViewLayersHeight">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Height</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-as-radio">True</property>
-                                <property name="group">menuViewLayersBase</property>
+                                <property name="group">menuViewLayersHeight</property>
                               </object>
                             </child>
                             <child>
@@ -183,7 +173,17 @@
                                 <property name="label" translatable="yes">Moisture</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menuViewLayersBase</property>
+                                <property name="group">menuViewLayersHeight</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menuViewLayersTexture">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Texture</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                                <property name="group">menuViewLayersHeight</property>
                               </object>
                             </child>
                             <child>
@@ -193,7 +193,7 @@
                                 <property name="label" translatable="yes">Political</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
-                                <property name="group">menuViewLayersBase</property>
+                                <property name="group">menuViewLayersHeight</property>
                               </object>
                             </child>
                           </object>

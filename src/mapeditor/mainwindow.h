@@ -83,10 +83,10 @@ namespace MapEditor {
 		GtkWidget *menuViewShowRegionGrid;
 		GtkWidget *menuViewShowTileGrid;
 		GtkWidget *menuViewShowKmGrid;
-		GtkWidget *menuViewLayersBase;
-		GtkWidget *menuViewLayersTemperature;
 		GtkWidget *menuViewLayersHeight;
+		GtkWidget *menuViewLayersTemperature;
 		GtkWidget *menuViewLayersMoisture;
+		GtkWidget *menuViewLayersTexture;
 		GtkWidget *menuViewLayersPolitical;
 		GtkWidget *menuViewLayersHeightContours;
 		GtkWidget *menuViewLayersPaths;

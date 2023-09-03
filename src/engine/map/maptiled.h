@@ -14,10 +14,10 @@ namespace Engine {
 			static const unsigned maxZoom=9; // zoom in range [0,maxZoom-1], equal to 1+log2((Map::regionsSize*MapRegion::tilesSize)/imageSize)
 
 			typedef unsigned ImageLayer;
-			static const ImageLayer	ImageLayerBase=0;
+			static const ImageLayer	ImageLayerHeight=0;
 			static const ImageLayer	ImageLayerTemperature=1;
-			static const ImageLayer	ImageLayerHeight=2;
-			static const ImageLayer	ImageLayerMoisture=3;
+			static const ImageLayer	ImageLayerMoisture=2;
+			static const ImageLayer	ImageLayerTexture=3;
 			static const ImageLayer	ImageLayerHeightContour=4;
 			static const ImageLayer	ImageLayerPath=5;
 			static const ImageLayer	ImageLayerPolitical=6;
@@ -26,15 +26,15 @@ namespace Engine {
 
 			typedef unsigned ImageLayerSet;
 			static const ImageLayerSet ImageLayerSetNone=0;
-			static const ImageLayerSet ImageLayerSetBase=(1u<<ImageLayerBase);
-			static const ImageLayerSet ImageLayerSetTemperature=(1u<<ImageLayerTemperature);
 			static const ImageLayerSet ImageLayerSetHeight=(1u<<ImageLayerHeight);
+			static const ImageLayerSet ImageLayerSetTemperature=(1u<<ImageLayerTemperature);
 			static const ImageLayerSet ImageLayerSetMoisture=(1u<<ImageLayerMoisture);
+			static const ImageLayerSet ImageLayerSetTexture=(1u<<ImageLayerTexture);
 			static const ImageLayerSet ImageLayerSetHeightContour=(1u<<ImageLayerHeightContour);
 			static const ImageLayerSet ImageLayerSetPath=(1u<<ImageLayerPath);
 			static const ImageLayerSet ImageLayerSetPolitical=(1u<<ImageLayerPolitical);
 			static const ImageLayerSet ImageLayerSetRegionGrid=(1u<<ImageLayerRegionGrid);
-			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetBase|ImageLayerSetTemperature|ImageLayerSetHeight|ImageLayerSetMoisture|ImageLayerSetHeightContour|ImageLayerSetPath|ImageLayerSetPolitical|ImageLayerSetRegionGrid;
+			static const ImageLayerSet ImageLayerSetAll=ImageLayerSetHeight|ImageLayerSetTemperature|ImageLayerSetMoisture|ImageLayerSetTexture|ImageLayerSetHeightContour|ImageLayerSetPath|ImageLayerSetPolitical|ImageLayerSetRegionGrid;
 
 			MapTiled();
 			~MapTiled();
