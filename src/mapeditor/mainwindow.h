@@ -42,6 +42,7 @@ namespace MapEditor {
 		bool menuToolsClearActivate(GtkWidget *widget);
 		bool menuToolsHeightTemperatureActivate(GtkWidget *widget);
 		bool menuToolsContourLinesActivate(GtkWidget *widget);
+		bool menuToolsKingdomTerritoryActivate(GtkWidget *widget);
 
 		bool drawingAreaDraw(GtkWidget *widget, cairo_t *cr);
 		gboolean drawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event);
@@ -77,6 +78,7 @@ namespace MapEditor {
 		GtkWidget *menuToolsClear;
 		GtkWidget *menuToolsHeightTemperature;
 		GtkWidget *menuToolsContourLines;
+		GtkWidget *menuToolsKingdomTerritory;
 		GtkWidget *statusLabel;
 		GtkWidget *positionLabel;
 		GtkWidget *drawingArea;

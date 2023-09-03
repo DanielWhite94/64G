@@ -294,6 +294,14 @@
                         <property name="use-underline">True</property>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menuToolsKingdomTerritory">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Kingdom Territory</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

@@ -10,6 +10,7 @@
 #include "cleardialogue.h"
 #include "contourlinesdialogue.h"
 #include "heighttemperaturedialogue.h"
+#include "kingdomterritorydialogue.h"
 #include "mainwindow.h"
 #include "newdialogue.h"
 #include "progressdialogue.h"
@@ -17,6 +18,7 @@
 
 #include "../engine/gen/common.h"
 #include "../engine/gen/edgedetect.h"
+#include "../engine/gen/kingdom.h"
 #include "../engine/gen/modifytiles.h"
 #include "../engine/gen/pathfind.h"
 #include "../engine/gen/search.h"
@@ -51,6 +53,7 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gp
 gboolean mapEditorMainWindowWrapperMenuToolsClearActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuToolsContourLinesActivate(GtkWidget *widget, gpointer userData);
+gboolean mapEditorMainWindowWrapperMenuToolsKingdomTerritoryActivate(GtkWidget *widget, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
 gboolean mapEditorMainWindowWrapperDrawingAreaKeyPressEvent(GtkWidget *widget, GdkEventKey *event, gpointer userData);
@@ -137,6 +140,7 @@ namespace MapEditor {
 		error|=(menuToolsClear=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsClear")))==NULL;
 		error|=(menuToolsHeightTemperature=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsHeightTemperature")))==NULL;
 		error|=(menuToolsContourLines=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsContourLines")))==NULL;
+		error|=(menuToolsKingdomTerritory=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsKingdomTerritory")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
@@ -154,6 +158,7 @@ namespace MapEditor {
 		g_signal_connect(menuToolsClear, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsClearActivate), (void *)this);
 		g_signal_connect(menuToolsHeightTemperature, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate), (void *)this);
 		g_signal_connect(menuToolsContourLines, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsContourLinesActivate), (void *)this);
+		g_signal_connect(menuToolsKingdomTerritory, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsKingdomTerritoryActivate), (void *)this);
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
 		g_signal_connect(drawingArea, "key-press-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyPressEvent), (void *)this);
 		g_signal_connect(drawingArea, "key-release-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent), (void *)this);
@@ -558,6 +563,58 @@ namespace MapEditor {
 		// Clear cached images
 		prog->setText("2/2: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetHeightContour, &progressDialogueProgressFunctor, prog);
+		updateDrawingArea();
+
+		// Tidy up
+		delete prog;
+		operationEnd();
+
+		return false;
+	}
+
+	bool MainWindow::menuToolsKingdomTerritoryActivate(GtkWidget *widget) {
+		// Sanity check
+		if (map==NULL)
+			return false;
+
+		// Prompt user for parameters
+		KingdomTerritoryDialogue *kingdomTerritoryDialogue;
+		try {
+			kingdomTerritoryDialogue=new KingdomTerritoryDialogue(window);
+		} catch (std::exception& e) {
+			kingdomTerritoryDialogue=NULL;
+
+			// Update status label
+			char statusLabelStr[1024]; // TODO: better
+			sprintf(statusLabelStr, "Could not create kingdom territory dialogue: %s", e.what());
+			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
+
+			return false;
+		}
+
+		KingdomTerritoryDialogue::Params params={
+			.threads=4,
+		};
+
+		bool promptResult=kingdomTerritoryDialogue->run(&params);
+
+		delete kingdomTerritoryDialogue;
+
+		if (!promptResult)
+			return false;
+
+		// Create progress dialogue to provide updates
+		operationBegin();
+		ProgressDialogue *prog=new ProgressDialogue("1/2: Calculating landmass id numbers...", window);
+		prog->setShowCancelButton(true);
+
+		// Use Gen Kingdom module to identify the territories
+		Gen::Kingdom kingdom(map);
+		kingdom.identifyTerritories(params.threads, &progressDialogueProgressFunctor, prog);
+
+		// Clear cached images
+		prog->setText("2/2: Clearing cached map images...");
+		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetPolitical, &progressDialogueProgressFunctor, prog);
 		updateDrawingArea();
 
 		// Tidy up
@@ -1214,6 +1271,7 @@ namespace MapEditor {
 		gtk_widget_set_sensitive(menuToolsClear, mapOpen);
 		gtk_widget_set_sensitive(menuToolsHeightTemperature, mapOpen);
 		gtk_widget_set_sensitive(menuToolsContourLines, mapOpen);
+		gtk_widget_set_sensitive(menuToolsKingdomTerritory, mapOpen);
 	}
 
 	void MainWindow::updateTitle(void) {
@@ -1399,6 +1457,11 @@ gboolean mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate(GtkWidget 
 gboolean mapEditorMainWindowWrapperMenuToolsContourLinesActivate(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuToolsContourLinesActivate(widget);
+}
+
+gboolean mapEditorMainWindowWrapperMenuToolsKingdomTerritoryActivate(GtkWidget *widget, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->menuToolsKingdomTerritoryActivate(widget);
 }
 
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData) {
