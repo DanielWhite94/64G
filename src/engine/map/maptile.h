@@ -11,6 +11,7 @@ namespace Engine {
 		public:
 			static const unsigned layersMax=4;
 			static const unsigned objectsMax=8;
+			static const unsigned landmassIdMax=65536;
 
 			struct Layer {
 				MapTexture::Id textureId;
