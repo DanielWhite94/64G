@@ -67,6 +67,9 @@ namespace Engine {
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
 
+			unsigned addTileOffsetX(unsigned offsetX, int dx); // 0<=offsetX<map width, -map width<dx<map width
+			unsigned addTileOffsetY(unsigned offsetY, int dy); // 0<=offsetY<map height, -map height<dy<map height
+
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
 			double minTemperature, maxTemperature;
