@@ -122,11 +122,12 @@ namespace Engine {
 				return;
 
 			// Set tile's landmass id and update other data/stats
-			// Note: we do +1 so that id 0 is reserved for 'border' tiles
-			tile->setLandmassId(groupId+1);
-			++landmassData->landmasses[groupId+1].area;
+			// Note: we do +1 so that id 0 is reserved for boundary/unassigned tiles
+			unsigned newId=groupId+1;
+			tile->setLandmassId(newId);
+			++landmassData->landmasses[newId].area;
 			if (tile->getHeight()>map->seaLevel)
-				landmassData->landmasses[groupId+1].isWater=false;
+				landmassData->landmasses[newId].isWater=false;
 		}
 
 		bool kingdomIdentifyTerritoriesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
@@ -162,10 +163,8 @@ namespace Engine {
 					if (dx==0 && dy==0)
 						continue;
 
-					int neighbourX=(x+dx+map->getWidth())%map->getWidth();
-					int neighbourY=(y+dy+map->getHeight())%map->getHeight();
-					assert(neighbourX>=0 && neighbourX<map->getWidth());
-					assert(neighbourY>=0 && neighbourY<map->getHeight());
+					int neighbourX=map->addTileOffsetX(x, dx);
+					int neighbourY=map->addTileOffsetY(y, dy);
 
 					const MapTile *neighbourTile=map->getTileAtOffset(neighbourX, neighbourY, Engine::Map::Map::GetTileFlag::None);
 					if (neighbourTile==NULL)
@@ -197,9 +196,8 @@ namespace Engine {
 				return;
 
 			// 'chase down' our true id by following the 'pointers'
-			while(landmassData->landmasses[id].rewriteId!=id) {
+			while(landmassData->landmasses[id].rewriteId!=id)
 				id=landmassData->landmasses[id].rewriteId;
-			}
 
 			// Loop over 8 directly neighbouring tiles
 			for(int dy=-1; dy<2; ++dy) {
@@ -207,10 +205,8 @@ namespace Engine {
 					if (dx==0 && dy==0)
 						continue;
 
-					int neighbourX=(x+dx+map->getWidth())%map->getWidth();
-					int neighbourY=(y+dy+map->getHeight())%map->getHeight();
-					assert(neighbourX>=0 && neighbourX<map->getWidth());
-					assert(neighbourY>=0 && neighbourY<map->getHeight());
+					int neighbourX=map->addTileOffsetX(x, dx);
+					int neighbourY=map->addTileOffsetY(y, dy);
 
 					const MapTile *neighbourTile=map->getTileAtOffset(neighbourX, neighbourY, Engine::Map::Map::GetTileFlag::None);
 					if (neighbourTile==NULL)
@@ -222,9 +218,8 @@ namespace Engine {
 						continue;
 
 					// 'chase down' neighbour id
-					while(landmassData->landmasses[neighbourId].rewriteId!=neighbourId) {
+					while(landmassData->landmasses[neighbourId].rewriteId!=neighbourId)
 						neighbourId=landmassData->landmasses[neighbourId].rewriteId;
-					}
 
 					// If neighbour id differs to our own, note these landmasses should be merged
 					if (neighbourId!=id) {
@@ -246,9 +241,8 @@ namespace Engine {
 
 			// 'chase down' our id to find true value
 			unsigned id=tile->getLandmassId();
-			while(landmassData->landmasses[id].rewriteId!=id) {
+			while(landmassData->landmasses[id].rewriteId!=id)
 				id=landmassData->landmasses[id].rewriteId;
-			}
 
 			// Update our id
 			tile->setLandmassId(id);
