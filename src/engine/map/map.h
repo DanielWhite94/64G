@@ -67,6 +67,10 @@ namespace Engine {
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
 
+			unsigned wrappingDistX(unsigned x1, unsigned x2); // distance between x1 and x2 (considers wrapping around the edge as an option)
+			unsigned wrappingDistY(unsigned y1, unsigned y2);
+			unsigned wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2); // sum of x and y distances (e.g. manhattan/taxicab distance)
+
 			unsigned addTileOffsetX(unsigned offsetX, int dx); // 0<=offsetX<map width, -map width<dx<map width
 			unsigned addTileOffsetY(unsigned offsetY, int dy); // 0<=offsetY<map height, -map height<dy<map height
 

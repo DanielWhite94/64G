@@ -886,6 +886,18 @@ namespace Engine {
 			return mapTiledDir;
 		}
 
+		unsigned Map::wrappingDistX(unsigned x1, unsigned x2) {
+			return Util::wrappingDistX(x1, x2, getWidth());
+		}
+
+		unsigned Map::wrappingDistY(unsigned y1, unsigned y2) {
+			return Util::wrappingDistY(y1, y2, getHeight());
+		}
+
+		unsigned Map::wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2) {
+			return Util::wrappingDist(x1, y1, x2, y2, getWidth(), getHeight());
+		}
+
 		unsigned Map::addTileOffsetX(unsigned offsetX, int dx) {
 			assert(0<=offsetX && offsetX<getWidth());
 			assert(-dx<(int)getWidth() && dx<(int)getWidth());
