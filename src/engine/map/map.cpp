@@ -899,23 +899,11 @@ namespace Engine {
 		}
 
 		unsigned Map::addTileOffsetX(unsigned offsetX, int dx) {
-			assert(0<=offsetX && offsetX<getWidth());
-			assert(-dx<(int)getWidth() && dx<(int)getWidth());
-
-			int result=(offsetX+dx+getWidth())%getWidth();
-
-			assert(result>=0 && result<getWidth());
-			return result;
+			return Util::addTileOffsetX(offsetX, dx, getWidth());
 		}
 
 		unsigned Map::addTileOffsetY(unsigned offsetY, int dy) {
-			assert(0<=offsetY && offsetY<getHeight());
-			assert(-dy<(int)getHeight() && dy<(int)getHeight());
-
-			int result=(offsetY+dy+getHeight())%getHeight();
-
-			assert(result>=0 && result<getHeight());
-			return result;
+			return Util::addTileOffsetY(offsetY, dy, getHeight());
 		}
 
 		const char *Map::getRegionsDir(void) const {

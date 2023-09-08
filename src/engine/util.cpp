@@ -248,6 +248,26 @@ namespace Engine {
 		return wrappingDistX(x1, x2, mapW)+wrappingDistY(y1, y2, mapH);
 	}
 
+	unsigned Util::addTileOffsetX(unsigned offsetX, int dx, unsigned mapW) {
+		assert(0<=offsetX && offsetX<mapW);
+		assert(-dx<(int)mapW && dx<(int)mapW);
+
+		int result=(offsetX+dx+mapW)%mapW;
+
+		assert(result>=0 && result<mapW);
+		return result;
+	}
+
+	unsigned Util::addTileOffsetY(unsigned offsetY, int dy, unsigned mapH) {
+		assert(0<=offsetY && offsetY<mapH);
+		assert(-dy<(int)mapH && dy<(int)mapH);
+
+		int result=(offsetY+dy+mapH)%mapH;
+
+		assert(result>=0 && result<mapH);
+		return result;
+	}
+
 	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
 		assert(progress>=0.0 && progress<=1.0);
 		assert(userData!=NULL);

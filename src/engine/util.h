@@ -40,6 +40,9 @@ namespace Engine {
 		static unsigned wrappingDistX(unsigned x1, unsigned x2, unsigned mapW); // distance between x1 and x2 (considers wrapping around the edge as an option)
 		static unsigned wrappingDistY(unsigned y1, unsigned y2, unsigned mapH);
 		static unsigned wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2, unsigned mapW, unsigned mapH); // sum of x and y distances (e.g. manhattan/taxicab distance)
+
+		static unsigned addTileOffsetX(unsigned offsetX, int dx, unsigned mapW); // 0<=offsetX<mapW, -mapW<dx<mapW
+		static unsigned addTileOffsetY(unsigned offsetY, int dy, unsigned mapH); // 0<=offsetY<mapH, -mapH<dy<mapH
 	};
 
 	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string
