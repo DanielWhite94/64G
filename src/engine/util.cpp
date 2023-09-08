@@ -1,4 +1,3 @@
-#include <cassert>
 #include <chrono>
 #include <cstdlib>
 #include <cstdio>
@@ -215,57 +214,6 @@ namespace Engine {
 			return -1;
 
 		return remainingTimeMs;
-	}
-
-	unsigned Util::wrappingDistX(unsigned x1, unsigned x2, unsigned mapW) {
-		assert(x1<mapW);
-		assert(x2<mapW);
-
-		// Note: could try something clever like std::min((x1-x2)&(mapW-1), (x2-x1)&(mapW-1)) but would only work for power of two map sizes?
-
-		if (x2>x1)
-			return std::min(x2-x1, x1+mapW-x2);
-		else
-			return std::min(x1-x2, x2+mapW-x1);
-	}
-
-	unsigned Util::wrappingDistY(unsigned y1, unsigned y2, unsigned mapH) {
-		assert(y1<mapH);
-		assert(y2<mapH);
-
-		if (y2>y1)
-			return std::min(y2-y1, y1+mapH-y2);
-		else
-			return std::min(y1-y2, y2+mapH-y1);
-	}
-
-	unsigned Util::wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2, unsigned mapW, unsigned mapH) {
-		assert(x1<mapW);
-		assert(y1<mapH);
-		assert(x2<mapW);
-		assert(y2<mapH);
-
-		return wrappingDistX(x1, x2, mapW)+wrappingDistY(y1, y2, mapH);
-	}
-
-	unsigned Util::addTileOffsetX(unsigned offsetX, int dx, unsigned mapW) {
-		assert(0<=offsetX && offsetX<mapW);
-		assert(-dx<(int)mapW && dx<(int)mapW);
-
-		int result=(offsetX+dx+mapW)%mapW;
-
-		assert(result>=0 && result<mapW);
-		return result;
-	}
-
-	unsigned Util::addTileOffsetY(unsigned offsetY, int dy, unsigned mapH) {
-		assert(0<=offsetY && offsetY<mapH);
-		assert(-dy<(int)mapH && dy<(int)mapH);
-
-		int result=(offsetY+dy+mapH)%mapH;
-
-		assert(result>=0 && result<mapH);
-		return result;
 	}
 
 	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData) {

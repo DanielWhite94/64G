@@ -67,12 +67,27 @@ namespace Engine {
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
 
-			unsigned wrappingDistX(unsigned x1, unsigned x2); // distance between x1 and x2 (considers wrapping around the edge as an option)
-			unsigned wrappingDistY(unsigned y1, unsigned y2);
-			unsigned wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2); // sum of x and y distances (e.g. manhattan/taxicab distance)
+			// See Util versions for a description.
+			unsigned wrappingDistX(unsigned x1, unsigned x2) {
+				return Util::wrappingDistX(x1, x2, getWidth());
+			}
 
-			unsigned addTileOffsetX(unsigned offsetX, int dx); // 0<=offsetX<map width, -map width<dx<map width
-			unsigned addTileOffsetY(unsigned offsetY, int dy); // 0<=offsetY<map height, -map height<dy<map height
+			unsigned wrappingDistY(unsigned y1, unsigned y2) {
+				return Util::wrappingDistY(y1, y2, getHeight());
+			}
+
+			unsigned wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2) {
+				return Util::wrappingDist(x1, y1, x2, y2, getWidth(), getHeight());
+			}
+
+			// See Util versions for a description.
+			unsigned addTileOffsetX(unsigned offsetX, int dx) {
+				return Util::addTileOffsetX(offsetX, dx, getWidth());
+			}
+
+			unsigned addTileOffsetY(unsigned offsetY, int dy) {
+				return Util::addTileOffsetY(offsetY, dy, getHeight());
+			}
 
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
