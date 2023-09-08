@@ -70,7 +70,7 @@ namespace Engine {
 				entry->epsilon=entryArray[i].epsilon;
 
 				// Calculate expected iterMax and use it just in case we cannot narrow down the range for some reason.
-				// This calculation is based on the idea that each iteration reduces the range by a factpr of #samples+1.
+				// This calculation is based on the idea that each iteration reduces the range by a factor of #samples+1.
 				entry->iterMax=ceil(log((entry->sampleMax-entry->sampleMin)/(2*entry->epsilon))/log(entry->sampleCount+1));
 
 				if (entry->iterMax>trueIterMax)
