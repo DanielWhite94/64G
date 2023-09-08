@@ -95,6 +95,35 @@ namespace Engine {
 			assert(result>=0 && result<mapH);
 			return result;
 		}
+
+		// Like addTileOffsetX/Y but with dx/dy=1
+		static unsigned incTileOffsetX(unsigned offsetX, unsigned mapW) {
+			assert(0<=offsetX && offsetX<mapW);
+			assert(mapW>0);
+
+			return (offsetX+1!=mapW ? offsetX+1 : 0);
+		}
+
+		static unsigned incTileOffsetY(unsigned offsetY, unsigned mapH) {
+			assert(0<=offsetY && offsetY<mapH);
+			assert(mapH>0);
+
+			return (offsetY+1!=mapH ? offsetY+1 : 0);
+		}
+
+		static unsigned decTileOffsetX(unsigned offsetX, unsigned mapW) {
+			assert(0<=offsetX && offsetX<mapW);
+			assert(mapW>0);
+
+			return (offsetX!=0 ? offsetX-1 : mapW-1);
+		}
+
+		static unsigned decTileOffsetY(unsigned offsetY, unsigned mapH) {
+			assert(0<=offsetY && offsetY<mapH);
+			assert(mapH>0);
+
+			return (offsetY!=0 ? offsetY-1 : mapH-1);
+		}
 	};
 
 	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string

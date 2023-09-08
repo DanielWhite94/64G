@@ -89,6 +89,23 @@ namespace Engine {
 				return Util::addTileOffsetY(offsetY, dy, getHeight());
 			}
 
+			// See Util versions for a description.
+			unsigned incTileOffsetX(unsigned offsetX) {
+				return Util::incTileOffsetX(offsetX, getWidth());
+			}
+
+			unsigned incTileOffsetY(unsigned offsetY) {
+				return Util::incTileOffsetY(offsetY, getHeight());
+			}
+
+			unsigned decTileOffsetX(unsigned offsetX) {
+				return Util::decTileOffsetX(offsetX, getWidth());
+			}
+
+			unsigned decTileOffsetY(unsigned offsetY) {
+				return Util::decTileOffsetY(offsetY, getHeight());
+			}
+
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
 			double minTemperature, maxTemperature;
