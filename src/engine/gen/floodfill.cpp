@@ -107,7 +107,12 @@ namespace Engine {
 								Segment segment=segments.back();
 								segments.pop_back();
 
+								assert(segment.x0<mapWidth);
+								assert(segment.x1<mapWidth);
+								assert(segment.y<mapHeight);
+
 								// Extend segment left until we hit a boundary
+								assert(segment.x0<mapWidth);
 								unsigned extendLoopInitialX=segment.x0;
 								while(1) {
 									// Compute nextX value
@@ -124,6 +129,7 @@ namespace Engine {
 								}
 
 								// Extend segment right until we hit a boundary
+								assert(segment.x1<mapWidth);
 								extendLoopInitialX=segment.x1;
 								while(1) {
 									// Compute nextX value
