@@ -158,6 +158,7 @@ namespace Engine {
 				return;
 
 			// Loop over 8 directly neighbouring tiles
+			// TODO: make some kind of iterator for this?
 			for(int dy=-1; dy<2; ++dy) {
 				for(int dx=-1; dx<2; ++dx) {
 					if (dx==0 && dy==0)
@@ -200,6 +201,7 @@ namespace Engine {
 				id=landmassData->landmasses[id].rewriteId;
 
 			// Loop over 8 directly neighbouring tiles
+			// TODO: make some kind of iterator for this?
 			for(int dy=-1; dy<2; ++dy) {
 				for(int dx=-1; dx<2; ++dx) {
 					if (dx==0 && dy==0)
