@@ -99,7 +99,7 @@ namespace Engine {
 							// Add start tile as an initial segment to start filling from
 							std::vector<Segment> segments;
 							segments.clear();
-							segments.push_back(Segment(startX, startX+1, startY));
+							segments.push_back(Segment(startX, map->incTileOffsetX(startX), startY));
 
 							// Main loop to handle each segment/scanline
 							while(!segments.empty()) {
