@@ -101,28 +101,40 @@ namespace Engine {
 			assert(0<=offsetX && offsetX<mapW);
 			assert(mapW>0);
 
-			return (offsetX+1!=mapW ? offsetX+1 : 0);
+			unsigned result=(offsetX+1!=mapW ? offsetX+1 : 0);
+			assert(result<mapW);
+
+			return result;
 		}
 
 		static unsigned incTileOffsetY(unsigned offsetY, unsigned mapH) {
 			assert(0<=offsetY && offsetY<mapH);
 			assert(mapH>0);
 
-			return (offsetY+1!=mapH ? offsetY+1 : 0);
+			unsigned result=(offsetY+1!=mapH ? offsetY+1 : 0);
+			assert(result<mapH);
+
+			return result;
 		}
 
 		static unsigned decTileOffsetX(unsigned offsetX, unsigned mapW) {
 			assert(0<=offsetX && offsetX<mapW);
 			assert(mapW>0);
 
-			return (offsetX!=0 ? offsetX-1 : mapW-1);
+			unsigned result=(offsetX!=0 ? offsetX-1 : mapW-1);
+			assert(result<mapW);
+
+			return result;
 		}
 
 		static unsigned decTileOffsetY(unsigned offsetY, unsigned mapH) {
 			assert(0<=offsetY && offsetY<mapH);
 			assert(mapH>0);
 
-			return (offsetY!=0 ? offsetY-1 : mapH-1);
+			unsigned result=(offsetY!=0 ? offsetY-1 : mapH-1);
+			assert(result<mapH);
+
+			return result;
 		}
 	};
 
