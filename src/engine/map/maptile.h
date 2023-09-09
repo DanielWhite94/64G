@@ -14,19 +14,19 @@ namespace Engine {
 			static const unsigned landmassIdMax=65536;
 
 			struct Layer {
-				MapTexture::Id textureId;
 				Physics::HitMask hitmask;
+				MapTexture::Id textureId;
 			};
 
 			struct FileData {
 				Layer layers[layersMax];
-				double height, moisture, temperature;
 				uint64_t bitset;
-				uint16_t landmassId;
+				float height, moisture, temperature;
 				union {
 					uint32_t scratchInt;
 					float scratchFloat;
 				};
+				uint16_t landmassId;
 			};
 
 			MapTile();
