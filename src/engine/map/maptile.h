@@ -13,12 +13,12 @@ namespace Engine {
 			static const unsigned objectsMax=8;
 			static const unsigned landmassIdMax=65536;
 
-			struct Layer {
+			struct __attribute__((packed)) Layer  {
 				Physics::HitMask hitmask;
 				MapTexture::Id textureId;
 			};
 
-			struct FileData {
+			struct __attribute__((packed)) FileData {
 				Layer layers[layersMax];
 				uint64_t bitset;
 				float height, moisture, temperature;
