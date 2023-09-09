@@ -300,10 +300,10 @@ namespace Engine {
 				return;
 
 			// If a single neighbour is not 'inside' then this is an edge
-			unsigned xm1=(x==0 ? map->getWidth()-1 : x-1);
-			unsigned xp1=(x+1==map->getWidth() ? 0 : x+1);
-			unsigned ym1=(y==0 ? map->getHeight()-1 : y-1);
-			unsigned yp1=(y+1==map->getHeight() ? 0 : y+1);
+			unsigned xm1=map->decTileOffsetX(x);
+			unsigned xp1=map->incTileOffsetX(x);
+			unsigned ym1=map->decTileOffsetX(y);
+			unsigned yp1=map->incTileOffsetX(y);
 
 			if (!data->sampleFunctor(map, xm1, ym1, data->sampleUserData) ||
 			    !data->sampleFunctor(map, x+0, ym1, data->sampleUserData) ||

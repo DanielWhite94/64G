@@ -85,8 +85,8 @@ namespace Engine {
 					assert(dx==-1 || dx==0 || dx==1);
 					assert(dy==-1 || dy==0 || dy==1);
 
-					*x=(*x+map->getWidth()+dx)%map->getWidth();
-					*y=(*y+map->getHeight()+dy)%map->getHeight();
+					*x=map->addTileOffsetX(*x, dx);
+					*y=map->addTileOffsetY(*y, dy);
 				}
 			};
 

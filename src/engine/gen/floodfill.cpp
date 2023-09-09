@@ -111,11 +111,7 @@ namespace Engine {
 								unsigned extendLoopInitialX=segment.x0;
 								while(1) {
 									// Compute nextX value
-									unsigned nextX;
-									if (segment.x0==0)
-										nextX=mapWidth-1;
-									else
-										nextX=segment.x0-1;
+									unsigned nextX=map->decTileOffsetX(segment.x0);
 
 									// Check for boundary
 									if (boundaryFunctor(map, nextX, segment.y, boundaryUserData))
@@ -131,11 +127,7 @@ namespace Engine {
 								extendLoopInitialX=segment.x1;
 								while(1) {
 									// Compute nextX value
-									unsigned nextX;
-									if (segment.x1==mapWidth)
-										nextX=0;
-									else
-										nextX=segment.x1+1;
+									unsigned nextX=map->incTileOffsetX(segment.x1);
 
 									// Check for boundary
 									if (boundaryFunctor(map, segment.x1, segment.y, boundaryUserData))
@@ -150,15 +142,15 @@ namespace Engine {
 								// Loop over this segment to handle each tile within, and to find new segments to add to the stack
 								bool aboveActive=false, belowActive=false;
 								Segment aboveSegment, belowSegment;
-								aboveSegment.y=(segment.y>0 ? segment.y-1 : mapHeight-1);
-								belowSegment.y=(segment.y+1<mapHeight ? segment.y+1 : 0);
+								aboveSegment.y=map->decTileOffsetY(segment.y);
+								belowSegment.y=map->incTileOffsetY(segment.y);
 								unsigned loopX=segment.x0;
 								while(1) {
 									// Ensure scratch bit is set in this tile's bitset to indicate we have handled it
 									MapTile *loopTile=map->getTileAtOffset(loopX, segment.y, Map::Map::GetTileFlag::Dirty);
 									if (loopTile==NULL) {
 										// Advance to next tile in this segment
-										loopX=(loopX+1)%mapWidth;
+										loopX=map->incTileOffsetX(loopX);
 										if (loopX==segment.x1)
 											break;
 
@@ -168,7 +160,7 @@ namespace Engine {
 									// Have we already handled this tile?
 									if (loopTile->getBitsetN(scratchBit)) {
 										// Advance to next tile in this segment
-										loopX=(loopX+1)%mapWidth;
+										loopX=map->incTileOffsetX(loopX);
 										if (loopX==segment.x1)
 											break;
 
@@ -198,11 +190,11 @@ namespace Engine {
 											segments.push_back(aboveSegment);
 											aboveActive=false;
 										} else
-											aboveSegment.x1=(aboveSegment.x1+1)%mapWidth;
+											aboveSegment.x1=map->incTileOffsetX(aboveSegment.x1);
 									} else if (!aboveIsBoundary) {
 										aboveActive=true;
 										aboveSegment.x0=loopX;
-										aboveSegment.x1=(loopX+1)%mapWidth;
+										aboveSegment.x1=map->incTileOffsetX(loopX);
 									}
 
 									// Check for potential new segment below the current one
@@ -217,15 +209,15 @@ namespace Engine {
 											segments.push_back(belowSegment);
 											belowActive=false;
 										} else
-											belowSegment.x1=(belowSegment.x1+1)%mapWidth;
+											belowSegment.x1=map->incTileOffsetX(belowSegment.x1);
 									} else if (!belowIsBoundary) {
 										belowActive=true;
 										belowSegment.x0=loopX;
-										belowSegment.x1=(loopX+1)%mapWidth;
+										belowSegment.x1=map->incTileOffsetX(loopX);
 									}
 
 									// Advance to next tile in this segment
-									loopX=(loopX+1)%mapWidth;
+									loopX=map->incTileOffsetX(loopX);
 									if (loopX==segment.x1)
 										break;
 								}

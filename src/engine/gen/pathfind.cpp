@@ -53,14 +53,14 @@ namespace Engine {
 
 		float pathFindSearchGoalDistanceHeuristicDistance(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
 			// Only consider manhatten/taxicab distance
-			return Util::wrappingDist(x1, y1, x2, y2, map->getWidth(), map->getHeight());
+			return map->wrappingDist(x1, y1, x2, y2);
 		}
 
 		float pathFindSearchGoalDistanceHeuristicDistanceWeight(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
 			double distance=0.0;
 
 			// Add manhatten/taxicab distance
-			distance+=Util::wrappingDist(x1, y1, x2, y2, map->getWidth(), map->getHeight());
+			distance+=map->wrappingDist(x1, y1, x2, y2);
 
 			// Compare height of two tiles and add the relevant penalaty
 			MapTile *t1=map->getTileAtOffset(x1, y1, Engine::Map::Map::GetTileFlag::None);
@@ -122,66 +122,50 @@ namespace Engine {
 				float delta;
 
 				// Left neighbour
-				nx=(entry.x+map->getWidth()-1)%map->getWidth();
+				nx=map->decTileOffsetX(entry.x);
 				ny=entry.y;
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchFullQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-					};
+					PathFind::SearchFullQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd};
 					queue.push(newEntry);
 				}
 
 				// Right neighbour
-				nx=(entry.x+1)%map->getWidth();
+				nx=map->incTileOffsetX(entry.x);
 				ny=entry.y;
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchFullQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-					};
+					PathFind::SearchFullQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd};
 					queue.push(newEntry);
 				}
 
 				// Above neighbour
 				nx=entry.x;
-				ny=(entry.y+map->getHeight()-1)%map->getHeight();
+				ny=map->decTileOffsetY(entry.y);
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchFullQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-					};
+					PathFind::SearchFullQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd};
 					queue.push(newEntry);
 				}
 
 				// Below neighbour
 				nx=entry.x;
-				ny=(entry.y+1)%map->getHeight();
+				ny=map->incTileOffsetY(entry.y);
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchFullQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-					};
+					PathFind::SearchFullQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd};
 					queue.push(newEntry);
 				}
 
@@ -229,7 +213,7 @@ namespace Engine {
 
 			// Process nodes/tiles until we reach destination or run out of tiles
 			unsigned progressCounter=0; // number of nodes/tiles we have processed
-			unsigned progressMax=Util::wrappingDist(startX, startY, endX, endY, map->getWidth(), map->getHeight()); // distance between start and end tiles - used as a loose upper bound to estimate progress
+			unsigned progressMax=map->wrappingDist(startX, startY, endX, endY); // distance between start and end tiles - used as a loose upper bound to estimate progress
 			unsigned progressMin=progressMax; // distance for closest node/tile found so far
 			while(!queue.empty()) {
 				// Pop lowest distance entry
@@ -259,76 +243,56 @@ namespace Engine {
 				float delta;
 
 				// Left neighbour
-				nx=(entry.x+map->getWidth()-1)%map->getWidth();
+				nx=map->decTileOffsetX(entry.x);
 				ny=entry.y;
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchGoalQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
-					};
+					PathFind::SearchGoalQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd, .estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData)};
 					queue.push(newEntry);
 				}
 
 				// Right neighbour
-				nx=(entry.x+1)%map->getWidth();
+				nx=map->incTileOffsetX(entry.x);
 				ny=entry.y;
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchGoalQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
-					};
+					PathFind::SearchGoalQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd, .estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData)};
 					queue.push(newEntry);
 				}
 
 				// Above neighbour
 				nx=entry.x;
-				ny=(entry.y+map->getHeight()-1)%map->getHeight();
+				ny=map->decTileOffsetY(entry.y);
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchGoalQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
-					};
+					PathFind::SearchGoalQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd, .estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData)};
 					queue.push(newEntry);
 				}
 
 				// Below neighbour
 				nx=entry.x;
-				ny=(entry.y+1)%map->getHeight();
+				ny=map->incTileOffsetY(entry.y);
 				nd=getTileScratchValue(nx, ny);
 				delta=distanceFunctor(map, entry.x, entry.y, nx, ny, distanceUserData);
 				newd=entry.distance+delta;
 				if (delta>0.0 && newd<nd) {
 					setTileScratchValue(nx, ny, newd);
-					PathFind::SearchGoalQueueEntry newEntry={
-						.x=(uint16_t)nx,
-						.y=(uint16_t)ny,
-						.distance=newd,
-						.estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData),
-					};
+					PathFind::SearchGoalQueueEntry newEntry={.x=(uint16_t)nx, .y=(uint16_t)ny, .distance=newd, .estimate=newd+heuristicFunctor(map, nx, ny, startX, startY, heuristicUserData)};
 					queue.push(newEntry);
 				}
 
 				// Give a progress update
 				// This is an estimate based on how far we are from the goal vs how far away we were when we started.
-				unsigned progressCurrent=Util::wrappingDist(startX, startY, entry.x, entry.y, map->getWidth(), map->getHeight());
+				unsigned progressCurrent=map->wrappingDist(startX, startY, entry.x, entry.y);
 				if (progressCurrent<progressMin)
 					progressMin=progressCurrent;
 
@@ -389,7 +353,7 @@ namespace Engine {
 				float nd;
 
 				// Check left neightbour
-				nx=(x+map->getWidth()-1)%map->getWidth();
+				nx=map->decTileOffsetX(x);
 				ny=y;
 				nd=getTileScratchValue(nx, ny);
 				if (nd<bestD) {
@@ -399,7 +363,7 @@ namespace Engine {
 				}
 
 				// Check right neightbour
-				nx=(x+1)%map->getWidth();
+				nx=map->incTileOffsetX(x);
 				ny=y;
 				nd=getTileScratchValue(nx, ny);
 				if (nd<bestD) {
@@ -410,7 +374,7 @@ namespace Engine {
 
 				// Check up neightbour
 				nx=x;
-				ny=(y+map->getHeight()-1)%map->getHeight();
+				ny=map->decTileOffsetY(y);
 				nd=getTileScratchValue(nx, ny);
 				if (nd<bestD) {
 					bestX=nx;
@@ -420,7 +384,7 @@ namespace Engine {
 
 				// Check down neightbour
 				nx=x;
-				ny=(y+1)%map->getHeight();
+				ny=map->incTileOffsetY(y);
 				nd=getTileScratchValue(nx, ny);
 				if (nd<bestD) {
 					bestX=nx;
