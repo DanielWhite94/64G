@@ -8,7 +8,6 @@
 #include <new>
 
 #include "cleardialogue.h"
-#include "contourlinesdialogue.h"
 #include "heighttemperaturedialogue.h"
 #include "kingdomterritorydialogue.h"
 #include "mainwindow.h"
@@ -52,7 +51,6 @@ gboolean mapEditorMainWindowWrapperMenuViewZoomFitActivate(GtkWidget *widget, gp
 
 gboolean mapEditorMainWindowWrapperMenuToolsClearActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate(GtkWidget *widget, gpointer userData);
-gboolean mapEditorMainWindowWrapperMenuToolsContourLinesActivate(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuToolsKingdomTerritoryActivate(GtkWidget *widget, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperDrawingAreaDraw(GtkWidget *widget, cairo_t *cr, gpointer userData);
@@ -139,7 +137,6 @@ namespace MapEditor {
 		error|=(menuViewZoomFit=GTK_WIDGET(gtk_builder_get_object(builder, "menuViewZoomFit")))==NULL;
 		error|=(menuToolsClear=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsClear")))==NULL;
 		error|=(menuToolsHeightTemperature=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsHeightTemperature")))==NULL;
-		error|=(menuToolsContourLines=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsContourLines")))==NULL;
 		error|=(menuToolsKingdomTerritory=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsKingdomTerritory")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
@@ -157,7 +154,6 @@ namespace MapEditor {
 		g_signal_connect(menuViewZoomFit, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuViewZoomFitActivate), (void *)this);
 		g_signal_connect(menuToolsClear, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsClearActivate), (void *)this);
 		g_signal_connect(menuToolsHeightTemperature, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate), (void *)this);
-		g_signal_connect(menuToolsContourLines, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsContourLinesActivate), (void *)this);
 		g_signal_connect(menuToolsKingdomTerritory, "activate", G_CALLBACK(mapEditorMainWindowWrapperMenuToolsKingdomTerritoryActivate), (void *)this);
 		g_signal_connect(drawingArea, "draw", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDraw), (void *)this);
 		g_signal_connect(drawingArea, "key-press-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaKeyPressEvent), (void *)this);
@@ -510,59 +506,6 @@ namespace MapEditor {
 		// Clear cached images
 		prog->setText("3/3: Clearing cached map images...");
 		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetAll, &progressDialogueProgressFunctor, prog);
-		updateDrawingArea();
-
-		// Tidy up
-		delete prog;
-		operationEnd();
-
-		return false;
-	}
-
-	bool MainWindow::menuToolsContourLinesActivate(GtkWidget *widget) {
-		// Sanity check
-		if (map==NULL)
-			return false;
-
-		// Prompt user for parameters
-		ContourLinesDialogue *contourLinesDialogue;
-		try {
-			contourLinesDialogue=new ContourLinesDialogue(window);
-		} catch (std::exception& e) {
-			contourLinesDialogue=NULL;
-
-			// Update status label
-			char statusLabelStr[1024]; // TODO: better
-			sprintf(statusLabelStr, "Could not create contour lines dialogue: %s", e.what());
-			gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
-
-			return false;
-		}
-
-		ContourLinesDialogue::Params params={
-			.lineCount=9,
-			.threads=4,
-		};
-
-		bool promptResult=contourLinesDialogue->run(&params);
-
-		delete contourLinesDialogue;
-
-		if (!promptResult)
-			return false;
-
-		// Create progress dialogue to provide updates
-		operationBegin();
-		ProgressDialogue *prog=new ProgressDialogue("1/2: Calculating height contours...", window);
-		prog->setShowCancelButton(true);
-
-		// Calculate height contour lines
-		Gen::EdgeDetect heightContourEdgeDetect(map);
-		heightContourEdgeDetect.traceFastHeightContours(params.threads, params.lineCount, &progressDialogueProgressFunctor, prog);
-
-		// Clear cached images
-		prog->setText("2/2: Clearing cached map images...");
-		MapTiled::clearImagesAll(map, MapTiled::ImageLayerSetHeightContour, &progressDialogueProgressFunctor, prog);
 		updateDrawingArea();
 
 		// Tidy up
@@ -1270,7 +1213,6 @@ namespace MapEditor {
 
 		gtk_widget_set_sensitive(menuToolsClear, mapOpen);
 		gtk_widget_set_sensitive(menuToolsHeightTemperature, mapOpen);
-		gtk_widget_set_sensitive(menuToolsContourLines, mapOpen);
 		gtk_widget_set_sensitive(menuToolsKingdomTerritory, mapOpen);
 	}
 
@@ -1452,11 +1394,6 @@ gboolean mapEditorMainWindowWrapperMenuToolsClearActivate(GtkWidget *widget, gpo
 gboolean mapEditorMainWindowWrapperMenuToolsHeightTemperatureActivate(GtkWidget *widget, gpointer userData) {
 	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
 	return mainWindow->menuToolsHeightTemperatureActivate(widget);
-}
-
-gboolean mapEditorMainWindowWrapperMenuToolsContourLinesActivate(GtkWidget *widget, gpointer userData) {
-	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
-	return mainWindow->menuToolsContourLinesActivate(widget);
 }
 
 gboolean mapEditorMainWindowWrapperMenuToolsKingdomTerritoryActivate(GtkWidget *widget, gpointer userData) {

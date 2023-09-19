@@ -4,9 +4,8 @@
 namespace Engine {
 	namespace Gen {
 
-		const unsigned TileBitsetIndexContour=0;
-		const unsigned TileBitsetIndexLandmassBorder=1;
-		const unsigned TileBitsetIndexPath=2;
+		const unsigned TileBitsetIndexLandmassBorder=0;
+		const unsigned TileBitsetIndexPath=1;
 
 	};
 };

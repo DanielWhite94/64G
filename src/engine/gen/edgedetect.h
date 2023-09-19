@@ -56,10 +56,6 @@ namespace Engine {
 				// The follow is a custom algorithm designed for speed at the expense of edge quality.
 				void traceFast(unsigned threadCount, SampleFunctor *sampleFunctor, void *sampleUserData, EdgeFunctor *edgeFunctor, void *edgeUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
-				// Trace a series of contours based on given number of height thresholds.
-				// For each tile which is determined to be part of a contour we set bit TileBitsetIndexContour in the tile's bitset.
-				void traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
-				void traceFastHeightContours(unsigned threadCount, int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 			private:
 				class Map *map;
 

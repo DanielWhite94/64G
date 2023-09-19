@@ -901,11 +901,6 @@ int main(int argc, char **argv) {
 	landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &utilProgressFunctorString, (void *)"Identifying individual landmasses via flood-fill ");
 	printf("\n");
 
-	// Run contour line detection logic
-	Gen::EdgeDetect heightContourEdgeDetect(mapData.map);
-	heightContourEdgeDetect.traceFastHeightContours(threadCount, 9, &utilProgressFunctorString, (void *)"Height contour edge detection ");
-	printf("\n");
-
 	// Save map.
 	if (!mapData.map->save()) {
 		printf("Could not save map to '%s'.\n", outputPath);

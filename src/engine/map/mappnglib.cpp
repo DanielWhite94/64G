@@ -324,8 +324,7 @@ namespace Engine {
 
 	void MapPngLib::getColourForTileHeightContour(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Use black pixels for the contour lines themselves, transparent for everything else
-		*r=*g=*b=0;
-		*a=(tile->getBitsetN(Gen::TileBitsetIndexContour) ? 255 : 0);
+		*r=*g=*b=*a=0;
 	}
 
 	void MapPngLib::getColourForTilePath(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {

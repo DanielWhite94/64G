@@ -8,15 +8,6 @@ using namespace Engine;
 
 namespace Engine {
 	namespace Gen {
-		struct EdgeDetectTraceHeightContoursData {
-			unsigned contourIndex, contourCount;
-			double heightThreshold;
-
-			Util::ProgressFunctor *functor;
-			void *userData;
-
-			Util::TimeMs startTimeMs;
-		};
 
 		struct EdgeDetectTraceClearScratchBitsModifyTilesProgressData {
 			Util::ProgressFunctor *functor;
@@ -25,7 +16,6 @@ namespace Engine {
 			double progressRatio;
 		};
 
-		bool edgeDetectTraceHeightContoursProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		bool edgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 
 		void edgeDetectTraceFastModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
@@ -222,60 +212,6 @@ namespace Engine {
 			modifyTilesData.edgeUserData=edgeUserData;
 
 			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &edgeDetectTraceFastModifyTilesFunctor, &modifyTilesData, progressFunctor, progressUserData);
-		}
-
-		void EdgeDetect::traceAccurateHeightContours(unsigned scratchBits[DirectionNB], int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
-			// Check for bad contourCount
-			if (contourCount<1)
-				return;
-
-			// Create our own wrapper userData for progress functor
-			EdgeDetectTraceHeightContoursData functorData;
-			functorData.contourIndex=0;
-			functorData.contourCount=contourCount;
-			functorData.functor=progressFunctor;
-			functorData.userData=progressUserData;
-			functorData.startTimeMs=Util::getTimeMs();
-
-			// Run edge detection at various height thresholds to trace all contour lines
-			for(functorData.contourIndex=0; functorData.contourIndex<contourCount; ++functorData.contourIndex) {
-				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
-				traceAccurate(scratchBits, &edgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexContour, (progressFunctor!=NULL ? &edgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
-			}
-		}
-
-		void EdgeDetect::traceFastHeightContours(unsigned threadCount, int contourCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
-			// Check for bad contourCount
-			if (contourCount<1)
-				return;
-
-			// Create our own wrapper userData for progress functor
-			EdgeDetectTraceHeightContoursData functorData;
-			functorData.contourIndex=0;
-			functorData.contourCount=contourCount;
-			functorData.functor=progressFunctor;
-			functorData.userData=progressUserData;
-			functorData.startTimeMs=Util::getTimeMs();
-
-			// Run edge detection at various height thresholds to trace all contour lines
-			for(functorData.contourIndex=0; functorData.contourIndex<contourCount; ++functorData.contourIndex) {
-				functorData.heightThreshold=map->seaLevel+((functorData.contourIndex+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
-				traceFast(threadCount, &edgeDetectHeightThresholdSampleFunctor, &functorData.heightThreshold, &edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexContour, (progressFunctor!=NULL ? &edgeDetectTraceHeightContoursProgressFunctor : NULL), (void *)&functorData);
-			}
-		}
-
-		bool edgeDetectTraceHeightContoursProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-			assert(userData!=NULL);
-
-			const EdgeDetectTraceHeightContoursData *functorData=(const EdgeDetectTraceHeightContoursData *)userData;
-
-			// Calculate true progress and elapsed time (for the entire height contour operation, rather than this individual trace sub-operation)
-			double trueProgress=(functorData->contourIndex+progress)/functorData->contourCount;
-
-			Util::TimeMs trueElapsedTimeMs=Util::getTimeMs()-functorData->startTimeMs;
-
-			// Call user progress functor (which cannot be NULL as we would not be executing this progress functor in the first place)
-			return functorData->functor(trueProgress, trueElapsedTimeMs, functorData->userData);
 		}
 
 		bool edgeDetectTraceClearScratchBitsModifyTilesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
