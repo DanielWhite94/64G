@@ -325,6 +325,50 @@ namespace Engine {
 	void MapPngLib::getColourForTileHeightContour(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Use black pixels for the contour lines themselves, transparent for everything else
 		*r=*g=*b=*a=0;
+
+		// Grab parameters
+		const unsigned contourCount=9; // TODO: grab this from somewhere
+
+		// To indentify contour lines we look for borders/boundaries.
+		// These require the current tile's height to be greater than the contour height threshold,
+		// and that there exists a neighbouring tile with height less than or equal to the threshold.
+		// So we first find the highest contour line threshold which is below this tile's height.
+		const double tileHeight=tile->getHeight();
+
+		double contourHeight;
+		for(int i=contourCount-1; i>=0; --i) {
+			contourHeight=map->seaLevel+((i+1.0)/(contourCount+1))*(map->maxHeight-map->seaLevel);
+			if (contourHeight<tileHeight)
+				break;
+		}
+
+		if (contourHeight>=tileHeight)
+			return; // tile is below all contour lines
+
+		// Next check if any neighbour have height less than or equal to the contour.
+		// If so, we have found a boundary and so should mark this tile as such.
+		MapTile *neighbourTile;
+
+		neighbourTile=map->getTileAtOffset(map->decTileOffsetX(mapTileX), mapTileY, Engine::Map::Map::GetTileFlag::None);
+		if (neighbourTile!=NULL && neighbourTile->getHeight()<=contourHeight) {
+			*a=255;
+			return;
+		}
+		neighbourTile=map->getTileAtOffset(map->incTileOffsetX(mapTileX), mapTileY, Engine::Map::Map::GetTileFlag::None);
+		if (neighbourTile!=NULL && neighbourTile->getHeight()<=contourHeight) {
+			*a=255;
+			return;
+		}
+		neighbourTile=map->getTileAtOffset(mapTileX, map->decTileOffsetX(mapTileY), Engine::Map::Map::GetTileFlag::None);
+		if (neighbourTile!=NULL && neighbourTile->getHeight()<=contourHeight) {
+			*a=255;
+			return;
+		}
+		neighbourTile=map->getTileAtOffset(mapTileX, map->incTileOffsetX(mapTileY), Engine::Map::Map::GetTileFlag::None);
+		if (neighbourTile!=NULL && neighbourTile->getHeight()<=contourHeight) {
+			*a=255;
+			return;
+		}
 	}
 
 	void MapPngLib::getColourForTilePath(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
