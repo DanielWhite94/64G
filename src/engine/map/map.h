@@ -106,6 +106,20 @@ namespace Engine {
 				return Util::decTileOffsetY(offsetY, getHeight());
 			}
 
+			static size_t estimatedFileSize(unsigned width, unsigned height) {
+				size_t total=0;
+
+				// Regions (tile data)
+				size_t regionCount=((width+MapRegion::tilesSize-1)/MapRegion::tilesSize)*((height+MapRegion::tilesSize-1)/MapRegion::tilesSize);
+				size_t regionSize=MapRegion::tilesSize*MapRegion::tilesSize*sizeof(MapTile::FileData);
+				total+=regionCount*regionSize;
+
+				// MapTiled (images)
+				// TODO: this (and anything else)
+
+				return total;
+			}
+
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
 			double minHeight, maxHeight;
 			double minTemperature, maxTemperature;
