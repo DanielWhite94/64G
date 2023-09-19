@@ -90,19 +90,19 @@ namespace Engine {
 			}
 
 			// See Util versions for a description.
-			unsigned incTileOffsetX(unsigned offsetX) {
+			unsigned incTileOffsetX(unsigned offsetX) const {
 				return Util::incTileOffsetX(offsetX, getWidth());
 			}
 
-			unsigned incTileOffsetY(unsigned offsetY) {
+			unsigned incTileOffsetY(unsigned offsetY) const {
 				return Util::incTileOffsetY(offsetY, getHeight());
 			}
 
-			unsigned decTileOffsetX(unsigned offsetX) {
+			unsigned decTileOffsetX(unsigned offsetX) const {
 				return Util::decTileOffsetX(offsetX, getWidth());
 			}
 
-			unsigned decTileOffsetY(unsigned offsetY) {
+			unsigned decTileOffsetY(unsigned offsetY) const {
 				return Util::decTileOffsetY(offsetY, getHeight());
 			}
 
