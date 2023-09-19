@@ -349,11 +349,9 @@ void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x
 	tile->setTemperature(temperature);
 	tile->setLandmassId(0); // default to 0 to imply part of a border - we will update non-border tiles in a later step
 	tile->setHitMask(Physics::HitMask::emptyMask);
-
-	for(unsigned i=0; i<MapTile::layersMax; ++i) {
-		MapTile::Layer layer={.textureId=MapTexture::IdMax};
-		tile->setLayer(i, layer);
-	}
+	tile->setBitset(0);
+	for(unsigned i=0; i<MapTile::layersMax; ++i)
+		tile->setLayer(i, {.textureId=MapTexture::IdMax});
 }
 
 void demogenGroundModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {

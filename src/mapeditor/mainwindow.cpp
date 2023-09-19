@@ -1542,10 +1542,9 @@ void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, u
 	tile->setTemperature(0.0);
 	tile->setLandmassId(0);
 	tile->setHitMask(Physics::HitMask::emptyMask);
-	for(unsigned i=0; i<MapTile::layersMax; ++i) {
-		MapTile::Layer layer={.textureId=MapTexture::IdMax};
-		tile->setLayer(i, layer);
-	}
+	tile->setBitset(0);
+	for(unsigned i=0; i<MapTile::layersMax; ++i)
+		tile->setLayer(i, {.textureId=MapTexture::IdMax});
 }
 
 void mainWindowToolsHeightTemperatureModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
