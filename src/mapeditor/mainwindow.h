@@ -49,6 +49,7 @@ namespace MapEditor {
 		gboolean drawingAreaScrollEvent(GtkWidget *widget, GdkEventScroll *event);
 		void drawingAreaDragBegin(double startX, double startY);
 		void drawingAreaDragUpdate(double startX, double startY, double offsetX, double offsetY);
+		gboolean drawingAreaMotionNotifyEvent(GtkWidget *widget, GdkEventMotion *event);
 
 		bool menuViewShowRegionGridIsActive(void);
 		bool menuViewShowRegionGridToggled(GtkWidget *widget);
@@ -114,6 +115,8 @@ namespace MapEditor {
 		int idleTickSource;
 
 		unsigned operationCounter; // if 0 then no operation
+
+		double drawingAreaMouseDeviceX, drawingAreaMouseDeviceY;
 
 		bool mapNew(void);
 		bool mapOpen(const char *filename); // Returns true if successfully opened, false if choosen folder is not a valid map.

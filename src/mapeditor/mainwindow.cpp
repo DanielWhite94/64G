@@ -59,6 +59,7 @@ gboolean mapEditorMainWindowWrapperDrawingAreaKeyReleaseEvent(GtkWidget *widget,
 gboolean mapEditorMainWindowWrapperDrawingAreaScrollEvent(GtkWidget *widget, GdkEventScroll *event, gpointer userData);
 void mapEditorMainWindowWrapperDrawingAreaDragBegin(GtkGestureDrag *gesture, double x, double y, gpointer userData);
 void mapEditorMainWindowWrapperDrawingAreaDragUpdate(GtkGestureDrag *gesture, double x, double y, gpointer userData);
+gboolean mapEditorMainWindowWrapperDrawingAreaMotionNotifyEvent(GtkWidget *widget, GdkEventMotion *event, gpointer userData);
 
 gboolean mapEditorMainWindowWrapperMenuFileQuitActivate(GtkWidget *widget, gpointer userData);
 
@@ -82,6 +83,8 @@ namespace MapEditor {
 		userCentreX=0;
 		userCentreY=0;
 		lastTickTimeMs=0;
+		drawingAreaMouseDeviceX=0;
+		drawingAreaMouseDeviceY=0;
 
 		keyPanningLeft=false;
 		keyPanningRight=false;
@@ -174,6 +177,8 @@ namespace MapEditor {
 		gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(drag), GDK_BUTTON_PRIMARY);
 		g_signal_connect(drag, "drag-begin", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDragBegin), (void *)this);
 		g_signal_connect(drag, "drag-update", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaDragUpdate), (void *)this);
+
+		g_signal_connect(drawingArea, "motion-notify-event", G_CALLBACK(mapEditorMainWindowWrapperDrawingAreaMotionNotifyEvent), (void *)this);
 
 		// Free memory used by GtkBuilder object.
 		g_object_unref(G_OBJECT(builder));
@@ -343,16 +348,31 @@ namespace MapEditor {
 	}
 
 	void MainWindow::setZoom(int level) {
+		// Clamp zoom level
 		if (level<zoomLevelMin)
 			level=zoomLevelMin;
 		if (level>=zoomLevelMax)
 			level=zoomLevelMax-1;
 
+		// If no change then nothing to do
 		if (level==zoomLevel)
 			return;
 
+		// Temporarily adjust userCentreX/Y so that we can zoom in/out about the cursor position as opposed to the centre of the screen.
+		double dx=drawingAreaMouseDeviceX-gtk_widget_get_allocated_width(drawingArea)/2.0;
+		double dy=drawingAreaMouseDeviceY-gtk_widget_get_allocated_height(drawingArea)/2.0;
+
+		userCentreX+=dx/getZoomFactor();
+		userCentreY+=dy/getZoomFactor();
+
+		// Update zoom level
 		zoomLevel=level;
 
+		// Undo temporary userCentreX/Y adjustment done above
+		userCentreX-=dx/getZoomFactor();
+		userCentreY-=dy/getZoomFactor();
+
+		// Update various bits of the UI
 		updateDrawingArea();
 		updatePositionLabel();
 	}
@@ -361,14 +381,14 @@ namespace MapEditor {
 		if (map==NULL)
 			return;
 
-		// Find centre of the map
-		userCentreX=map->getWidth()/2.0;
-		userCentreY=map->getHeight()/2.0;
-
 		// Calculate zoom level which shows entire map
 		double ratioW=gtk_widget_get_allocated_width(drawingArea)/((double)map->getWidth());
 		double ratioH=gtk_widget_get_allocated_height(drawingArea)/((double)map->getHeight());
 		setZoom(floor(log2(std::min(ratioW, ratioH)))+8);
+
+		// Find centre of the map
+		userCentreX=map->getWidth()/2.0;
+		userCentreY=map->getHeight()/2.0;
 
 		// Call these manually here in case setZoom didn't because there was no change in the zoom level
 		updateDrawingArea();
@@ -895,6 +915,15 @@ namespace MapEditor {
 		updatePositionLabel();
 	}
 
+	gboolean MainWindow::drawingAreaMotionNotifyEvent(GtkWidget *widget, GdkEventMotion *event) {
+		drawingAreaMouseDeviceX=event->x;
+		drawingAreaMouseDeviceY=event->y;
+
+		updatePositionLabel();
+
+		return FALSE;
+	}
+
 	bool MainWindow::menuViewShowRegionGridIsActive(void) {
 		return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuViewShowRegionGrid));
 	}
@@ -1252,9 +1281,12 @@ namespace MapEditor {
 	void MainWindow::updatePositionLabel(void) {
 		char str[1024]; // TODO: better
 
+		int cursorTileX=drawingAreaDeviceXToTileX(drawingAreaMouseDeviceX);
+		int cursorTileY=drawingAreaDeviceYToTileY(drawingAreaMouseDeviceY);
+
 		char *oldLocale = setlocale(LC_NUMERIC, NULL);
 		setlocale(LC_NUMERIC, "");
-		sprintf(str, "Centre (%.0f,%.0f), Zoom level %i (x%.0f)", userCentreX, userCentreY, getZoomLevelHuman(), getZoomFactorHuman());
+		sprintf(str, "Centre (%.0f,%.0f), Cursor (%i,%i), Zoom level %i (x%.0f)", userCentreX, userCentreY, cursorTileX, cursorTileY, getZoomLevelHuman(), getZoomFactorHuman());
 		setlocale(LC_NUMERIC, oldLocale);
 
 		gtk_label_set_text(GTK_LABEL(positionLabel), str);
@@ -1452,6 +1484,11 @@ void mapEditorMainWindowWrapperDrawingAreaDragUpdate(GtkGestureDrag *gesture, do
 	double startX, startY;
 	if (gtk_gesture_drag_get_start_point(gesture, &startX, &startY))
 		mainWindow->drawingAreaDragUpdate(startX, startY, x, y);
+}
+
+gboolean mapEditorMainWindowWrapperDrawingAreaMotionNotifyEvent(GtkWidget *widget, GdkEventMotion *event, gpointer userData) {
+	MapEditor::MainWindow *mainWindow=(MapEditor::MainWindow *)userData;
+	return mainWindow->drawingAreaMotionNotifyEvent(widget, event);
 }
 
 gboolean mapEditorMainWindowWrapperMenuViewShowRegionGridToggled(GtkWidget *widget, gpointer userData) {
