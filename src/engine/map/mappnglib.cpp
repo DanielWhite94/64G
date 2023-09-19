@@ -163,7 +163,7 @@ namespace Engine {
 		return true;
 	}
 
-	void MapPngLib::getColourForTile(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTile(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, MapTiled::ImageLayer layer, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		assert(map!=NULL);
 		assert(tile!=NULL);
 		assert(r!=NULL);
@@ -201,7 +201,7 @@ namespace Engine {
 		*r=*g=*b=*a=0;
 	}
 
-	void MapPngLib::getColourForTileHeight(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileHeight(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
 		// Grab height and check for ocean tile as special case
@@ -244,7 +244,7 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileTemperature(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileTemperature(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
 		// Grab temperature and normalise to [0, 1]
@@ -279,7 +279,7 @@ namespace Engine {
 		}
 	}
 
-	void MapPngLib::getColourForTileMoisture(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileMoisture(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		*a=255;
 
 		// Special case for ocean tiles
@@ -301,7 +301,7 @@ namespace Engine {
 		*b=255;
 	}
 
-	void MapPngLib::getColourForTileTexture(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileTexture(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Loop over layers from top to bottom looking for one with a texture set
 		for(int z=MapTile::layersMax-1; z>=0; --z) {
 			const MapTile::Layer *layer=tile->getLayer(z);
@@ -322,13 +322,13 @@ namespace Engine {
 		*r=255;*g=0;*b=0;*a=255;
 	}
 
-	void MapPngLib::getColourForTileHeightContour(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileHeightContour(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Use black pixels for the contour lines themselves, transparent for everything else
 		*r=*g=*b=0;
 		*a=(tile->getBitsetN(Gen::TileBitsetIndexContour) ? 255 : 0);
 	}
 
-	void MapPngLib::getColourForTilePath(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTilePath(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Use blue/cyan pixels for the paths themselves, transparent for everything else
 		*r=0;
 		*g=48;
@@ -336,7 +336,7 @@ namespace Engine {
 		*a=(tile->getBitsetN(Gen::TileBitsetIndexPath) ? 255 : 0);
 	}
 
-	void MapPngLib::getColourForTilePolitical(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTilePolitical(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		static const uint8_t distinctColours[64][3]={
 			{0, 0, 0},
 			{1, 0, 103},
@@ -421,7 +421,7 @@ namespace Engine {
 		*a=255;
 	}
 
-	void MapPngLib::getColourForTileRegionGrid(const class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+	void MapPngLib::getColourForTileRegionGrid(class Map *map, int mapTileX, int mapTileY, const MapTile *tile, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
 		// Use black pixels for the grid lines themselves, transparent for everything else
 		*r=*g=*b=0;
 		*a=((mapTileX%MapRegion::tilesSize<1 || mapTileY%MapRegion::tilesSize<1) ? 255 : 0);
