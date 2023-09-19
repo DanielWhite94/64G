@@ -88,7 +88,8 @@ namespace Engine {
 								continue;
 
 							// Invoke progress functor if needed
-							if (progressFunctor!=NULL && progress%256==0 && !progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)progress)/progressMax, Util::getTimeMs()-startTimeMs, progressUserData))
+							// TODO: why do we need the std::min call in progress calcs? Rare but sometimes progress>progressMax slightly
+							if (progressFunctor!=NULL && progress%256==0 && !progressFunctor(preModifyTilesProgressRatio+(1.0-preModifyTilesProgressRatio)*((double)(std::min(progress,progressMax)))/progressMax, Util::getTimeMs()-startTimeMs, progressUserData))
 								return;
 							++progress;
 
