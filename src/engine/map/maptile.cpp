@@ -88,11 +88,8 @@ namespace Engine {
 		}
 
 		Physics::HitMask MapTile::getHitMask(const CoordVec &tilePos) const {
-			HitMask hitMask;
-
-			// Add tile layer hitmasks.
-			for(unsigned i=0; i<MapTile::layersMax; ++i)
-				hitMask|=getLayer(i)->hitmask;
+			// Tile hitmask.
+			HitMask hitMask=fileData->hitmask;
 
 			// Add object hitmasks.
 			unsigned objectCount=getObjectCount();
@@ -119,6 +116,10 @@ namespace Engine {
 
 		void MapTile::setTemperature(double temperature) {
 			fileData->temperature=temperature;
+		}
+
+		void MapTile::setHitMask(Physics::HitMask hitmask) {
+			fileData->hitmask=hitmask;
 		}
 
 		void MapTile::setBitset(uint64_t bitset) {

@@ -43,32 +43,72 @@ namespace Engine {
 						case 2: texture=params->textureIdWall0; break;
 						case 3: texture=params->textureIdWall1; break;
 					}
-					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+totalH-1-ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=texture});
+					MapTile *newTile=map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+totalH-1-ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+					if (newTile!=NULL) {
+						newTile->setLayer(params->tileLayer, {.textureId=texture});
+						newTile->setHitMask(HitMask::fullMask);
+					}
 				}
 
 			// Add door.
 			if (params->flags & AddHouseFlags::ShowDoor) {
 				int doorX=params->doorXOffset+baseX;
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseDoorBL});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseDoorBR});
-				map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseDoorTL});
-				map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseDoorTR});
+				MapTile *newTile;
+				newTile=map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+				if (newTile!=NULL) {
+					newTile->setHitMask(HitMask::fullMask);
+					newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorBL});
+				}
+				newTile=map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+				if (newTile!=NULL) {
+					newTile->setHitMask(HitMask::fullMask);
+					newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorBR});
+				}
+				newTile=map->getTileAtCoordVec(CoordVec(doorX*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+				if (newTile!=NULL) {
+					newTile->setHitMask(HitMask::fullMask);
+					newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorTL});
+				}
+				newTile=map->getTileAtCoordVec(CoordVec((doorX+1)*Physics::CoordsPerTile, (baseY+totalH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+				if (newTile!=NULL) {
+					newTile->setHitMask(HitMask::fullMask);
+					newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseDoorTR});
+				}
 			}
 
 			// Add main part of roof.
 			for(ty=0;ty<params->roofHeight-1;++ty) // -1 due to ridge tiles added later
-				for(tx=0;tx<totalW;++tx)
-					map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+1+ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseRoof});
+				for(tx=0;tx<totalW;++tx) {
+					MapTile *newTile=map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, (baseY+1+ty)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+					if (newTile==NULL)
+						continue;
+					newTile->setHitMask(HitMask::fullMask);
+					newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseRoof});
+				}
 
 			// Add roof top ridge.
-			for(tx=0;tx<totalW;++tx)
-				map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseRoofTop});
+			for(tx=0;tx<totalW;++tx) {
+				MapTile *newTile=map->getTileAtCoordVec(CoordVec((baseX+tx)*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+				if (newTile==NULL)
+					continue;
+				newTile->setHitMask(HitMask::fullMask);
+				newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseRoofTop});
+			}
 
 			// Add chimney.
 			if (params->flags & AddHouseFlags::ShowChimney) {
 				int chimneyX=params->chimneyXOffset+baseX;
-				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseChimneyTop});
-				map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (baseY+1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=params->textureIdHouseChimney});
+				MapTile *newTile;
+				newTile=map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, baseY*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+				if (newTile!=NULL) {
+					newTile->setHitMask(HitMask::fullMask);
+					newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseChimneyTop});
+				}
+				newTile=map->getTileAtCoordVec(CoordVec(chimneyX*Physics::CoordsPerTile, (baseY+1)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+				if (newTile!=NULL) {
+					newTile->setHitMask(HitMask::fullMask);
+					newTile->setLayer(params->tileLayer, {.textureId=params->textureIdHouseChimney});
+				}
 			}
 
 			// Add some decoration.
@@ -77,7 +117,9 @@ namespace Engine {
 				if (params->flags & AddHouseFlags::ShowDoor) {
 					for(int offset=0; offset<doorW; ++offset) {
 						int posX=baseX+params->doorXOffset+offset;
-						map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->tileLayer, {.hitmask=HitMask(), .textureId=params->textureIdBrickPath});
+						MapTile *newTile=map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+						if (newTile!=NULL)
+							newTile->setLayer(params->tileLayer, {.textureId=params->textureIdBrickPath});
 					}
 				}
 
@@ -89,7 +131,9 @@ namespace Engine {
 					assert(offset>=0 && offset<totalW);
 
 					int posX=offset+baseX;
-					map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->decorationLayer, {.hitmask=HitMask(), .textureId=params->textureIdRoseBush});
+					MapTile *newTile=map->getTileAtCoordVec(CoordVec(posX*Physics::CoordsPerTile, (baseY+totalH)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+					if (newTile!=NULL)
+						newTile->setLayer(params->decorationLayer, {.textureId=params->textureIdRoseBush});
 				}
 			}
 

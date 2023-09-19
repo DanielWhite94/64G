@@ -14,12 +14,12 @@ namespace Engine {
 			static const unsigned landmassIdMax=65536;
 
 			struct __attribute__((packed)) Layer  {
-				Physics::HitMask hitmask;
 				MapTexture::Id textureId;
 			};
 
 			struct __attribute__((packed)) FileData {
 				Layer layers[layersMax];
+				Physics::HitMask hitmask;
 				uint64_t bitset;
 				float height, moisture, temperature;
 				union {
@@ -47,13 +47,13 @@ namespace Engine {
 			uint16_t getLandmassId(void) const;
 			uint32_t getScratchInt(void) const;
 			float getScratchFloat(void) const;
-
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
 
 			void setLayer(unsigned z, const Layer &layer);
 			void setHeight(double height);
 			void setMoisture(double moisture);
 			void setTemperature(double temperature);
+			void setHitMask(Physics::HitMask hitmask);
 			void setBitset(uint64_t bitset);
 			void setBitsetN(unsigned n, bool value);
 			void setLandmassId(uint16_t landmassId);

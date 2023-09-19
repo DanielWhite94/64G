@@ -106,8 +106,11 @@ namespace Engine {
 
 				int a, b;
 				for(a=road.y0; a<road.trueY1; ++a)
-					for(b=road.x0; b<road.trueX1; ++b)
-						map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(params->roadTileLayer, {.hitmask=HitMask(), .textureId=(road.width>=3 ? params->textureIdMajorPath : params->textureIdMinorPath)});
+					for(b=road.x0; b<road.trueX1; ++b){
+						MapTile *newTile=map->getTileAtCoordVec(CoordVec(b*Physics::CoordsPerTile, a*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+						if (newTile!=NULL)
+							newTile->setLayer(params->roadTileLayer, {.textureId=(road.width>=3 ? params->textureIdMajorPath : params->textureIdMinorPath)});
+					}
 
 				// Add potential child roads.
 				TownRoad newRoad;
@@ -256,7 +259,11 @@ namespace Engine {
 					int signX=signOffset+houseParams->doorXOffset+houseData.x;
 
 					// Add sign.
-					map->getTileAtCoordVec(CoordVec(signX*Physics::CoordsPerTile, (houseData.y+houseData.mapH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty)->setLayer(houseParams->tileLayer, {.hitmask=HitMask(HitMask::fullMask), .textureId=signTextureId});
+					MapTile *newTile=map->getTileAtCoordVec(CoordVec(signX*Physics::CoordsPerTile, (houseData.y+houseData.mapH-2)*Physics::CoordsPerTile), Map::Map::GetTileFlag::CreateDirty);
+					if (newTile!=NULL) {
+						newTile->setHitMask(HitMask::fullMask);
+						newTile->setLayer(houseParams->tileLayer, {.textureId=signTextureId});
+					}
 				}
 			}
 
