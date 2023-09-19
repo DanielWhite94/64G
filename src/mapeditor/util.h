@@ -12,6 +12,8 @@ namespace MapEditor {
 	int utilPromptCustom(const char *title, const char *prompt, GtkWidget *parentWindow, const char *firstButton, ...);
 
 	void utilDoGtkEvents(void); // process a finite (small) number of GTK events
+
+	void sizeToStr(char *str, size_t size);
 };
 
 #endif

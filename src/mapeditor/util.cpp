@@ -46,4 +46,23 @@ namespace MapEditor {
 		for(unsigned i=0; i<4 && gtk_events_pending(); ++i)
 			gtk_main_iteration_do(false);
 	}
+
+	void sizeToStr(char *str, size_t size) {
+		if (size>1024llu*1024llu*1024llu) {
+			// gb
+			float sizeF=size/(1024.0*1024.0*1024.0);
+			sprintf(str, "%.2fgb", sizeF);
+		} else if (size>1024*1024) {
+			// mb
+			float sizeF=size/(1024.0*1024.0);
+			sprintf(str, "%.2fmb", sizeF);
+		} else if (size>1024) {
+			// kb
+			float sizeF=size/1024.0;
+			sprintf(str, "%.2fkb", sizeF);
+		} else {
+			// b
+			sprintf(str, "%llub", (unsigned long long)size);
+		}
+	}
 };
