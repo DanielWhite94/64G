@@ -1203,6 +1203,26 @@ namespace MapEditor {
 		return pow(2.0, getZoomLevelHuman());
 	}
 
+	int MainWindow::drawingAreaDeviceXToTileX(double deviceX) {
+		double zoomFactor=getZoomFactor();
+		return (deviceX-gtk_widget_get_allocated_width(drawingArea)/2)/zoomFactor+userCentreX;
+	}
+
+	int MainWindow::drawingAreaDeviceYToTileY(double deviceY) {
+		double zoomFactor=getZoomFactor();
+		return (deviceY-gtk_widget_get_allocated_height(drawingArea)/2)/zoomFactor+userCentreY;
+	}
+
+	double MainWindow::drawingAreaTileXToDeviceX(int tileX) {
+		double zoomFactor=getZoomFactor();
+		return (tileX-userCentreX)*zoomFactor+gtk_widget_get_allocated_width(drawingArea)/2.0;
+	}
+
+	double MainWindow::drawingAreaTileYToDeviceY(int tileY) {
+		double zoomFactor=getZoomFactor();
+		return (tileY-userCentreY)*zoomFactor+gtk_widget_get_allocated_height(drawingArea)/2.0;
+	}
+
 	void MainWindow::updateFileMenuSensitivity(void) {
 		bool mapOpen=(map!=NULL);
 		bool mapChanges=mapGetUnsavedChanges();

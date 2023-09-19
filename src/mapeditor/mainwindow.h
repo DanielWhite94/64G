@@ -127,6 +127,11 @@ namespace MapEditor {
 		int getZoomLevelHuman(void);
 		double getZoomFactorHuman(void);
 
+		int drawingAreaDeviceXToTileX(double deviceX);
+		int drawingAreaDeviceYToTileY(double deviceY);
+		double drawingAreaTileXToDeviceX(int tileX);
+		double drawingAreaTileYToDeviceY(int tileY);
+
 		void updateFileMenuSensitivity(void);
 		void updateTitle(void);
 		void updateDrawingArea(void);
