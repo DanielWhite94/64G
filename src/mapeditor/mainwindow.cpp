@@ -1219,6 +1219,10 @@ namespace MapEditor {
 		double deviceY=userY;
 		cairo_user_to_device(cr, &deviceX, &deviceY);
 
+		// Floor x/y values to avoid rendering artefacts.
+		deviceX=floor(deviceX);
+		deviceY=floor(deviceY);
+
 		// Reset transformation matrix and blit
 		cairo_save(cr);
 		cairo_identity_matrix(cr);
