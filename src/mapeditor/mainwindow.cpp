@@ -679,63 +679,19 @@ namespace MapEditor {
 					for(int mapTileX=mapTileStartX; mapTileX<=mapTileEndX; ++mapTileX) {
 						double userMapTileTopLeftX=mapTileX*userMapTileImageSize;
 
-						// Attempt to load png image as a cairo surface
+						// Draw 'base' surface
 						cairo_surface_t *mapTileSurface=getMapTiledImageSurface(zoomLevel, mapTileX, mapTileY, activeLayer);
-
-						// Draw surface
-						if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
-							// To blit the png surface we will reset the cairo transformation matrix.
-							// So before we do that work out where we should be drawing said surface.
-							double deviceMapTileTopLeftX=userMapTileTopLeftX;
-							double deviceMapTileTopLeftY=userMapTileTopLeftY;
-							cairo_user_to_device(cr, &deviceMapTileTopLeftX, &deviceMapTileTopLeftY);
-
-							// Reset transformation matrix and blit
-							cairo_save(cr);
-							cairo_identity_matrix(cr);
-							cairo_set_source_surface(cr, mapTileSurface, deviceMapTileTopLeftX, deviceMapTileTopLeftY);
-							cairo_paint(cr);
-							cairo_surface_destroy(mapTileSurface);
-							cairo_restore(cr);
-						}
+						drawingAreaDrawTileSurface(cr, mapTileSurface, userMapTileTopLeftX, userMapTileTopLeftY);
 
 						// Do we need to draw any other layers on top?
 						if (menuViewLayersHeightContoursIsActive()) {
 							cairo_surface_t *mapTileSurface=getMapTiledImageSurface(zoomLevel, mapTileX, mapTileY, MapTiled::ImageLayerHeightContour);
-							if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
-								// To blit the png surface we will reset the cairo transformation matrix.
-								// So before we do that work out where we should be drawing said surface.
-								double deviceMapTileTopLeftX=userMapTileTopLeftX;
-								double deviceMapTileTopLeftY=userMapTileTopLeftY;
-								cairo_user_to_device(cr, &deviceMapTileTopLeftX, &deviceMapTileTopLeftY);
-
-								// Reset transformation matrix and blit
-								cairo_save(cr);
-								cairo_identity_matrix(cr);
-								cairo_set_source_surface(cr, mapTileSurface, deviceMapTileTopLeftX, deviceMapTileTopLeftY);
-								cairo_paint(cr);
-								cairo_surface_destroy(mapTileSurface);
-								cairo_restore(cr);
-							}
+							drawingAreaDrawTileSurface(cr, mapTileSurface, userMapTileTopLeftX, userMapTileTopLeftY);
 						}
 
 						if (menuViewLayersPathsIsActive()) {
 							cairo_surface_t *mapTileSurface=getMapTiledImageSurface(zoomLevel, mapTileX, mapTileY, MapTiled::ImageLayerPath);
-							if (cairo_surface_status(mapTileSurface)==CAIRO_STATUS_SUCCESS) {
-								// To blit the png surface we will reset the cairo transformation matrix.
-								// So before we do that work out where we should be drawing said surface.
-								double deviceMapTileTopLeftX=userMapTileTopLeftX;
-								double deviceMapTileTopLeftY=userMapTileTopLeftY;
-								cairo_user_to_device(cr, &deviceMapTileTopLeftX, &deviceMapTileTopLeftY);
-
-								// Reset transformation matrix and blit
-								cairo_save(cr);
-								cairo_identity_matrix(cr);
-								cairo_set_source_surface(cr, mapTileSurface, deviceMapTileTopLeftX, deviceMapTileTopLeftY);
-								cairo_paint(cr);
-								cairo_surface_destroy(mapTileSurface);
-								cairo_restore(cr);
-							}
+							drawingAreaDrawTileSurface(cr, mapTileSurface, userMapTileTopLeftX, userMapTileTopLeftY);
 						}
 					}
 				}
@@ -1250,6 +1206,26 @@ namespace MapEditor {
 	double MainWindow::drawingAreaTileYToDeviceY(int tileY) {
 		double zoomFactor=getZoomFactor();
 		return (tileY-userCentreY)*zoomFactor+gtk_widget_get_allocated_height(drawingArea)/2.0;
+	}
+
+	void MainWindow::drawingAreaDrawTileSurface(cairo_t *cr, cairo_surface_t *surface, double userX, double userY) {
+		// Check surface
+		if (cairo_surface_status(surface)!=CAIRO_STATUS_SUCCESS)
+			return;
+
+		// To blit the png surface we will reset the cairo transformation matrix.
+		// So before we do that work out where we should be drawing said surface.
+		double deviceX=userX;
+		double deviceY=userY;
+		cairo_user_to_device(cr, &deviceX, &deviceY);
+
+		// Reset transformation matrix and blit
+		cairo_save(cr);
+		cairo_identity_matrix(cr);
+		cairo_set_source_surface(cr, surface, deviceX, deviceY);
+		cairo_paint(cr);
+		cairo_surface_destroy(surface);
+		cairo_restore(cr);
 	}
 
 	void MainWindow::updateFileMenuSensitivity(void) {

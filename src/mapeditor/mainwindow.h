@@ -135,6 +135,8 @@ namespace MapEditor {
 		double drawingAreaTileXToDeviceX(int tileX);
 		double drawingAreaTileYToDeviceY(int tileY);
 
+		void drawingAreaDrawTileSurface(cairo_t *cr, cairo_surface_t *surface, double userX, double userY);
+
 		void updateFileMenuSensitivity(void);
 		void updateTitle(void);
 		void updateDrawingArea(void);
