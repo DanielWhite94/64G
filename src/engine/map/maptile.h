@@ -1,6 +1,7 @@
 #ifndef ENGINE_GRAPHICS_MAPTILE_H
 #define ENGINE_GRAPHICS_MAPTILE_H
 
+#include "maplandmass.h"
 #include "mapobject.h"
 #include "../physics/hitmask.h"
 
@@ -11,7 +12,6 @@ namespace Engine {
 		public:
 			static const unsigned layersMax=4;
 			static const unsigned objectsMax=8;
-			static const unsigned landmassIdMax=65536;
 
 			struct __attribute__((packed)) Layer  {
 				MapTexture::Id textureId;
@@ -26,7 +26,7 @@ namespace Engine {
 					uint32_t scratchInt;
 					float scratchFloat;
 				};
-				uint16_t landmassId;
+				MapLandmass::Id landmassId;
 			};
 
 			MapTile();
@@ -44,7 +44,7 @@ namespace Engine {
 			double getTemperature(void) const;
 			uint64_t getBitset(void) const;
 			bool getBitsetN(unsigned n) const;
-			uint16_t getLandmassId(void) const;
+			MapLandmass::Id getLandmassId(void) const;
 			uint32_t getScratchInt(void) const;
 			float getScratchFloat(void) const;
 			Physics::HitMask getHitMask(const CoordVec &tilePos) const;
@@ -56,7 +56,7 @@ namespace Engine {
 			void setHitMask(Physics::HitMask hitmask);
 			void setBitset(uint64_t bitset);
 			void setBitsetN(unsigned n, bool value);
-			void setLandmassId(uint16_t landmassId);
+			void setLandmassId(MapLandmass::Id landmassId);
 			void setScratchInt(uint32_t scratchInt);
 			void setScratchFloat(float scratchFloat);
 

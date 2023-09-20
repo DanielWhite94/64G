@@ -24,13 +24,13 @@ namespace Engine {
 
 		struct KingdomIdentifyLandmassDataSingle {
 			uint32_t area; // number of tiles making up this landmass
-			uint16_t rewriteId; // used when merging landmasses together
+			MapLandmass::Id rewriteId; // used when merging landmasses together
 			bool isWater; // true if all tiles are <= sea level (if area=0 then vacuously true)
 		};
 
 		struct KingdomIdentifyLandmassData {
-			uint16_t oceanId; // initially 0 until computed
-			KingdomIdentifyLandmassDataSingle landmasses[MapTile::landmassIdMax];
+			MapLandmass::Id oceanId; // initially MapLandmass::IdNone until computed
+			KingdomIdentifyLandmassDataSingle landmasses[MapLandmass::IdMax];
 		};
 
 		void kingdomIdentifyTerritoriesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
@@ -62,8 +62,8 @@ namespace Engine {
 
 			// Create struct to hold data about landmasses
 			KingdomIdentifyLandmassData *landmassData=(KingdomIdentifyLandmassData *)malloc(sizeof(KingdomIdentifyLandmassData));
-			landmassData->oceanId=0;
-			for(unsigned i=0; i<MapTile::landmassIdMax; ++i) {
+			landmassData->oceanId=MapLandmass::IdNone;
+			for(unsigned i=0; i<MapLandmass::IdMax; ++i) {
 				// TODO: use memset or w/e?
 				landmassData->landmasses[i].area=0;
 				landmassData->landmasses[i].isWater=true; // set to false on first encounter with land
@@ -83,8 +83,9 @@ namespace Engine {
 
 			// Determine which landmass is actually the main ocean
 			unsigned oceanArea=0;
-			assert(landmassData->oceanId==0);
-			for(unsigned i=1; i<MapTile::landmassIdMax; ++i) {
+			assert(landmassData->oceanId==MapLandmass::IdNone);
+			assert(MapLandmass::IdNone==0);
+			for(unsigned i=1; i<MapLandmass::IdMax; ++i) {
 				if (landmassData->landmasses[i].area==0)
 					break;
 				if (!landmassData->landmasses[i].isWater)
@@ -122,8 +123,9 @@ namespace Engine {
 				return;
 
 			// Set tile's landmass id and update other data/stats
-			// Note: we do +1 so that id 0 is reserved for boundary/unassigned tiles
-			unsigned newId=groupId+1;
+			// Note: we do +1 so that id 0 is reserved
+			assert(MapLandmass::IdNone==0);
+			MapLandmass::Id newId=groupId+1;
 			tile->setLandmassId(newId);
 			++landmassData->landmasses[newId].area;
 			if (tile->getHeight()>map->seaLevel)
@@ -142,7 +144,7 @@ namespace Engine {
 		void kingdomIdentifyTerritoriesModifyTilesFunctorClearLandmassId(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
 			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
 			if (tile!=NULL)
-				tile->setLandmassId(0);
+				tile->setLandmassId(MapLandmass::IdNone);
 		}
 
 		void kingdomIdentifyTerritoriesModifyTilesFunctorAssignBoundaries(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
@@ -153,8 +155,8 @@ namespace Engine {
 				return;
 
 			// We only care about boundary tiles (which don't yet have a landmass id assigned to them)
-			unsigned id=tile->getLandmassId();
-			if (id!=0)
+			MapLandmass::Id id=tile->getLandmassId();
+			if (id!=MapLandmass::IdNone)
 				return;
 
 			// Loop over 8 directly neighbouring tiles
@@ -172,8 +174,8 @@ namespace Engine {
 						continue;
 
 					// If neighbour has a non-boundary landmass id then update this tile's to match
-					unsigned neighbourId=neighbourTile->getLandmassId();
-					if (neighbourId!=0) {
+					MapLandmass::Id neighbourId=neighbourTile->getLandmassId();
+					if (neighbourId!=MapLandmass::IdNone) {
 						tile->setLandmassId(neighbourId);
 						return;
 					}
@@ -192,8 +194,8 @@ namespace Engine {
 
 			// We skip all tiles within the ocean landmass
 			// (id==0 shouldn't be possible but no harm being safe)
-			unsigned id=tile->getLandmassId();
-			if (id==0 || id==landmassData->oceanId)
+			MapLandmass::Id id=tile->getLandmassId();
+			if (id==MapLandmass::IdNone || id==landmassData->oceanId)
 				return;
 
 			// 'chase down' our true id by following the 'pointers'
@@ -215,8 +217,8 @@ namespace Engine {
 						continue;
 
 					// Not interested in ocean tiles
-					unsigned neighbourId=neighbourTile->getLandmassId();
-					if (neighbourId==0 || neighbourId==landmassData->oceanId)
+					MapLandmass::Id neighbourId=neighbourTile->getLandmassId();
+					if (neighbourId==MapLandmass::IdNone || neighbourId==landmassData->oceanId)
 						continue;
 
 					// 'chase down' neighbour id
@@ -242,7 +244,7 @@ namespace Engine {
 				return;
 
 			// 'chase down' our id to find true value
-			unsigned id=tile->getLandmassId();
+			MapLandmass::Id id=tile->getLandmassId();
 			while(landmassData->landmasses[id].rewriteId!=id)
 				id=landmassData->landmasses[id].rewriteId;
 

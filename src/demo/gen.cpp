@@ -347,7 +347,7 @@ void demogenInitModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x
 	tile->setHeight(height);
 	tile->setMoisture(0.0);
 	tile->setTemperature(temperature);
-	tile->setLandmassId(0); // default to 0 to imply part of a border - we will update non-border tiles in a later step
+	tile->setLandmassId(MapLandmass::IdNone);
 	tile->setHitMask(Physics::HitMask::emptyMask);
 	tile->setBitset(0);
 	for(unsigned i=0; i<MapTile::layersMax; ++i)
@@ -640,7 +640,8 @@ void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y,
 		return;
 
 	// Set tile's landmass id
-	// Note: we do +1 so that id 0 is reserved for 'border' tiles
+	// Note: we do +1 so that id 0 is reserved
+	assert(MapLandmass::IdNone==0);
 	tile->setLandmassId(groupId+1);
 }
 

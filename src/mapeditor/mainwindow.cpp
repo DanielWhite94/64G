@@ -1514,7 +1514,7 @@ void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, u
 	tile->setHeight(0.0);
 	tile->setMoisture(0.0);
 	tile->setTemperature(0.0);
-	tile->setLandmassId(0);
+	tile->setLandmassId(MapLandmass::IdNone);
 	tile->setHitMask(Physics::HitMask::emptyMask);
 	tile->setBitset(0);
 	for(unsigned i=0; i<MapTile::layersMax; ++i)

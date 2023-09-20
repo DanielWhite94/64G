@@ -75,7 +75,7 @@ namespace Engine {
 			return (fileData->bitset>>n)&1;
 		}
 
-		uint16_t MapTile::getLandmassId(void) const {
+		MapLandmass::Id MapTile::getLandmassId(void) const {
 			return fileData->landmassId;
 		}
 
@@ -135,7 +135,7 @@ namespace Engine {
 				fileData->bitset&=~(((uint64_t)1)<<n);
 		}
 
-		void MapTile::setLandmassId(uint16_t landmassId) {
+		void MapTile::setLandmassId(MapLandmass::Id landmassId) {
 			fileData->landmassId=landmassId;
 		}
 

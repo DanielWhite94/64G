@@ -448,10 +448,10 @@ namespace Engine {
 		};
 
 		// Grab landmass id for this tile
-		uint16_t landmassId=tile->getLandmassId();
+		MapLandmass::Id landmassId=tile->getLandmassId();
 
-		// Special case: id=0 implies border tile, so colour black
-		if (landmassId==0) {
+		// Special case for id none
+		if (landmassId==MapLandmass::IdNone) {
 			*r=*g=*b=0;
 			*a=255;
 			return;
