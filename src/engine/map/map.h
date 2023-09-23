@@ -4,6 +4,7 @@
 #include <mutex>
 #include <vector>
 
+#include "maplandmass.h"
 #include "mapobject.h"
 #include "mapregion.h"
 #include "maptexture.h"
@@ -39,6 +40,7 @@ namespace Engine {
 			bool saveTextures(void) const; // Only saves list of textures (requires directory exists).
 			bool saveItems(void) const; // Only saves list of item 'definitions' (requires directory exists).
 			bool saveRegions(void); // Only saves regions (requires directory exists).
+			bool saveLandmasses(void); // Only saves landmasses
 
 			bool loadRegion(unsigned regionX, unsigned regionY, const char *regionPath);
 			bool markRegionDirtyAtTileOffset(unsigned offsetX, unsigned offsetY, bool create);
@@ -63,6 +65,9 @@ namespace Engine {
 			bool addItem(MapItem *item); // These functions will free item later.
 			void removeItem(unsigned id);
 			const MapItem *getItem(unsigned id) const;
+
+			bool addLandmass(MapLandmass *landmass);
+			void removeLandmasses(void);
 
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
@@ -155,6 +160,8 @@ namespace Engine {
 			MapTexture *textures[MapTexture::IdMax];
 
 			MapItem *items[MapItem::IdMax];
+
+			std::vector<MapLandmass *> landmasses;
 
 			const char *getRegionsDir(void) const;
 			const char *getTexturesDir(void) const;

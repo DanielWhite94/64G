@@ -2,6 +2,7 @@
 #define ENGINE_GRAPHICS_MAPLANDMASS_H
 
 #include <cstdint>
+#include <cstdio>
 
 namespace Engine {
 	namespace Map {
@@ -11,6 +12,7 @@ namespace Engine {
 			static const Id IdNone=0;
 			static const Id IdMax=((1u)<<16)-1;
 
+			MapLandmass(); // used if going to immediately call load
 			MapLandmass(Id id, uint32_t area);
 			~MapLandmass();
 

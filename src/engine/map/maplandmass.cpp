@@ -13,6 +13,11 @@
 
 namespace Engine {
 	namespace Map {
+		MapLandmass::MapLandmass() {
+			id=IdNone;
+			area=0;
+		}
+
 		MapLandmass::MapLandmass(Id gId, uint32_t gArea) {
 			assert(gId<IdMax);
 

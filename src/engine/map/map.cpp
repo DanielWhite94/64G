@@ -285,6 +285,24 @@ namespace Engine {
 				closedir(dirFd);
 			}
 
+			// Load landmasses file
+			char landmassesFilePath[1024]; // TODO: Prevent overflows.
+			sprintf(landmassesFilePath, "%s/landmasses", baseDir);
+			FILE *landmassesFile=fopen(landmassesFilePath, "r");
+			if (landmassesFile!=NULL) {
+				while(1) {
+					MapLandmass *landmass=new MapLandmass();
+					if (!landmass->load(landmassesFile)) {
+						delete landmass;
+						break;
+					}
+
+					addLandmass(landmass);
+				}
+
+				fclose(metadataFile);
+			}
+
 			// Note: Regions are loaded on demand.
 		}
 
@@ -305,6 +323,9 @@ namespace Engine {
 			// Remove items.
 			for(i=0; i<MapItem::IdMax; ++i)
 				removeItem(i);
+
+			// Remove landmasses.
+			removeLandmasses();
 
 			// Close and remove lock file
 			if (lockFd!=-1)
@@ -346,6 +367,10 @@ namespace Engine {
 
 			// Save all items.
 			if (!saveItems())
+				return false;
+
+			// Save all landmasses.
+			if (!saveLandmasses())
 				return false;
 
 			return true;
@@ -537,6 +562,28 @@ namespace Engine {
 			regionsLock.unlock();
 
 			return success;
+		}
+
+		bool Map::saveLandmasses(void) {
+			// Create file.
+			char path[1024]; // TODO: Prevent overflows.
+			sprintf(path, "%s/landmasses", baseDir);
+			FILE *file=fopen(path, "w");
+			if (file==NULL)
+				return false;
+
+			// Save landmasses
+			bool result=true;
+			for(auto const *landmass: landmasses)
+				if (!landmass->save(file)) {
+					result=false;
+					break;
+				}
+
+			// Close file.
+			fclose(file);
+
+			return result;
 		}
 
 		bool Map::loadRegion(unsigned regionX, unsigned regionY, const char *regionPath) {
@@ -876,6 +923,27 @@ namespace Engine {
 			assert(id<MapItem::IdMax);
 
 			return items[id];
+		}
+
+		bool Map::addLandmass(MapLandmass *landmass) {
+			// ..... temp
+			printf("@@@@@ adding landmass: id=%u, area=%u\n", landmass->getId(), landmass->getArea());
+
+			// TODO: check for id already existing
+
+			// Add to list
+			landmasses.push_back(landmass);
+
+			return true;
+		}
+
+		void Map::removeLandmasses(void) {
+			// Empty the vector one by one
+			while(!landmasses.empty()) {
+				MapLandmass *landmass=landmasses.back();
+				landmasses.pop_back();
+				delete landmass;
+			}
 		}
 
 		const char *Map::getBaseDir(void) const {

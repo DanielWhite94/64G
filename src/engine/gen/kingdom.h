@@ -18,7 +18,8 @@ namespace Engine {
 
 			// Identifies individual physical landmasses/continents and assigns each of them a unique id greater than 0.
 			// All tiles within a continent have their landmassId field set to match that of the continent.
-			void identifyTerritories(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
+			// Clears and repopulates landmasses list in Map
+			void identifyLandmasses(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
 		private:
 			class Map *map;

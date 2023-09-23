@@ -568,12 +568,12 @@ namespace MapEditor {
 
 		// Create progress dialogue to provide updates
 		operationBegin();
-		ProgressDialogue *prog=new ProgressDialogue("1/2: Calculating landmass id numbers...", window);
+		ProgressDialogue *prog=new ProgressDialogue("1/2: Identifying landmasses...", window);
 		prog->setShowCancelButton(true);
 
-		// Use Gen Kingdom module to identify the territories
+		// Use Gen Kingdom module to identify the territories/landmasses
 		Gen::Kingdom kingdom(map);
-		kingdom.identifyTerritories(params.threads, &progressDialogueProgressFunctor, prog);
+		kingdom.identifyLandmasses(params.threads, &progressDialogueProgressFunctor, prog);
 
 		// Clear cached images
 		prog->setText("2/2: Clearing cached map images...");
