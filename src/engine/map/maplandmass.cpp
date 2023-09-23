@@ -16,13 +16,18 @@ namespace Engine {
 		MapLandmass::MapLandmass() {
 			id=IdNone;
 			area=0;
+
+			tileMinX=UINT16_MAX;
+			tileMinY=UINT16_MAX;
+			tileMaxX=0;
+			tileMaxY=0;
+			tileAverageX=0;
+			tileAverageY=0;
+			tileExampleX=0;
+			tileExampleY=0;
 		}
 
-		MapLandmass::MapLandmass(Id gId, uint32_t gArea) {
-			assert(gId<IdMax);
-
-			id=gId;
-			area=gArea;
+		MapLandmass::MapLandmass(Id id, uint32_t area, uint16_t tileMinX, uint16_t tileMinY, uint16_t tileMaxX, uint16_t tileMaxY, uint16_t tileAverageX, uint16_t tileAverageY, uint16_t tileExampleX, uint16_t tileExampleY): id(id), area(area), tileMinX(tileMinX), tileMinY(tileMinY), tileMaxX(tileMaxX), tileMaxY(tileMaxY), tileAverageX(tileAverageX), tileAverageY(tileAverageY), tileExampleX(tileExampleX) {
 		}
 
 		MapLandmass::~MapLandmass() {
@@ -35,6 +40,14 @@ namespace Engine {
 
 			result&=(fread(&id, sizeof(id), 1, file)==1);
 			result&=(fread(&area, sizeof(area), 1, file)==1);
+			result&=(fread(&tileMinX, sizeof(tileMinX),  1, file)==1);
+			result&=(fread(&tileMinY, sizeof(tileMinY),  1, file)==1);
+			result&=(fread(&tileMaxX, sizeof(tileMaxX),  1, file)==1);
+			result&=(fread(&tileMaxY, sizeof(tileMaxY),  1, file)==1);
+			result&=(fread(&tileAverageX, sizeof(tileAverageX),  1, file)==1);
+			result&=(fread(&tileAverageY, sizeof(tileAverageY),  1, file)==1);
+			result&=(fread(&tileExampleX, sizeof(tileExampleX),  1, file)==1);
+			result&=(fread(&tileExampleY, sizeof(tileExampleY),  1, file)==1);
 
 			return result;
 		}
@@ -46,6 +59,14 @@ namespace Engine {
 
 			result&=(fwrite(&id, sizeof(id), 1, file)==1);
 			result&=(fwrite(&area, sizeof(area), 1, file)==1);
+			result&=(fwrite(&tileMinX, sizeof(tileMinX),  1, file)==1);
+			result&=(fwrite(&tileMinY, sizeof(tileMinY),  1, file)==1);
+			result&=(fwrite(&tileMaxX, sizeof(tileMaxX),  1, file)==1);
+			result&=(fwrite(&tileMaxY, sizeof(tileMaxY),  1, file)==1);
+			result&=(fwrite(&tileAverageX, sizeof(tileAverageX),  1, file)==1);
+			result&=(fwrite(&tileAverageY, sizeof(tileAverageY),  1, file)==1);
+			result&=(fwrite(&tileExampleX, sizeof(tileExampleX),  1, file)==1);
+			result&=(fwrite(&tileExampleY, sizeof(tileExampleY),  1, file)==1);
 
 			return result;
 		}
@@ -58,5 +79,29 @@ namespace Engine {
 			return area;
 		}
 
+		uint16_t MapLandmass::getTileMinX(void) const {
+			return tileMinX;
+		}
+		uint16_t MapLandmass::getTileMinY(void) const {
+			return tileMinY;
+		}
+		uint16_t MapLandmass::getTileMaxX(void) const {
+			return tileMaxX;
+		}
+		uint16_t MapLandmass::getTileMaxY(void) const {
+			return tileMaxY;
+		}
+		uint16_t MapLandmass::getTileAverageX(void) const {
+			return tileAverageX;
+		}
+		uint16_t MapLandmass::getTileAverageY(void) const {
+			return tileAverageY;
+		}
+		uint16_t MapLandmass::getTileExampleX(void) const {
+			return tileExampleX;
+		}
+		uint16_t MapLandmass::getTileExampleY(void) const {
+			return tileExampleY;
+		}
 	};
 };

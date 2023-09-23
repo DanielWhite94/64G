@@ -22,15 +22,126 @@ namespace Engine {
 			void *progressUserData;
 		};
 
-		struct KingdomIdentifyLandmassesDataSingle {
-			uint32_t area; // number of tiles making up this landmass
-			MapLandmass::Id rewriteId; // used when merging landmasses together
-			bool isWater; // true if all tiles are <= sea level (if area=0 then vacuously true)
-		};
+		class KingdomIdentifyLandmassesData {
+		public:
+			KingdomIdentifyLandmassesData(class Map *map): map(map) {
+				clear();
+			}
 
-		struct KingdomIdentifyLandmassesData {
+			void clear(void) {
+				oceanId=MapLandmass::IdNone;
+				// TODO: use memset or w/e?
+				for(unsigned i=0; i<MapLandmass::IdMax; ++i) {
+					Entry *entry=&landmasses[i];
+
+					entry->area=0;
+					entry->isWater=true; // set to false on first encounter with land
+					entry->rewriteId=i;
+
+					entry->tileTotalX=0;
+					entry->tileTotalY=0;
+					entry->tileMinX=UINT16_MAX;
+					entry->tileMinY=UINT16_MAX;
+					entry->tileMaxX=0;
+					entry->tileMaxY=0;
+					entry->tileExampleX=0;
+					entry->tileExampleY=0;
+				}
+			}
+
+			void addTileStats(unsigned x, unsigned y, MapTile *tile) {
+				// Grab id from tile and other data
+				MapLandmass::Id id=tile->getLandmassId();
+				Entry *entry=&landmasses[id];
+
+				// Update stats
+				++entry->area;
+				if (tile->getHeight()>map->seaLevel)
+					entry->isWater=false;
+
+				entry->tileTotalX+=x;
+				entry->tileTotalY+=y;
+				entry->tileMinX=std::min(entry->tileMinX, (uint16_t)x);
+				entry->tileMinY=std::min(entry->tileMinY, (uint16_t)y);
+				entry->tileMaxX=std::max(entry->tileMaxX, (uint16_t)x);
+				entry->tileMaxY=std::max(entry->tileMaxY, (uint16_t)y);
+				entry->tileExampleX=x;
+				entry->tileExampleY=y;
+			}
+
+			MapLandmass::Id getOceanId(void) const {
+				return oceanId;
+			}
+			MapLandmass::Id resolveRewriteId(MapLandmass::Id id) {
+				// 'Chase down' the id until we hit the final (and true) value
+				while(landmasses[id].rewriteId!=id)
+					id=landmasses[id].rewriteId;
+				return id;
+			}
+
+			void setRewriteId(MapLandmass::Id id, MapLandmass::Id rewriteId) {
+				landmasses[id].rewriteId=rewriteId;
+			}
+
+			void identifyOceanLandmassId(void) {
+				oceanId=MapLandmass::IdNone;
+
+				unsigned oceanArea=0;
+				assert(MapLandmass::IdNone==0);
+				for(unsigned i=1; i<MapLandmass::IdMax; ++i) {
+					Entry *entry=&landmasses[i];
+
+					// Unused id or not water?
+					if (entry->area==0)
+						break;
+					if (!entry->isWater)
+						continue;
+
+					// Have we found a new largest landmass of water?
+					if (entry->area>oceanArea) {
+						oceanArea=entry->area;
+						oceanId=i;
+					}
+				}
+			}
+
+			void identifyLandmasses(void) {
+				assert(MapLandmass::IdNone==0);
+				for(unsigned i=1; i<MapLandmass::IdMax; ++i) {
+					Entry *entry=&landmasses[i];
+					if (entry->area==0)
+						continue;
+
+					MapLandmass *landmass=new MapLandmass(i,
+					                                      entry->area,
+					                                      entry->tileMinX,
+					                                      entry->tileMinY,
+					                                      entry->tileMaxX,
+					                                      entry->tileMaxY,
+					                                      entry->tileTotalX/entry->area,
+					                                      entry->tileTotalY/entry->area,
+					                                      entry->tileExampleX,
+					                                      entry->tileExampleY);
+					map->addLandmass(landmass);
+				}
+			}
+
+		private:
+			struct Entry {
+				uint32_t area; // number of tiles making up this landmass
+				MapLandmass::Id rewriteId; // used when merging landmasses together
+				bool isWater; // true if all tiles are <= sea level (if area=0 then vacuously true)
+
+				// see maplandmass.h for a description of these
+				uint64_t tileTotalX, tileTotalY; // used to compute averages
+				uint16_t tileMinX, tileMinY;
+				uint16_t tileMaxX, tileMaxY;
+				uint16_t tileExampleX, tileExampleY;
+			};
+
+			class Map *map;
 			MapLandmass::Id oceanId; // initially MapLandmass::IdNone until computed
-			KingdomIdentifyLandmassesDataSingle landmasses[MapLandmass::IdMax];
+			Entry landmasses[MapLandmass::IdMax];
 		};
 
 		void kingdomIdentifyLandmassesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
@@ -65,14 +176,7 @@ namespace Engine {
 			landmassEdgeDetect.traceFast(threadCount, &Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
 
 			// Create struct to hold data about landmasses
-			KingdomIdentifyLandmassesData *landmassData=(KingdomIdentifyLandmassesData *)malloc(sizeof(KingdomIdentifyLandmassesData));
-			landmassData->oceanId=MapLandmass::IdNone;
-			for(unsigned i=0; i<MapLandmass::IdMax; ++i) {
-				// TODO: use memset or w/e?
-				landmassData->landmasses[i].area=0;
-				landmassData->landmasses[i].isWater=true; // set to false on first encounter with land
-				landmassData->landmasses[i].rewriteId=i;
-			}
+			KingdomIdentifyLandmassesData *landmassData=new KingdomIdentifyLandmassesData(map);
 
 			// Fill each continent so the tile landmassId field has the same value for each continent
 			progressData.progressOffset=3.0/11.0;
@@ -85,21 +189,8 @@ namespace Engine {
 			progressData.progressMultiplier=1.0/11.0;
 			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorAssignBoundaries, NULL, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
 
-			// Determine which landmass is actually the main ocean
-			unsigned oceanArea=0;
-			assert(landmassData->oceanId==MapLandmass::IdNone);
-			assert(MapLandmass::IdNone==0);
-			for(unsigned i=1; i<MapLandmass::IdMax; ++i) {
-				if (landmassData->landmasses[i].area==0)
-					break;
-				if (!landmassData->landmasses[i].isWater)
-					continue;
-
-				if (landmassData->landmasses[i].area>oceanArea) {
-					oceanArea=landmassData->landmasses[i].area;
-					landmassData->oceanId=i;
-				}
-			}
+			// Determine which landmass is the main ocean
+			landmassData->identifyOceanLandmassId();
 
 			// Merge together landmasses where they touch (e.g. seas/lakes wholly within other landmasses)
 			// Do this in two passes - the first pass identifies all mergers and the second performs the actually updating
@@ -111,29 +202,17 @@ namespace Engine {
 			progressData.progressMultiplier=1.0/11.0;
 			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorProcessMergers, landmassData, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
 
-			// Calculate landmass stats before adding proper landmass info to the map
-			for(unsigned i=0; i<MapLandmass::IdMax; ++i) {
-				// TODO: use memset or w/e?
-				landmassData->landmasses[i].area=0;
-				landmassData->landmasses[i].isWater=true; // set to false on first encounter with land
-				landmassData->landmasses[i].rewriteId=i;
-			}
+			// Recalculate landmass stats before adding proper landmass info to the map
+			landmassData->clear();
 
 			progressData.progressOffset=10.0/11.0;
 			progressData.progressMultiplier=1.0/11.0;
 			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorCollectStats, landmassData, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
 
-			for(unsigned i=0; i<MapLandmass::IdMax; ++i) {
-				assert(landmassData->landmasses[i].rewriteId==i);
-				if (landmassData->landmasses[i].area==0)
-					continue;
-
-				MapLandmass *landmass=new MapLandmass(i, landmassData->landmasses[i].area);
-				map->addLandmass(landmass);
-			}
+			landmassData->identifyLandmasses();
 
 			// Tidy up
-			free(landmassData);
+			delete landmassData;
 		}
 
 		void kingdomIdentifyLandmassesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData) {
@@ -151,10 +230,9 @@ namespace Engine {
 			// Note: we do +1 so that id 0 is reserved
 			assert(MapLandmass::IdNone==0);
 			MapLandmass::Id newId=groupId+1;
+
 			tile->setLandmassId(newId);
-			++landmassData->landmasses[newId].area;
-			if (tile->getHeight()>map->seaLevel)
-				landmassData->landmasses[newId].isWater=false;
+			landmassData->addTileStats(x, y, tile);
 		}
 
 		bool kingdomIdentifyLandmassesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
@@ -218,12 +296,11 @@ namespace Engine {
 			// We skip all tiles within the ocean landmass
 			// (id==0 shouldn't be possible but no harm being safe)
 			MapLandmass::Id id=tile->getLandmassId();
-			if (id==MapLandmass::IdNone || id==landmassData->oceanId)
+			if (id==MapLandmass::IdNone || id==landmassData->getOceanId())
 				return;
 
 			// 'chase down' our true id by following the 'pointers'
-			while(landmassData->landmasses[id].rewriteId!=id)
-				id=landmassData->landmasses[id].rewriteId;
+			id=landmassData->resolveRewriteId(id);
 
 			// Loop over 8 directly neighbouring tiles
 			// TODO: make some kind of iterator for this?
@@ -241,16 +318,15 @@ namespace Engine {
 
 					// Not interested in ocean tiles
 					MapLandmass::Id neighbourId=neighbourTile->getLandmassId();
-					if (neighbourId==MapLandmass::IdNone || neighbourId==landmassData->oceanId)
+					if (neighbourId==MapLandmass::IdNone || neighbourId==landmassData->getOceanId())
 						continue;
 
 					// 'chase down' neighbour id
-					while(landmassData->landmasses[neighbourId].rewriteId!=neighbourId)
-						neighbourId=landmassData->landmasses[neighbourId].rewriteId;
+					neighbourId=landmassData->resolveRewriteId(neighbourId);
 
 					// If neighbour id differs to our own, note these landmasses should be merged
 					if (neighbourId!=id) {
-						landmassData->landmasses[neighbourId].rewriteId=id;
+						landmassData->setRewriteId(neighbourId, id);
 						break;
 					}
 				}
@@ -268,8 +344,7 @@ namespace Engine {
 
 			// 'chase down' our id to find true value
 			MapLandmass::Id id=tile->getLandmassId();
-			while(landmassData->landmasses[id].rewriteId!=id)
-				id=landmassData->landmasses[id].rewriteId;
+			id=landmassData->resolveRewriteId(id);
 
 			// Update our id
 			tile->setLandmassId(id);
@@ -281,15 +356,12 @@ namespace Engine {
 			KingdomIdentifyLandmassesData *landmassData=(KingdomIdentifyLandmassesData *)userData;
 
 			// Grab tile
-			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::Dirty);
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
 			if (tile==NULL)
 				return;
 
 			// Update stats
-			MapLandmass::Id id=tile->getLandmassId();
-			++landmassData->landmasses[id].area;
-			if (tile->getHeight()>map->seaLevel)
-				landmassData->landmasses[id].isWater=false;
+			landmassData->addTileStats(x, y, tile);
 		}
 
 	};
