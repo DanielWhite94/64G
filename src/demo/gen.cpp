@@ -10,6 +10,7 @@
 #include "../engine/gen/common.h"
 #include "../engine/gen/edgedetect.h"
 #include "../engine/gen/floodfill.h"
+#include "../engine/gen/kingdom.h"
 #include "../engine/gen/modifytiles.h"
 #include "../engine/gen/particleflow.h"
 #include "../engine/gen/pathfind.h"
@@ -59,8 +60,6 @@ void demogenGrassSheepModifyTilesFunctor(unsigned threadId, class Map *map, unsi
 void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
-
-void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
 
 bool demogenAddTextures(class Map *map) {
 	const char *texturePaths[TextureIdNB]={
@@ -630,21 +629,6 @@ bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void
 	return true;
 }
 
-void demogenFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData) {
-	assert(map!=NULL);
-	assert(userData==NULL);
-
-	// Grab tile.
-	MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::CreateDirty);
-	if (tile==NULL)
-		return;
-
-	// Set tile's landmass id
-	// Note: we do +1 so that id 0 is reserved
-	assert(MapLandmass::IdNone==0);
-	tile->setLandmassId(groupId+1);
-}
-
 int main(int argc, char **argv) {
 	const double desiredLandFraction=0.4;
 	const double desiredAlpineFraction=0.01;
@@ -894,12 +878,8 @@ int main(int argc, char **argv) {
 	printf("\n");
 
 	// Landmass (contintent/island) identification
-	Gen::EdgeDetect landmassEdgeDetect(mapData.map);
-	landmassEdgeDetect.traceFast(threadCount, &Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &utilProgressFunctorString, (void *)"Identifying landmass boundaries via edge detection ");
-	printf("\n");
-
-	Gen::FloodFill landmassFloodFill(mapData.map, 63);
-	landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &demogenFloodFillLandmassFillFunctor, NULL, &utilProgressFunctorString, (void *)"Identifying individual landmasses via flood-fill ");
+	Gen::Kingdom kingdom(mapData.map);
+	kingdom.identifyLandmasses(threadCount, &utilProgressFunctorString, (void *)"Identifying landmasses ");
 	printf("\n");
 
 	// Save map.
