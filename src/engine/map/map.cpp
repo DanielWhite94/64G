@@ -926,9 +926,6 @@ namespace Engine {
 		}
 
 		bool Map::addLandmass(MapLandmass *landmass) {
-			// ..... temp
-			printf("@@@@@ adding landmass: id=%u, area=%u\n", landmass->getId(), landmass->getArea());
-
 			// TODO: check for id already existing
 
 			// Add to list
