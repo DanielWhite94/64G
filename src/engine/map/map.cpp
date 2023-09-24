@@ -318,7 +318,7 @@ namespace Engine {
 					addLandmass(landmass);
 				}
 
-				fclose(metadataFile);
+				fclose(landmassesFile);
 			}
 
 			// Note: Regions are loaded on demand.
