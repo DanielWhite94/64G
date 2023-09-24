@@ -215,6 +215,22 @@ namespace Engine {
 			delete landmassData;
 		}
 
+		void Kingdom::identifyKingdoms(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+			// For now simply assign a kingdom for each landmass
+			for(unsigned id=0; id<MapLandmass::IdMax; ++id) {
+				MapLandmass *landmass=map->getLandmassById(id);
+				if (landmass==NULL)
+					continue;
+
+				MapKingdom *kingdom=new MapKingdom(id);
+				if (map->addKingdom(kingdom)) {
+					landmass->setKingdomId(id);
+					kingdom->addLandmass(landmass);
+				} else
+					delete kingdom;
+			}
+		}
+
 		void kingdomIdentifyLandmassesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData) {
 			assert(map!=NULL);
 			assert(userData!=NULL);

@@ -285,6 +285,24 @@ namespace Engine {
 				closedir(dirFd);
 			}
 
+			// Load kingdoms file
+			char kingdomsFilePath[1024]; // TODO: Prevent overflows.
+			sprintf(kingdomsFilePath, "%s/kingdoms", baseDir);
+			FILE *kingdomsFile=fopen(kingdomsFilePath, "r");
+			if (kingdomsFile!=NULL) {
+				while(1) {
+					MapKingdom *kingdom=new MapKingdom();
+					if (!kingdom->load(kingdomsFile)) {
+						delete kingdom;
+						break;
+					}
+
+					addKingdom(kingdom);
+				}
+
+				fclose(kingdomsFile);
+			}
+
 			// Load landmasses file
 			char landmassesFilePath[1024]; // TODO: Prevent overflows.
 			sprintf(landmassesFilePath, "%s/landmasses", baseDir);
@@ -326,6 +344,9 @@ namespace Engine {
 
 			// Remove landmasses.
 			removeLandmasses();
+
+			// Remove kingdoms.
+			removeKingdoms();
 
 			// Close and remove lock file
 			if (lockFd!=-1)
@@ -371,6 +392,10 @@ namespace Engine {
 
 			// Save all landmasses.
 			if (!saveLandmasses())
+				return false;
+
+			// Save all kingdoms.
+			if (!saveKingdoms())
 				return false;
 
 			return true;
@@ -576,6 +601,28 @@ namespace Engine {
 			bool result=true;
 			for(auto const *landmass: landmasses)
 				if (!landmass->save(file)) {
+					result=false;
+					break;
+				}
+
+			// Close file.
+			fclose(file);
+
+			return result;
+		}
+
+		bool Map::saveKingdoms(void) {
+			// Create file.
+			char path[1024]; // TODO: Prevent overflows.
+			sprintf(path, "%s/kingdoms", baseDir);
+			FILE *file=fopen(path, "w");
+			if (file==NULL)
+				return false;
+
+			// Save kingdoms
+			bool result=true;
+			for(auto const *kingdom: kingdoms)
+				if (!kingdom->save(file)) {
 					result=false;
 					break;
 				}
@@ -931,6 +978,14 @@ namespace Engine {
 			// Add to list
 			landmasses.push_back(landmass);
 
+			// Add to kingdom
+			MapKingdomId kingdomId=landmass->getKingdomId();
+			if (kingdomId!=MapKingdomIdNone) {
+				MapKingdom *kingdom=getKingdomById(kingdomId);
+				if (kingdom!=NULL)
+					kingdom->addLandmass(landmass);
+			}
+
 			return true;
 		}
 
@@ -941,6 +996,38 @@ namespace Engine {
 				landmasses.pop_back();
 				delete landmass;
 			}
+		}
+
+		MapLandmass *Map::getLandmassById(MapLandmass::Id id) {
+			for(auto *landmass: landmasses)
+				if (landmass->getId()==id)
+					return landmass;
+			return NULL;
+		}
+
+		bool Map::addKingdom(MapKingdom *kingdom) {
+			// TODO: check for id already existing
+
+			// Add to list
+			kingdoms.push_back(kingdom);
+
+			return true;
+		}
+
+		void Map::removeKingdoms(void) {
+			// Empty the vector one by one
+			while(!kingdoms.empty()) {
+				MapKingdom *kingdom=kingdoms.back();
+				kingdoms.pop_back();
+				delete kingdom;
+			}
+		}
+
+		MapKingdom *Map::getKingdomById(MapKingdomId id) {
+			for(auto *kingdom: kingdoms)
+				if (kingdom->getId()==id)
+					return kingdom;
+			return NULL;
 		}
 
 		const char *Map::getBaseDir(void) const {

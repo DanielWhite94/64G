@@ -21,6 +21,10 @@ namespace Engine {
 			// Clears and repopulates landmasses list in Map
 			void identifyLandmasses(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
+			// Identifies kingdoms as sets of landmasses.
+			// Requires landmasses to have already been identified before being called.
+			// Clears and repopulates kingdoms list in Map.
+			void identifyKingdoms(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 		private:
 			class Map *map;
 		};

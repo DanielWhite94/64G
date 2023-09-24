@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "mapcommon.h"
+
 namespace Engine {
 	namespace Map {
 		class MapLandmass {
@@ -20,6 +22,7 @@ namespace Engine {
 			bool save(FILE *file) const;
 
 			Id getId(void) const;
+			MapKingdomId getKingdomId(void) const;
 			uint32_t getArea(void) const;
 			uint16_t getTileMinX(void) const;
 			uint16_t getTileMinY(void) const;
@@ -30,8 +33,10 @@ namespace Engine {
 			uint16_t getTileExampleX(void) const;
 			uint16_t getTileExampleY(void) const;
 
+			void setKingdomId(MapKingdomId id);
 		private:
 			Id id;
+			MapKingdomId kingdomId;
 			uint32_t area; // TODO: think about this - techincally a max sized map with a single landmass would have area 2^32, exceeding range of 32 bit int
 
 			uint16_t tileMinX, tileMinY; // not necessairly the same tile in each case

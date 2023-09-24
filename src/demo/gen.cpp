@@ -877,9 +877,12 @@ int main(int argc, char **argv) {
 	Gen::modifyTilesMany(mapData.map, 0, 0, mapData.width, mapData.height, 1, npcModifyTilesArrayCount, npcModifyTilesArray, &utilProgressFunctorString, (void *)progressStringNpcsAnimals);
 	printf("\n");
 
-	// Landmass (contintent/island) identification
+	// Landmass (contintent/island) and kingdom identification
 	Gen::Kingdom kingdom(mapData.map);
 	kingdom.identifyLandmasses(threadCount, &utilProgressFunctorString, (void *)"Identifying landmasses ");
+	printf("\n");
+
+	kingdom.identifyKingdoms(threadCount, &utilProgressFunctorString, (void *)"Identifying kingdoms ");
 	printf("\n");
 
 	// Save map.
