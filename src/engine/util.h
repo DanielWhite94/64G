@@ -72,6 +72,17 @@ namespace Engine {
 			return wrappingDistX(x1, x2, mapW)+wrappingDistY(y1, y2, mapH);
 		}
 
+		static unsigned wrappingDistEuclideanSq(unsigned x1, unsigned y1, unsigned x2, unsigned y2, unsigned mapW, unsigned mapH) {
+			assert(x1<mapW);
+			assert(y1<mapH);
+			assert(x2<mapW);
+			assert(y2<mapH);
+
+			unsigned dx=wrappingDistX(x1, x2, mapW);
+			unsigned dy=wrappingDistY(y1, y2, mapH);
+			return dx*dx+dy*dy;
+		}
+
 		// Takes a coordinate and adds a delta/displacement.
 		// Inputs: 0<=offsetX<mapW, -mapW<dx<mapW
 		// Output: 0<=resultX<mapW

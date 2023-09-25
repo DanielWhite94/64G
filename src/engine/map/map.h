@@ -92,6 +92,10 @@ namespace Engine {
 				return Util::wrappingDistManhatten(x1, y1, x2, y2, getWidth(), getHeight());
 			}
 
+			unsigned wrappingDistEuclideanSq(unsigned x1, unsigned y1, unsigned x2, unsigned y2) {
+				return Util::wrappingDistEuclideanSq(x1, y1, x2, y2, getWidth(), getHeight());
+			}
+
 			// See Util versions for a description.
 			unsigned addTileOffsetX(unsigned offsetX, int dx) {
 				return Util::addTileOffsetX(offsetX, dx, getWidth());
