@@ -143,6 +143,9 @@ namespace Engine {
 
 			// These are similar but are not covered by the above function.
 			double seaLevel, alpineLevel, forestLevel;
+
+			std::vector<MapLandmass *> landmasses;
+			std::vector<MapKingdom *> kingdoms;
 		private:
 			static const unsigned regionsLoadedMax=32; // TODO: Decide this better
 
@@ -171,9 +174,6 @@ namespace Engine {
 			MapTexture *textures[MapTexture::IdMax];
 
 			MapItem *items[MapItem::IdMax];
-
-			std::vector<MapLandmass *> landmasses;
-			std::vector<MapKingdom *> kingdoms;
 
 			const char *getRegionsDir(void) const;
 			const char *getTexturesDir(void) const;

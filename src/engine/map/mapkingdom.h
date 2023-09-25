@@ -22,9 +22,11 @@ namespace Engine {
 			MapKingdomId getId(void) const;
 
 			bool addLandmass(MapLandmass *landmass);
+
+			std::vector<MapLandmass *> landmasses;
+
 		private:
 			MapKingdomId id;
-			std::vector<MapLandmass *> landmasses;
 
 		};
 	};
