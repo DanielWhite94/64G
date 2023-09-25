@@ -63,7 +63,7 @@ namespace Engine {
 				return std::min(y1-y2, y2+mapH-y1);
 		}
 
-		static unsigned wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2, unsigned mapW, unsigned mapH) {
+		static unsigned wrappingDistManhatten(unsigned x1, unsigned y1, unsigned x2, unsigned y2, unsigned mapW, unsigned mapH) {
 			assert(x1<mapW);
 			assert(y1<mapH);
 			assert(x2<mapW);

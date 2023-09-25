@@ -53,14 +53,14 @@ namespace Engine {
 
 		float pathFindSearchGoalDistanceHeuristicDistance(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
 			// Only consider manhatten/taxicab distance
-			return map->wrappingDist(x1, y1, x2, y2);
+			return map->wrappingDistManhatten(x1, y1, x2, y2);
 		}
 
 		float pathFindSearchGoalDistanceHeuristicDistanceWeight(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
 			double distance=0.0;
 
 			// Add manhatten/taxicab distance
-			distance+=map->wrappingDist(x1, y1, x2, y2);
+			distance+=map->wrappingDistManhatten(x1, y1, x2, y2);
 
 			// Compare height of two tiles and add the relevant penalaty
 			MapTile *t1=map->getTileAtOffset(x1, y1, Engine::Map::Map::GetTileFlag::None);
@@ -213,7 +213,7 @@ namespace Engine {
 
 			// Process nodes/tiles until we reach destination or run out of tiles
 			unsigned progressCounter=0; // number of nodes/tiles we have processed
-			unsigned progressMax=map->wrappingDist(startX, startY, endX, endY); // distance between start and end tiles - used as a loose upper bound to estimate progress
+			unsigned progressMax=map->wrappingDistManhatten(startX, startY, endX, endY); // distance between start and end tiles - used as a loose upper bound to estimate progress
 			unsigned progressMin=progressMax; // distance for closest node/tile found so far
 			while(!queue.empty()) {
 				// Pop lowest distance entry
@@ -292,7 +292,7 @@ namespace Engine {
 
 				// Give a progress update
 				// This is an estimate based on how far we are from the goal vs how far away we were when we started.
-				unsigned progressCurrent=map->wrappingDist(startX, startY, entry.x, entry.y);
+				unsigned progressCurrent=map->wrappingDistManhatten(startX, startY, entry.x, entry.y);
 				if (progressCurrent<progressMin)
 					progressMin=progressCurrent;
 

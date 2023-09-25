@@ -88,8 +88,8 @@ namespace Engine {
 				return Util::wrappingDistY(y1, y2, getHeight());
 			}
 
-			unsigned wrappingDist(unsigned x1, unsigned y1, unsigned x2, unsigned y2) {
-				return Util::wrappingDist(x1, y1, x2, y2, getWidth(), getHeight());
+			unsigned wrappingDistManhatten(unsigned x1, unsigned y1, unsigned x2, unsigned y2) {
+				return Util::wrappingDistManhatten(x1, y1, x2, y2, getWidth(), getHeight());
 			}
 
 			// See Util versions for a description.
