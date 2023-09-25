@@ -37,13 +37,6 @@ namespace Engine {
 					entry->area=0;
 					entry->isWater=true; // set to false on first encounter with land
 					entry->rewriteId=i;
-
-					entry->tileTotalX=0;
-					entry->tileTotalY=0;
-					entry->tileMinX=UINT16_MAX;
-					entry->tileMinY=UINT16_MAX;
-					entry->tileMaxX=0;
-					entry->tileMaxY=0;
 					entry->tileExampleX=0;
 					entry->tileExampleY=0;
 				}
@@ -58,13 +51,6 @@ namespace Engine {
 				++entry->area;
 				if (tile->getHeight()>map->seaLevel)
 					entry->isWater=false;
-
-				entry->tileTotalX+=x;
-				entry->tileTotalY+=y;
-				entry->tileMinX=std::min(entry->tileMinX, (uint16_t)x);
-				entry->tileMinY=std::min(entry->tileMinY, (uint16_t)y);
-				entry->tileMaxX=std::max(entry->tileMaxX, (uint16_t)x);
-				entry->tileMaxY=std::max(entry->tileMaxY, (uint16_t)y);
 				entry->tileExampleX=x;
 				entry->tileExampleY=y;
 			}
@@ -112,16 +98,7 @@ namespace Engine {
 					if (entry->area==0)
 						continue;
 
-					MapLandmass *landmass=new MapLandmass(i,
-					                                      entry->area,
-					                                      entry->tileMinX,
-					                                      entry->tileMinY,
-					                                      entry->tileMaxX,
-					                                      entry->tileMaxY,
-					                                      entry->tileTotalX/entry->area,
-					                                      entry->tileTotalY/entry->area,
-					                                      entry->tileExampleX,
-					                                      entry->tileExampleY);
+					MapLandmass *landmass=new MapLandmass(i, entry->area, entry->tileExampleX, entry->tileExampleY);
 					map->addLandmass(landmass);
 				}
 			}
@@ -131,12 +108,7 @@ namespace Engine {
 				uint32_t area; // number of tiles making up this landmass
 				MapLandmass::Id rewriteId; // used when merging landmasses together
 				bool isWater; // true if all tiles are <= sea level (if area=0 then vacuously true)
-
-				// see maplandmass.h for a description of these
-				uint64_t tileTotalX, tileTotalY; // used to compute averages
-				uint16_t tileMinX, tileMinY;
-				uint16_t tileMaxX, tileMaxY;
-				uint16_t tileExampleX, tileExampleY;
+				uint16_t tileExampleX, tileExampleY; // see maplandmass.h for a description of these
 			};
 
 			class Map *map;
@@ -228,52 +200,6 @@ namespace Engine {
 					kingdom->addLandmass(landmass);
 				} else
 					delete kingdom;
-			}
-
-			// Merge smaller kingdoms into neighbours until we hit our target kingdom count
-			const unsigned desiredKingdomCount=8; // TODO: pass parameter in
-			while(map->kingdoms.size()>desiredKingdomCount) {
-				// Find smallest kingdom
-				MapKingdom *smallestKingdom=NULL;
-				unsigned smallestArea;
-				for(auto *kingdom: map->kingdoms) {
-					uint32_t area=kingdom->getArea();
-					if (smallestKingdom==NULL || area<smallestArea) {
-						smallestKingdom=kingdom;
-						smallestArea=area;
-					}
-				}
-
-				if (smallestKingdom==NULL)
-					break;
-
-				// Find nearest landmass which is not part of the small kingdom
-				unsigned smallestKingdomX, smallestKingdomY;
-				smallestKingdom->getAverageXY(&smallestKingdomX, &smallestKingdomY);
-
-				MapLandmass *nearestLandmass=NULL;
-				unsigned nearestDistance;
-				for(auto *landmass: map->landmasses) {
-					if (landmass->getKingdomId()==smallestKingdom->getId())
-						continue;
-
-					unsigned distance=map->wrappingDistEuclideanSq(landmass->getTileAverageX(), landmass->getTileAverageY(), smallestKingdomX, smallestKingdomY);
-					if (nearestLandmass==NULL || distance<nearestDistance) {
-						nearestLandmass=landmass;
-						nearestDistance=distance;
-					}
-				}
-
-				if (nearestLandmass==NULL)
-					break;
-
-				// Merge small kingdom into the one containing the nearest landmass
-				MapKingdom *nearestKingdom=map->getKingdomByLandmass(nearestLandmass);
-				if (nearestKingdom==NULL)
-					break;
-				assert(nearestKingdom!=smallestKingdom);
-
-				map->mergeKingdoms(nearestKingdom, smallestKingdom);
 			}
 		}
 
