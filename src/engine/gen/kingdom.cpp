@@ -216,7 +216,7 @@ namespace Engine {
 		}
 
 		void Kingdom::identifyKingdoms(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
-			// For now simply assign a kingdom for each landmass
+			// Initially simply assign a kingdom for each landmass
 			for(unsigned id=0; id<MapLandmass::IdMax; ++id) {
 				MapLandmass *landmass=map->getLandmassById(id);
 				if (landmass==NULL)
@@ -228,6 +228,52 @@ namespace Engine {
 					kingdom->addLandmass(landmass);
 				} else
 					delete kingdom;
+			}
+
+			// Merge smaller kingdoms into neighbours until we hit our target kingdom count
+			const unsigned desiredKingdomCount=8; // TODO: pass parameter in
+			while(map->kingdoms.size()>desiredKingdomCount) {
+				// Find smallest kingdom
+				MapKingdom *smallestKingdom=NULL;
+				unsigned smallestArea;
+				for(auto *kingdom: map->kingdoms) {
+					uint32_t area=kingdom->getArea();
+					if (smallestKingdom==NULL || area<smallestArea) {
+						smallestKingdom=kingdom;
+						smallestArea=area;
+					}
+				}
+
+				if (smallestKingdom==NULL)
+					break;
+
+				// Find nearest landmass which is not part of the small kingdom
+				unsigned smallestKingdomX, smallestKingdomY;
+				smallestKingdom->getAverageXY(&smallestKingdomX, &smallestKingdomY);
+
+				MapLandmass *nearestLandmass=NULL;
+				unsigned nearestDistance;
+				for(auto *landmass: map->landmasses) {
+					if (landmass->getKingdomId()==smallestKingdom->getId())
+						continue;
+
+					unsigned distance=map->wrappingDistEuclideanSq(landmass->getTileAverageX(), landmass->getTileAverageY(), smallestKingdomX, smallestKingdomY);
+					if (nearestLandmass==NULL || distance<nearestDistance) {
+						nearestLandmass=landmass;
+						nearestDistance=distance;
+					}
+				}
+
+				if (nearestLandmass==NULL)
+					break;
+
+				// Merge small kingdom into the one containing the nearest landmass
+				MapKingdom *nearestKingdom=map->getKingdomByLandmass(nearestLandmass);
+				if (nearestKingdom==NULL)
+					break;
+				assert(nearestKingdom!=smallestKingdom);
+
+				map->mergeKingdoms(nearestKingdom, smallestKingdom);
 			}
 		}
 
