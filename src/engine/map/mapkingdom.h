@@ -21,6 +21,8 @@ namespace Engine {
 
 			MapKingdomId getId(void) const;
 
+			uint32_t getArea(void) const;
+
 			bool addLandmass(MapLandmass *landmass);
 
 			std::vector<MapLandmass *> landmasses;

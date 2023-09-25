@@ -47,6 +47,14 @@ namespace Engine {
 			return id;
 		}
 
+		uint32_t MapKingdom::getArea(void) const {
+			uint32_t area=0;
+			for(auto *landmass: landmasses)
+				area+=landmass->getArea();
+
+			return area;
+		}
+
 		bool MapKingdom::addLandmass(MapLandmass *landmass) {
 			assert(landmass->getKingdomId()==getId());
 
