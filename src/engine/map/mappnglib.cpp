@@ -345,7 +345,7 @@ namespace Engine {
 		if (contourHeight>=tileHeight)
 			return; // tile is below all contour lines
 
-		// Next check if any neighbour have height less than or equal to the contour.
+		// Next check if any neighbour has height less than or equal to the contour.
 		// If so, we have found a boundary and so should mark this tile as such.
 		MapTile *neighbourTile;
 
