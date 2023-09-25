@@ -447,20 +447,20 @@ namespace Engine {
 			{232, 94, 190},
 		};
 
-		// Grab landmass id for this tile
-		MapLandmass::Id landmassId=tile->getLandmassId();
+		// Grab kingdom id for this tile
+		MapKingdomId kingdomId=map->getKingdomIdByLandmassId(tile->getLandmassId());
 
-		// Special case for id none
-		if (landmassId==MapLandmass::IdNone) {
+		// Special case for 'no kingdom'
+		if (kingdomId==MapKingdomIdNone) {
 			*r=*g=*b=0;
 			*a=255;
 			return;
 		}
 
 		// Choose colour from array of distinct colours
-		*r=distinctColours[landmassId%64][0];
-		*g=distinctColours[landmassId%64][1];
-		*b=distinctColours[landmassId%64][2];
+		*r=distinctColours[kingdomId%64][0];
+		*g=distinctColours[kingdomId%64][1];
+		*b=distinctColours[kingdomId%64][2];
 		*a=255;
 	}
 
