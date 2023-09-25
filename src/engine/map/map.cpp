@@ -999,9 +999,13 @@ namespace Engine {
 		}
 
 		MapLandmass *Map::getLandmassById(MapLandmass::Id id) {
+			if (id==MapLandmass::IdNone)
+				return NULL;
+
 			for(auto *landmass: landmasses)
 				if (landmass->getId()==id)
 					return landmass;
+
 			return NULL;
 		}
 
@@ -1014,6 +1018,17 @@ namespace Engine {
 			return true;
 		}
 
+		void Map::removeKingdom(MapKingdom *kingdom) {
+			for(unsigned i=0; i<MapKingdomIdMax; ++i) {
+				if (kingdoms[i]==kingdom) {
+					kingdoms.erase(kingdoms.begin()+i);
+					delete kingdom;
+					break;
+				}
+			}
+
+		}
+
 		void Map::removeKingdoms(void) {
 			// Empty the vector one by one
 			while(!kingdoms.empty()) {
@@ -1023,11 +1038,50 @@ namespace Engine {
 			}
 		}
 
+		bool Map::mergeKingdoms(MapKingdom *dest, MapKingdom *src) {
+			// TODO: better error checking presumably
+
+			// Loop over all landmasses in the src kingdom
+			for(auto *landmass: src->landmasses) {
+				// Update the kingdom id field for this landmass to point to the new dest kingdom
+				landmass->setKingdomId(dest->getId());
+
+				// Add this landmass to the list in dest
+				dest->addLandmass(landmass);
+			}
+
+			// Remove the src kingdom
+			removeKingdom(src);
+
+			return true;
+		}
+
 		MapKingdom *Map::getKingdomById(MapKingdomId id) {
+			if (id==MapKingdomIdNone)
+				return NULL;
+
 			for(auto *kingdom: kingdoms)
 				if (kingdom->getId()==id)
 					return kingdom;
+
 			return NULL;
+		}
+
+		MapKingdomId Map::getKingdomIdByLandmassId(MapLandmass::Id id) {
+			MapLandmass *landmass=getLandmassById(id);
+			if (landmass==NULL)
+				return MapKingdomIdNone;
+
+			return landmass->getKingdomId();
+		}
+
+		MapKingdom *Map::getKingdomByLandmassId(MapLandmass::Id landmassId) {
+			MapKingdomId kingdomId=getKingdomIdByLandmassId(landmassId);
+			return getKingdomById(kingdomId);
+		}
+
+		MapKingdom *Map::getKingdomByLandmass(MapLandmass *landmass) {
+			return getKingdomById(landmass->getKingdomId());
 		}
 
 		const char *Map::getBaseDir(void) const {

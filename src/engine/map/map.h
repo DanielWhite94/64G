@@ -73,8 +73,13 @@ namespace Engine {
 			MapLandmass *getLandmassById(MapLandmass::Id id);
 
 			bool addKingdom(MapKingdom *kingdom);
+			void removeKingdom(MapKingdom *kingdom);
 			void removeKingdoms(void);
+			bool mergeKingdoms(MapKingdom *dest, MapKingdom *src);
 			MapKingdom *getKingdomById(MapKingdomId id);
+			MapKingdomId getKingdomIdByLandmassId(MapLandmass::Id id);
+			MapKingdom *getKingdomByLandmassId(MapLandmass::Id id);
+			MapKingdom *getKingdomByLandmass(MapLandmass *landmass);
 
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
