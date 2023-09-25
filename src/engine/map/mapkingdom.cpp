@@ -55,6 +55,31 @@ namespace Engine {
 			return area;
 		}
 
+		unsigned MapKingdom::getAverageX(void) const {
+			unsigned x, y;
+			getAverageXY(&x, &y);
+			return x;
+		}
+
+		unsigned MapKingdom::getAverageY(void) const {
+			unsigned x, y;
+			getAverageXY(&x, &y);
+			return y;
+		}
+
+		void MapKingdom::getAverageXY(unsigned *averageX, unsigned *averageY) const {
+			// Weighted average of landmass average x/y values
+			uint64_t totalX=0, totalY=0, totalArea=0;
+			for(auto *landmass: landmasses) {
+				totalX+=landmass->getTileAverageX()*landmass->getArea();
+				totalY+=landmass->getTileAverageY()*landmass->getArea();
+				totalArea+=landmass->getArea();
+			}
+
+			*averageX=totalX/totalArea;
+			*averageY=totalY/totalArea;
+		}
+
 		bool MapKingdom::addLandmass(MapLandmass *landmass) {
 			assert(landmass->getKingdomId()==getId());
 

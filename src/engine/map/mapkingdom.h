@@ -22,6 +22,9 @@ namespace Engine {
 			MapKingdomId getId(void) const;
 
 			uint32_t getArea(void) const;
+			unsigned getAverageX(void) const;
+			unsigned getAverageY(void) const;
+			void getAverageXY(unsigned *averageX, unsigned *averageY) const;
 
 			bool addLandmass(MapLandmass *landmass);
 
