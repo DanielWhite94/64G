@@ -60,6 +60,9 @@ namespace Engine {
 			// Trace shortest path from (startX,startY) to (endX,endY) specified during previous search call
 			bool trace(unsigned startX, unsigned startY, TraceFunctor *functor, void *functorUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
+			// Get distance from given (startX/startY) to (endX,endY) specified during previous search call
+			float getDistance(unsigned startX, unsigned startY);
+
 		private:
 			class Map *map;
 

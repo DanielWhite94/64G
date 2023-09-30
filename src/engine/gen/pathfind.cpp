@@ -412,6 +412,10 @@ namespace Engine {
 			return false;
 		}
 
+		float PathFind::getDistance(unsigned startX, unsigned startY) {
+			return getTileScratchValue(startX, startY);
+		}
+
 		float PathFind::getTileScratchValue(int x, int y) {
 			// Grab tile.
 			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
