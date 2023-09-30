@@ -12,16 +12,6 @@ using namespace Engine;
 namespace Engine {
 	namespace Gen {
 
-		struct KingdomIdentifyLandmassesProgressData {
-			double progressOffset;
-			double progressMultiplier;
-
-			Util::TimeMs startTimeMs;
-
-			Util::ProgressFunctor *progressFunctor;
-			void *progressUserData;
-		};
-
 		class KingdomIdentifyLandmassesData {
 		public:
 			KingdomIdentifyLandmassesData(class Map *map): map(map) {
@@ -117,7 +107,6 @@ namespace Engine {
 		};
 
 		void kingdomIdentifyLandmassesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData);
-		bool kingdomIdentifyLandmassesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData);
 		void kingdomIdentifyLandmassesModifyTilesFunctorClearLandmassId(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 		void kingdomIdentifyLandmassesModifyTilesFunctorAssignBoundaries(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 		void kingdomIdentifyLandmassesModifyTilesFunctorIdentifyMergers(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
@@ -126,7 +115,7 @@ namespace Engine {
 
 		void Kingdom::identifyLandmasses(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Create progress data struct
-			KingdomIdentifyLandmassesProgressData progressData={
+			Util::ProgressFunctorScaledData progressData={
 				.startTimeMs=Util::getTimeMs(),
 				.progressFunctor=progressFunctor,
 				.progressUserData=progressUserData,
@@ -139,13 +128,13 @@ namespace Engine {
 			// TODO: consider if this can be skipped - flood fill should update all tiles except perhaps the borders are the issue?
 			progressData.progressOffset=0.0/11.0;
 			progressData.progressMultiplier=1.0/11.0;
-			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorClearLandmassId, NULL, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
+			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorClearLandmassId, NULL, &utilProgressFunctorScaled, &progressData);
 
 			// Trace edges of land/sea to form borders for later fill operation
 			progressData.progressOffset=1.0/11.0;
 			progressData.progressMultiplier=2.0/11.0;
 			Gen::EdgeDetect landmassEdgeDetect(map);
-			landmassEdgeDetect.traceFast(threadCount, &Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
+			landmassEdgeDetect.traceFast(threadCount, &Gen::edgeDetectLandSampleFunctor, NULL, &Gen::edgeDetectBitsetNEdgeFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &utilProgressFunctorScaled, &progressData);
 
 			// Create struct to hold data about landmasses
 			KingdomIdentifyLandmassesData *landmassData=new KingdomIdentifyLandmassesData(map);
@@ -154,12 +143,12 @@ namespace Engine {
 			progressData.progressOffset=3.0/11.0;
 			progressData.progressMultiplier=4.0/11.0;
 			Gen::FloodFill landmassFloodFill(map, 63);
-			landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &kingdomIdentifyLandmassesFloodFillLandmassFillFunctor, landmassData, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
+			landmassFloodFill.fill(&Gen::floodFillBitsetNBoundaryFunctor, (void *)(uintptr_t)Gen::TileBitsetIndexLandmassBorder, &kingdomIdentifyLandmassesFloodFillLandmassFillFunctor, landmassData, &utilProgressFunctorScaled, &progressData);
 
 			// Do a pass over the map to assign a nearby landmass id to boundary tiles
 			progressData.progressOffset=7.0/11.0;
 			progressData.progressMultiplier=1.0/11.0;
-			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorAssignBoundaries, NULL, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
+			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorAssignBoundaries, NULL, &utilProgressFunctorScaled, &progressData);
 
 			// Determine which landmass is the main ocean
 			landmassData->identifyOceanLandmassId();
@@ -168,18 +157,18 @@ namespace Engine {
 			// Do this in two passes - the first pass identifies all mergers and the second performs the actually updating
 			progressData.progressOffset=8.0/11.0;
 			progressData.progressMultiplier=1.0/11.0;
-			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorIdentifyMergers, landmassData, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
+			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorIdentifyMergers, landmassData, &utilProgressFunctorScaled, &progressData);
 
 			progressData.progressOffset=9.0/11.0;
 			progressData.progressMultiplier=1.0/11.0;
-			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorProcessMergers, landmassData, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
+			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorProcessMergers, landmassData, &utilProgressFunctorScaled, &progressData);
 
 			// Recalculate landmass stats before adding proper landmass info to the map
 			landmassData->clear();
 
 			progressData.progressOffset=10.0/11.0;
 			progressData.progressMultiplier=1.0/11.0;
-			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorCollectStats, landmassData, &kingdomIdentifyLandmassesProgressFunctor, &progressData);
+			Gen::modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &kingdomIdentifyLandmassesModifyTilesFunctorCollectStats, landmassData, &utilProgressFunctorScaled, &progressData);
 
 			landmassData->identifyLandmasses();
 
@@ -221,13 +210,6 @@ namespace Engine {
 
 			tile->setLandmassId(newId);
 			landmassData->addTileStats(x, y, tile);
-		}
-
-		bool kingdomIdentifyLandmassesProgressFunctor(double progress, Util::TimeMs elapsedTimeMs, void *userData) {
-			KingdomIdentifyLandmassesProgressData *data=(KingdomIdentifyLandmassesProgressData *)userData;
-
-			// Call user's progress functor with modified progress and correct elapsed time
-			return data->progressFunctor(data->progressOffset+progress*data->progressMultiplier, Util::getTimeMs()-data->startTimeMs, data->progressUserData);
 		}
 
 		void kingdomIdentifyLandmassesModifyTilesFunctorClearLandmassId(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {

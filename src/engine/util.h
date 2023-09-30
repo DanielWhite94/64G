@@ -12,6 +12,16 @@ namespace Engine {
 
 		typedef bool (ProgressFunctor)(double progress, Util::TimeMs elapsedTimeMs, void *userData); // return true to continue, false to cancel the operation
 
+		struct ProgressFunctorScaledData {
+			double progressOffset;
+			double progressMultiplier;
+
+			TimeMs startTimeMs;
+
+			ProgressFunctor *progressFunctor;
+			void *progressUserData;
+		};
+
 		static int floordiv(int n, int d);
 
 		static double angleFromXYToXY(double x1, double y1, double x2, double y2);
@@ -149,7 +159,12 @@ namespace Engine {
 		}
 	};
 
-	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // where userData points to a null terminated string
+	// The following functions can be used where a Util::ProgressFunctor is expected.
+	bool utilProgressFunctorString(double progress, Util::TimeMs elapsedTimeMs, void *userData); // Designed for console use. Prints a string from the user (pointed to by userData), followed by progress as a percentage, followed by elapsed time and estimated remaining time.
+	bool utilProgressFunctorScaled(double progress, Util::TimeMs elapsedTimeMs, void *userData); // Invokes another progress functor with the progress scaled based on an offset and a multiplier. Can be used for multiple independant operations as calculates the elapsed time from the user data instead of using the value passed as an argument. ProgressFunctorScaledData pointer to be passed as userData.
+
+	// A helper function for when using ProgressFunctorScaledData logic.
+	bool utilInvokeScaledProgressFunctor(double progress, Util::ProgressFunctorScaledData *data);
 };
 
 #endif

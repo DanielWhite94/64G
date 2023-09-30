@@ -245,4 +245,33 @@ namespace Engine {
 		return true;
 	}
 
+	bool utilProgressFunctorScaled(double progress, Util::TimeMs fakeElapsedTimeMs, void *userData) {
+		assert(progress>=0.0 && progress<=1.0);
+		assert(userData!=NULL);
+
+		Util::ProgressFunctorScaledData *data=(Util::ProgressFunctorScaledData *)userData;
+
+		// No progress functor to be called?
+		if (data->progressFunctor==NULL)
+			return true; // continue operation
+
+		// Call user's progress functor with modified progress and correct elapsed time
+		Util::TimeMs elapsedTimeMs=Util::getTimeMs()-data->startTimeMs;
+		assert(elapsedTimeMs>=fakeElapsedTimeMs);
+		double scaledProgress=data->progressOffset+progress*data->progressMultiplier;
+		return data->progressFunctor(scaledProgress, elapsedTimeMs, data->progressUserData);
+	}
+
+	bool utilInvokeScaledProgressFunctor(double progress, Util::ProgressFunctorScaledData *data) {
+		assert(progress>=0.0 && progress<=1.0);
+		assert(data!=NULL);
+
+		// No progress functor to be called?
+		if (data->progressFunctor==NULL)
+			return true; // continue operation
+
+		// Invoke progress functor
+		Util::TimeMs elapsedTimeMs=Util::getTimeMs()-data->startTimeMs;
+		return data->progressFunctor(progress, elapsedTimeMs, data->progressUserData);
+	}
 };
