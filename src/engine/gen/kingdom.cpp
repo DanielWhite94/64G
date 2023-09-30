@@ -88,7 +88,7 @@ namespace Engine {
 					if (entry->area==0)
 						continue;
 
-					MapLandmass *landmass=new MapLandmass(i, entry->area, entry->tileExampleX, entry->tileExampleY);
+					MapLandmass *landmass=new MapLandmass(i, entry->area, entry->isWater, entry->tileExampleX, entry->tileExampleY);
 					map->addLandmass(landmass);
 				}
 			}

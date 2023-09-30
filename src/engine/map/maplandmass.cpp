@@ -17,12 +17,13 @@ namespace Engine {
 			id=IdNone;
 			kingdomId=MapKingdomIdNone;
 			area=0;
+			isWater=true;
 
 			tileExampleX=0;
 			tileExampleY=0;
 		}
 
-		MapLandmass::MapLandmass(Id id, uint32_t area, uint16_t tileExampleX, uint16_t tileExampleY): id(id), area(area), tileExampleX(tileExampleX) {
+		MapLandmass::MapLandmass(Id id, uint32_t area, bool isWater, uint16_t tileExampleX, uint16_t tileExampleY): id(id), area(area), isWater(isWater), tileExampleX(tileExampleX), tileExampleY(tileExampleY) {
 			kingdomId=MapKingdomIdNone;
 		}
 
@@ -37,6 +38,7 @@ namespace Engine {
 			result&=(fread(&id, sizeof(id), 1, file)==1);
 			result&=(fread(&kingdomId, sizeof(kingdomId), 1, file)==1);
 			result&=(fread(&area, sizeof(area), 1, file)==1);
+			result&=(fread(&isWater, sizeof(isWater), 1, file)==1);
 			result&=(fread(&tileExampleX, sizeof(tileExampleX),  1, file)==1);
 			result&=(fread(&tileExampleY, sizeof(tileExampleY),  1, file)==1);
 
@@ -51,6 +53,7 @@ namespace Engine {
 			result&=(fwrite(&id, sizeof(id), 1, file)==1);
 			result&=(fwrite(&kingdomId, sizeof(kingdomId), 1, file)==1);
 			result&=(fwrite(&area, sizeof(area), 1, file)==1);
+			result&=(fwrite(&isWater, sizeof(isWater), 1, file)==1);
 			result&=(fwrite(&tileExampleX, sizeof(tileExampleX),  1, file)==1);
 			result&=(fwrite(&tileExampleY, sizeof(tileExampleY),  1, file)==1);
 
@@ -67,6 +70,10 @@ namespace Engine {
 
 		uint32_t MapLandmass::getArea(void) const {
 			return area;
+		}
+
+		bool MapLandmass::getIsWater(void) const {
+			return isWater;
 		}
 
 		uint16_t MapLandmass::getTileExampleX(void) const {
