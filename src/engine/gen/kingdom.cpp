@@ -1,10 +1,12 @@
 #include <cassert>
+#include <cfloat>
 #include <cstdlib>
 
 #include "common.h"
 #include "edgedetect.h"
 #include "floodfill.h"
 #include "kingdom.h"
+#include "pathfind.h"
 #include "modifytiles.h"
 
 using namespace Engine;
@@ -48,6 +50,7 @@ namespace Engine {
 			MapLandmass::Id getOceanId(void) const {
 				return oceanId;
 			}
+
 			MapLandmass::Id resolveRewriteId(MapLandmass::Id id) {
 				// 'Chase down' the id until we hit the final (and true) value
 				while(landmasses[id].rewriteId!=id)
@@ -113,6 +116,8 @@ namespace Engine {
 		void kingdomIdentifyLandmassesModifyTilesFunctorProcessMergers(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 		void kingdomIdentifyLandmassesModifyTilesFunctorCollectStats(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
+		float kingdomIdentifyKingdomsDistanceFunctor(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData);
+
 		void Kingdom::identifyLandmasses(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Create progress data struct
 			Util::ProgressFunctorScaledData progressData;
@@ -173,20 +178,99 @@ namespace Engine {
 			delete landmassData;
 		}
 
-		void Kingdom::identifyKingdoms(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
-			// Initially simply assign a kingdom for each landmass
-			for(unsigned id=0; id<MapLandmass::IdMax; ++id) {
-				MapLandmass *landmass=map->getLandmassById(id);
-				if (landmass==NULL)
+		void Kingdom::identifyKingdoms(unsigned kingdomCount, unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+			// Create progress data struct
+			Util::ProgressFunctorScaledData progressData;
+			utilProgressFunctorScaledInit(&progressData, progressFunctor, progressUserData);
+
+			// Initial progress update
+			if (!utilProgressFunctorScaledInvoke(0.0, &progressData))
+				return;
+
+			// Init PathFind module ready for use later
+			Gen::PathFind *pathFind=new Gen::PathFind(map);
+
+			// Initially create a kingdom for each landmass
+			for(auto landmass: map->landmasses) {
+				if (landmass->getIsWater())
 					continue;
 
-				MapKingdom *kingdom=new MapKingdom(id);
+				MapKingdom *kingdom=new MapKingdom(landmass->getId());
 				if (map->addKingdom(kingdom)) {
-					landmass->setKingdomId(id);
+					landmass->setKingdomId(kingdom->getId());
 					kingdom->addLandmass(landmass);
 				} else
 					delete kingdom;
 			}
+
+			// Merge smaller landmasses from small kingdoms into neighbours.
+			size_t kingdomsInitialCount=map->kingdoms.size();
+			while(map->kingdoms.size()>kingdomCount) {
+				// Find smallest kingdom
+				MapKingdom *smallestKingdom=NULL;
+				uint32_t smallestArea=UINT32_MAX;
+				for(auto kingdom: map->kingdoms) {
+					if (kingdom->landmasses.size()==0)
+						continue;
+					uint32_t area=kingdom->getArea();
+					if (area<smallestArea || smallestKingdom==NULL) {
+						smallestKingdom=kingdom;
+						smallestArea=area;
+					}
+				}
+
+				if (smallestKingdom==NULL)
+					break;
+
+				// Reallocate landamsses to nearest kingdoms
+				progressData.progressMultiplier=1/(2.0*(kingdomsInitialCount-kingdomCount));
+				for(auto landmass: smallestKingdom->landmasses) {
+					// Use path finding logic to find distance to other landmasses
+					pathFind->clear(threadCount, NULL, NULL);
+					pathFind->searchFull(landmass->getTileExampleX(), landmass->getTileExampleY(), &kingdomIdentifyKingdomsDistanceFunctor, NULL, NULL, NULL);
+
+					// Find closest landmass from a different kingdom
+					MapKingdom *closestKingdom=NULL;
+					float closestDistance=FLT_MAX;
+					for(auto loopLandmass: map->landmasses) {
+						// Skip ocean landmasses
+						if (loopLandmass->getIsWater())
+							continue;
+
+						// Skip if same (or no) kingdom
+						if (loopLandmass->getKingdomId()==landmass->getKingdomId() || loopLandmass->getKingdomId()==MapKingdomIdNone)
+							continue;
+
+						// See if closer than best found so far
+						float distance=pathFind->getDistance(loopLandmass->getTileExampleX(), loopLandmass->getTileExampleY());
+						if (distance<closestDistance || closestKingdom==NULL) {
+							closestKingdom=map->getKingdomById(loopLandmass->getKingdomId());
+							closestDistance=distance;
+						}
+					}
+
+					if (closestKingdom==NULL)
+						continue; // TODO: think about this - leaves a dangling landmass of sorts?
+
+					// Move landmass to new kingdom
+					landmass->setKingdomId(closestKingdom->getId());
+					closestKingdom->addLandmass(landmass);
+				}
+
+				// Remove smallest kingdom
+				map->removeKingdom(smallestKingdom);
+
+				// Progress update
+				// TODO: better (i.e. within path find logic for more frequence updates)
+				double progress=1.0-(map->kingdoms.size()-kingdomCount)/((double)(kingdomsInitialCount-kingdomCount));
+				utilProgressFunctorScaledInvoke(progress, &progressData);
+			}
+
+			// Tidy up
+			delete pathFind;
+
+			// Final progress update
+			utilProgressFunctorScaledInvoke(1.0, &progressData);
 		}
 
 		void kingdomIdentifyLandmassesFloodFillLandmassFillFunctor(class Map *map, unsigned x, unsigned y, unsigned groupId, void *userData) {
@@ -331,5 +415,21 @@ namespace Engine {
 			landmassData->addTileStats(x, y, tile);
 		}
 
+		float kingdomIdentifyKingdomsDistanceFunctor(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData) {
+			assert(map!=NULL);
+			assert(userData==NULL);
+
+			// Grab tiles
+			MapTile *tile2=map->getTileAtOffset(x2, y2, Engine::Map::Map::GetTileFlag::None);
+			if (tile2==NULL)
+				return 0.0;
+
+			// Traversing ocean/water should be expensive
+			if (tile2->getHeight()<=map->seaLevel)
+				return 1.0;
+
+			// Traversing land should be cheap
+			return 0.0;
+		}
 	};
 };

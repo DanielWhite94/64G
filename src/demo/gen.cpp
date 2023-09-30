@@ -882,7 +882,7 @@ int main(int argc, char **argv) {
 	kingdom.identifyLandmasses(threadCount, &utilProgressFunctorString, (void *)"Identifying landmasses ");
 	printf("\n");
 
-	kingdom.identifyKingdoms(threadCount, &utilProgressFunctorString, (void *)"Identifying kingdoms ");
+	kingdom.identifyKingdoms(5, threadCount, &utilProgressFunctorString, (void *)"Identifying kingdoms ");
 	printf("\n");
 
 	// Save map.

@@ -24,7 +24,7 @@ namespace Engine {
 			// Identifies kingdoms as sets of landmasses.
 			// Requires landmasses to have already been identified before being called.
 			// Clears and repopulates kingdoms list in Map.
-			void identifyKingdoms(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
+			void identifyKingdoms(unsigned kingdomCount, unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 		private:
 			class Map *map;
 		};
