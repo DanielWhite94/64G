@@ -115,11 +115,8 @@ namespace Engine {
 
 		void Kingdom::identifyLandmasses(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Create progress data struct
-			Util::ProgressFunctorScaledData progressData={
-				.startTimeMs=Util::getTimeMs(),
-				.progressFunctor=progressFunctor,
-				.progressUserData=progressUserData,
-			};
+			Util::ProgressFunctorScaledData progressData;
+			utilProgressFunctorScaledInit(&progressData, progressFunctor, progressUserData);
 
 			// Clear existing landmasses stored in the map
 			map->removeLandmasses();

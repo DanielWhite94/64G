@@ -262,7 +262,15 @@ namespace Engine {
 		return data->progressFunctor(scaledProgress, elapsedTimeMs, data->progressUserData);
 	}
 
-	bool utilInvokeScaledProgressFunctor(double progress, Util::ProgressFunctorScaledData *data) {
+	void utilProgressFunctorScaledInit(Util::ProgressFunctorScaledData *data, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+		assert(data!=NULL);
+
+		data->startTimeMs=Util::getTimeMs();
+		data->progressFunctor=progressFunctor;
+		data->progressUserData=progressUserData;
+	}
+
+	bool utilProgressFunctorScaledInvoke(double progress, Util::ProgressFunctorScaledData *data) {
 		assert(progress>=0.0 && progress<=1.0);
 		assert(data!=NULL);
 
