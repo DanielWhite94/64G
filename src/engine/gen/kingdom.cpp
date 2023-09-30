@@ -426,10 +426,10 @@ namespace Engine {
 
 			// Traversing ocean/water should be expensive
 			if (tile2->getHeight()<=map->seaLevel)
-				return 1.0;
+				return 16.0;
 
 			// Traversing land should be cheap
-			return 0.0;
+			return 0.0025;
 		}
 	};
 };
