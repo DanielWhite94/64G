@@ -27,7 +27,7 @@ namespace Engine {
 					Entry *entry=&landmasses[i];
 
 					entry->area=0;
-					entry->isWater=true; // set to false on first encounter with land
+					entry->landArea=0;
 					entry->rewriteId=i;
 					entry->tileExampleX=0;
 					entry->tileExampleY=0;
@@ -39,10 +39,11 @@ namespace Engine {
 				MapLandmass::Id id=tile->getLandmassId();
 				Entry *entry=&landmasses[id];
 
+				bool isLand=(tile->getHeight()>map->seaLevel);
+
 				// Update stats
 				++entry->area;
-				if (tile->getHeight()>map->seaLevel)
-					entry->isWater=false;
+				entry->landArea+=isLand;
 				entry->tileExampleX=x;
 				entry->tileExampleY=y;
 			}
@@ -73,7 +74,7 @@ namespace Engine {
 					// Unused id or not water?
 					if (entry->area==0)
 						break;
-					if (!entry->isWater)
+					if (!entry->getIsWater())
 						continue;
 
 					// Have we found a new largest landmass of water?
@@ -91,17 +92,27 @@ namespace Engine {
 					if (entry->area==0)
 						continue;
 
-					MapLandmass *landmass=new MapLandmass(i, entry->area, entry->isWater, entry->tileExampleX, entry->tileExampleY);
+					MapLandmass *landmass=new MapLandmass(i, entry->area, entry->getIsWater(), entry->tileExampleX, entry->tileExampleY);
 					map->addLandmass(landmass);
 				}
 			}
 
 		private:
 			struct Entry {
-				uint32_t area; // number of tiles making up this landmass
+				// number of tiles of various types making up this landmass
+				uint32_t area; // all tiles - total area
+				uint32_t landArea; // tile height > sea level
+
 				MapLandmass::Id rewriteId; // used when merging landmasses together
-				bool isWater; // true if all tiles are <= sea level (if area=0 then vacuously true)
 				uint16_t tileExampleX, tileExampleY; // see maplandmass.h for a description of these
+
+				uint32_t getWaterArea() {
+					return area-landArea;
+				}
+
+				bool getIsWater(void) {
+					return (getWaterArea()>landArea);
+				}
 			};
 
 			class Map *map;
