@@ -14,6 +14,11 @@ using namespace Engine;
 namespace Engine {
 	namespace Gen {
 
+		struct KingdomIdentifyKingdomsTileFunctorData {
+			MapKingdom *avoidKingdom;
+			MapKingdom *closestKingdom;
+		};
+
 		class KingdomIdentifyLandmassesData {
 		public:
 			KingdomIdentifyLandmassesData(class Map *map): map(map) {
@@ -128,6 +133,7 @@ namespace Engine {
 		void kingdomIdentifyLandmassesModifyTilesFunctorCollectStats(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
 		float kingdomIdentifyKingdomsDistanceFunctor(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData);
+		bool kingdomIdentifyKingdomsTileFunctor(class Map *map, unsigned x, unsigned y, void *userData);
 
 		void Kingdom::identifyLandmasses(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			// Create progress data struct
@@ -234,38 +240,21 @@ namespace Engine {
 					break;
 
 				// Reallocate landamsses to nearest kingdoms
-				progressData.progressMultiplier=1/(2.0*(kingdomsInitialCount-kingdomCount));
 				for(auto landmass: smallestKingdom->landmasses) {
 					// Use path finding logic to find distance to other landmasses
+					KingdomIdentifyKingdomsTileFunctorData tileFunctorData={
+						.avoidKingdom=smallestKingdom,
+						.closestKingdom=NULL,
+					};
 					pathFind->clear(threadCount, NULL, NULL);
-					pathFind->searchFull(landmass->getTileExampleX(), landmass->getTileExampleY(), &kingdomIdentifyKingdomsDistanceFunctor, NULL, NULL, NULL);
+					pathFind->searchFull(landmass->getTileExampleX(), landmass->getTileExampleY(), &kingdomIdentifyKingdomsDistanceFunctor, NULL, &kingdomIdentifyKingdomsTileFunctor, &tileFunctorData, NULL, NULL);
 
-					// Find closest landmass from a different kingdom
-					MapKingdom *closestKingdom=NULL;
-					float closestDistance=FLT_MAX;
-					for(auto loopLandmass: map->landmasses) {
-						// Skip ocean landmasses
-						if (loopLandmass->getIsWater())
-							continue;
-
-						// Skip if same (or no) kingdom
-						if (loopLandmass->getKingdomId()==landmass->getKingdomId() || loopLandmass->getKingdomId()==MapKingdomIdNone)
-							continue;
-
-						// See if closer than best found so far
-						float distance=pathFind->getDistance(loopLandmass->getTileExampleX(), loopLandmass->getTileExampleY());
-						if (distance<closestDistance || closestKingdom==NULL) {
-							closestKingdom=map->getKingdomById(loopLandmass->getKingdomId());
-							closestDistance=distance;
-						}
-					}
-
-					if (closestKingdom==NULL)
+					if (tileFunctorData.closestKingdom==NULL)
 						continue; // TODO: think about this - leaves a dangling landmass of sorts?
 
 					// Move landmass to new kingdom
-					landmass->setKingdomId(closestKingdom->getId());
-					closestKingdom->addLandmass(landmass);
+					landmass->setKingdomId(tileFunctorData.closestKingdom->getId());
+					tileFunctorData.closestKingdom->addLandmass(landmass);
 				}
 
 				// Remove smallest kingdom
@@ -441,6 +430,35 @@ namespace Engine {
 
 			// Traversing land should be cheap
 			return 0.0025;
+		}
+
+		bool kingdomIdentifyKingdomsTileFunctor(class Map *map, unsigned x, unsigned y, void *userData) {
+			assert(map!=NULL);
+			assert(userData!=NULL);
+
+			KingdomIdentifyKingdomsTileFunctorData *data=(KingdomIdentifyKingdomsTileFunctorData *)userData;
+			assert(data->avoidKingdom!=NULL);
+			assert(data->closestKingdom==NULL);
+
+			// Grab tile and kingdom it is part of
+			MapTile *tile=map->getTileAtOffset(x, y, Engine::Map::Map::GetTileFlag::None);
+			if (tile==NULL)
+				return false;
+
+			MapKingdom *kingdom=map->getKingdomByTile(tile);
+			if (kingdom==NULL)
+				return true;
+
+			// Have we found a tile which is part of different kingdom?
+			if (kingdom!=data->avoidKingdom) {
+				// Update closest kingdom field to note which kingdom we found
+				data->closestKingdom=kingdom;
+
+				// Return false to indicate we can stop searching
+				return false;
+			}
+
+			return true;
 		}
 	};
 };
