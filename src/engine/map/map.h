@@ -1,6 +1,7 @@
 #ifndef ENGINE_GRAPHICS_MAP_H
 #define ENGINE_GRAPHICS_MAP_H
 
+#include <cstdio>
 #include <mutex>
 #include <vector>
 
@@ -140,6 +141,20 @@ namespace Engine {
 				// TODO: this (and anything else)
 
 				return total;
+			}
+
+			void debugKingdomsLandmasses(void) {
+				printf("=========================================\n");
+				printf("debugging map %p:\n", this);
+				printf("landmasses:\n");
+				for(auto landmass: landmasses) {
+					printf("	%4u %p area=%u, is water %u, kingdom id %u\n", landmass->getId(), landmass, landmass->getArea(), landmass->getIsWater(), landmass->getKingdomId());
+				}
+				printf("kingdoms:\n");
+				for(auto kingdom: kingdoms) {
+					printf("	%4u %p area=%u\n", kingdom->getId(), kingdom, kingdom->getArea());
+				}
+				printf("=========================================\n");
 			}
 
 			// These need to be recalculated manually (e.g. by calling MapGen::recalculateStats).
