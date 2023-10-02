@@ -272,7 +272,7 @@ namespace Engine {
 				map->removeKingdom(smallestKingdom);
 
 				// Progress update
-				// TODO: better (i.e. within path find logic for more frequence updates)
+				// TODO: better (i.e. within path find logic for more frequent updates)
 				double progress=1.0-(map->kingdoms.size()-kingdomCount)/((double)(kingdomsInitialCount-kingdomCount));
 				utilProgressFunctorScaledInvoke(progress, &progressData);
 			}
@@ -430,7 +430,7 @@ namespace Engine {
 			assert(map!=NULL);
 			assert(userData==NULL);
 
-			// Grab tiles
+			// Grab tile
 			MapTile *tile2=map->getTileAtOffset(x2, y2, Engine::Map::Map::GetTileFlag::None);
 			if (tile2==NULL)
 				return 0.0;
