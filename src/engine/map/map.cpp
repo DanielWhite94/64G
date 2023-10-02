@@ -1084,6 +1084,10 @@ namespace Engine {
 			return getKingdomById(landmass->getKingdomId());
 		}
 
+		MapKingdom *Map::getKingdomByTile(MapTile *tile) {
+			return getKingdomByLandmassId(tile->getLandmassId());
+		}
+
 		const char *Map::getBaseDir(void) const {
 			return baseDir;
 		}

@@ -80,6 +80,7 @@ namespace Engine {
 			MapKingdomId getKingdomIdByLandmassId(MapLandmass::Id id);
 			MapKingdom *getKingdomByLandmassId(MapLandmass::Id id);
 			MapKingdom *getKingdomByLandmass(MapLandmass *landmass);
+			MapKingdom *getKingdomByTile(MapTile *tile);
 
 			const char *getBaseDir(void) const;
 			const char *getMapTiledDir(void) const;
