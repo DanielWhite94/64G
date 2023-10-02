@@ -33,6 +33,10 @@ namespace Engine {
 			// Note: tiles are adjacent either horizontally or vertically
 			typedef float (DistanceFunctor)(class Map *map, unsigned x1, unsigned y1, unsigned x2, unsigned y2, void *userData);
 
+			// A function which is called by the searchFull function for every tile it processes.
+			// Return true to continue the search, false to stop.
+			typedef bool (TileFunctor)(class Map *map, unsigned x, unsigned y, void *userData);
+
 			// A function which is called by the searchGoal function to optimise the search in the direction of the goal.
 			// Should returns (positive) heuristic distance metric between two tiles (return 0 if not traversible)
 			// Note: the tiles do NOT have to be adjacent horizontally or vertically - but can be anywhere on the map
@@ -51,7 +55,7 @@ namespace Engine {
 			void clear(unsigned threadCount, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
 			// Search outwards from (endX,endY), using tile scratch float fields to hold distances from each tile to the given end goal
-			void searchFull(unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData);
+			void searchFull(unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, TileFunctor *tileFunctor, void *tileUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData);
 
 			// Find a path from (startX,startY) to (endX,endY), using tile scratch float fields to hold the distance from each tile to the given end goal
 			// Can pass a heuristic distance function to speed up the search or pass pathFindSearchGoalDistanceHeuristicZero to disable this

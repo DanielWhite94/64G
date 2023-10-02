@@ -75,7 +75,7 @@ namespace Engine {
 			modifyTiles(map, 0, 0, map->getWidth(), map->getHeight(), threadCount, &pathFindClearModifyTilesFunctor, NULL, progressFunctor, progressUserData);
 		}
 
-		void PathFind::searchFull(unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
+		void PathFind::searchFull(unsigned endX, unsigned endY, DistanceFunctor *distanceFunctor, void *distanceUserData, TileFunctor *tileFunctor, void *tileUserData, Util::ProgressFunctor *progressFunctor, void *progressUserData) {
 			assert(distanceFunctor!=NULL);
 
 			// Init
@@ -114,6 +114,10 @@ namespace Engine {
 				if (tileDistance<entry.distance)
 					continue;
 				assert(entry.distance==tileDistance);
+
+				// Invoke tile functor (and, based on return value, potentially stop searching)
+				if (tileFunctor!=NULL && !tileFunctor(map, entry.x, entry.y, tileUserData))
+					return;
 
 				// Handle neighbours
 				unsigned nx, ny;
