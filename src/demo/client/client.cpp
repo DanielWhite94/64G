@@ -3,9 +3,9 @@
 #include <cstring>
 #include <iostream>
 
-#include "../engine/engine.h"
+#include "../../engine/engine.h"
 
-#include "common.h"
+#include "../common.h"
 
 using namespace Engine;
 

@@ -7,22 +7,22 @@
 #include <iostream>
 #include <new>
 
-#include "../engine/gen/common.h"
-#include "../engine/gen/edgedetect.h"
-#include "../engine/gen/floodfill.h"
-#include "../engine/gen/kingdom.h"
-#include "../engine/gen/modifytiles.h"
-#include "../engine/gen/particleflow.h"
-#include "../engine/gen/pathfind.h"
-#include "../engine/gen/search.h"
-#include "../engine/gen/stats.h"
-#include "../engine/gen/town.h"
-#include "../engine/map/map.h"
-#include "../engine/map/mapobject.h"
-#include "../engine/fbnnoise.h"
-#include "../engine/util.h"
+#include "../../engine/gen/common.h"
+#include "../../engine/gen/edgedetect.h"
+#include "../../engine/gen/floodfill.h"
+#include "../../engine/gen/kingdom.h"
+#include "../../engine/gen/modifytiles.h"
+#include "../../engine/gen/particleflow.h"
+#include "../../engine/gen/pathfind.h"
+#include "../../engine/gen/search.h"
+#include "../../engine/gen/stats.h"
+#include "../../engine/gen/town.h"
+#include "../../engine/map/map.h"
+#include "../../engine/map/mapobject.h"
+#include "../../engine/fbnnoise.h"
+#include "../../engine/util.h"
 
-#include "common.h"
+#include "../common.h"
 
 typedef struct {
 	// Only these are computed initially.
