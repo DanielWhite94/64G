@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace Engine {
 	class Util {
@@ -31,6 +32,9 @@ namespace Engine {
 		static bool randBool(void);
 		static long long randIntInInterval(long long min, long long max);
 		static double randFloatInInterval(double min, double max);
+		static uint16_t rand16(void);
+		static uint32_t rand32(void);
+		static uint64_t rand64(void);
 
 		static unsigned chooseWithProb(const double *probabilities, size_t count);
 
@@ -157,6 +161,50 @@ namespace Engine {
 
 			return result;
 		}
+
+		// write given values to the given pointer in little-endian format
+		// return value is given data pointer advanced by length of value
+		static uint8_t *writeDataLE8(uint8_t *data, uint8_t value) {
+			data[0]=value;
+			return data+1;
+		}
+
+		static uint8_t *writeDataLE16(uint8_t *data, uint16_t value) {
+			data[0]=(value&255);
+			data[1]=(value>>8);
+			return data+2;
+		}
+
+		static uint8_t *writeDataLE32(uint8_t *data, uint32_t value) {
+			data[0]=(value&255);
+			data[1]=((value>>8)&255);
+			data[2]=((value>>16)&255);
+			data[3]=((value>>24)&255);
+			return data+4;
+		}
+
+		static uint8_t *writeDataLE64(uint8_t *data, uint64_t value) {
+			data=writeDataLE32(data, (value&0xFFFFFFFFu));
+			return writeDataLE32(data, (value>>32));
+		}
+
+		// inverse of write functions above
+		static uint8_t readDataLE8(const uint8_t *data) {
+			return data[0];
+		}
+
+		static uint16_t readDataLE16(const uint8_t *data) {
+			return (((uint16_t)data[0])|(((uint16_t)data[1])<<8));
+		}
+
+		static uint32_t readDataLE32(const uint8_t *data) {
+			return (((uint32_t)data[0])|(((uint32_t)data[1])<<8)|(((uint32_t)data[2])<<16)|(((uint32_t)data[3])<<24));
+		}
+
+		static uint64_t readDataLE64(const uint8_t *data) {
+			return (((uint64_t)readDataLE32(data))|(((uint64_t)readDataLE32(data+4))<<32));
+		}
+
 	};
 
 	// The following functions can be used where a Util::ProgressFunctor is expected.

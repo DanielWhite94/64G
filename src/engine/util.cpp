@@ -50,9 +50,21 @@ namespace Engine {
 	double Util::randFloatInInterval(double min, double max) {
 		assert(min<max);
 
+		// TODO: improve this (and all other rand functions)
 		return (((double)rand())/RAND_MAX)*(max-min)+min;
 	}
 
+	uint16_t Util::rand16(void) {
+		return rand()&0xFFFFu;
+	}
+
+	uint32_t Util::rand32(void) {
+		return (((uint32_t)rand16())<<16)|rand16();
+	}
+
+	uint64_t Util::rand64(void) {
+		return (((uint64_t)rand32())<<32)|rand32();
+	}
 
 	unsigned Util::chooseWithProb(const double *probabilities, size_t count) {
 		assert(probabilities!=NULL);
