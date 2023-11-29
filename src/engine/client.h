@@ -1,5 +1,5 @@
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef ENGINE_CLIENT_H
+#define ENGINE_CLIENT_H
 
 #include <cstdbool>
 
@@ -9,10 +9,10 @@
 #include "./map/mapobject.h"
 
 namespace Engine {
-	class Engine {
+	class Client {
 	public:
-		Engine(const char *mapPath, int windowWidth, int windowHeight, int defaultZoom, int maxZoom, int fps, bool debug);
-		~Engine();
+		Client(const char *mapPath, int windowWidth, int windowHeight, int defaultZoom, int maxZoom, int fps, bool debug);
+		~Client();
 
 		void start(void); // does not return until after stop is called
 		void stop(void);

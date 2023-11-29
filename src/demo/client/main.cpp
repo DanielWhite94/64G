@@ -3,7 +3,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "../../engine/engine.h"
+#include "../../engine/client.h"
 
 #include "../common.h"
 
@@ -32,16 +32,16 @@ int main(int argc, char **argv) {
 	const int windowHeight=(TilesHigh*Physics::CoordsPerTile*defaultZoom);
 
 	// Initialise engine
-	class Engine *engine;
+	class Client *client;
 	try {
-		engine=new class Engine(path, windowWidth, windowHeight, defaultZoom, maxZoom, fps, debug);
+		client=new class Client(path, windowWidth, windowHeight, defaultZoom, maxZoom, fps, debug);
 	} catch (std::exception& e) {
-		std::cout << "Could not initialise engine: " << e.what() << '\n';
+		std::cout << "Could not initialise client: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 
 	// Create, add and set player object.
-	class Map *map=engine->getMap();
+	class Map *map=client->getMap();
 
 	MapObject player(CoordAngle0, CoordVec(startTileX*Physics::CoordsPerTile, startTileY*Physics::CoordsPerTile), 1, 1);
 	HitMask playerHitmask;
@@ -67,13 +67,13 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	engine->setPlayerObject(&player);
+	client->setPlayerObject(&player);
 
 	// Enter main loop to begin the game
-	engine->start();
+	client->start();
 
 	// Tidy up
-	delete engine;
+	delete client;
 
 	return EXIT_SUCCESS;
 }

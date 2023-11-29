@@ -1,12 +1,12 @@
 #include <SDL2/SDL.h>
 
-#include "engine.h"
+#include "client.h"
 
 using namespace Engine;
 
 namespace Engine {
 
-Engine::Engine(const char *mapPath, int windowWidth, int windowHeight, int defaultZoom, int maxZoom, int fps, bool debug): maxZoom(maxZoom), fps(fps), debug(debug), stopFlag(false), renderer(windowWidth, windowHeight), camera(CoordVec(0,0), defaultZoom) {
+Client::Client(const char *mapPath, int windowWidth, int windowHeight, int defaultZoom, int maxZoom, int fps, bool debug): maxZoom(maxZoom), fps(fps), debug(debug), stopFlag(false), renderer(windowWidth, windowHeight), camera(CoordVec(0,0), defaultZoom) {
 	// Load map.
 	printf("Loading map at '%s'...\n", mapPath);
 
@@ -16,12 +16,12 @@ Engine::Engine(const char *mapPath, int windowWidth, int windowHeight, int defau
 	renderer.drawMinimap=true;
 }
 
-Engine::~Engine() {
+Client::~Client() {
 	if (map!=NULL)
 		delete map;
 }
 
-void Engine::start(void) {
+void Client::start(void) {
 	// Init
 	CoordVec playerDelta(0, 0);
 	bool playerRunning=false;
@@ -144,19 +144,19 @@ void Engine::start(void) {
 	}
 }
 
-void Engine::stop(void) {
+void Client::stop(void) {
 	stopFlag=true;
 }
 
-class Map *Engine::getMap(void) {
+class Map *Client::getMap(void) {
 	return map;
 }
 
-MapObject *Engine::getPlayerObject(void) {
+MapObject *Client::getPlayerObject(void) {
 	return playerObject;
 }
 
-void Engine::setPlayerObject(MapObject *object) {
+void Client::setPlayerObject(MapObject *object) {
 	playerObject=object;
 }
 
