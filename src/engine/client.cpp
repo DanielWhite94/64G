@@ -1,10 +1,16 @@
+#include <cstdio>
+#include <cstring>
 #include <SDL2/SDL.h>
+#include <unistd.h>
 
 #include "client.h"
 
 using namespace Engine;
 
 namespace Engine {
+
+void engineClientReceiptFunctorWrapper(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, bool success, void *userData);
+void engineClientRecvFunctorWrapper(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, const void *data, size_t len, void *userData);
 
 Client::Client(const char *mapPath, int windowWidth, int windowHeight, int defaultZoom, int maxZoom, int fps, bool debug): maxZoom(maxZoom), fps(fps), debug(debug), stopFlag(false), renderer(windowWidth, windowHeight), camera(CoordVec(0,0), defaultZoom) {
 	// Load map.
@@ -158,6 +164,75 @@ MapObject *Client::getPlayerObject(void) {
 
 void Client::setPlayerObject(MapObject *object) {
 	playerObject=object;
+}
+
+void Client::receiptFunctor(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, bool success) {
+	// If this is the receipt of a session request then clear flag so we try again soon
+	// (in case of success=true, we should receive the GameJoinResponse command)
+	if (!sessionActive && seqNum==sessionRequestSeqNum)
+		sessionRequestSeqNum=-1;
+}
+
+void Client::recvFunctor(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, const void *gdata, size_t len) {
+	const uint8_t *data=(const uint8_t *)gdata;
+
+	// Handle received data
+	GameMessage message;
+	while(1) {
+		// Attempt to parse and consume some data into a message
+		uint8_t messageLen=message.parseData(data, len);
+		if (messageLen==0)
+			break;
+
+		data+=messageLen;
+		len-=messageLen;
+
+		// Handle the message
+		switch(message.getCommandId()) {
+			case GameMessage::CommandIdNone: {
+				// Nothing to do
+			} break;
+			case GameMessage::CommandIdGenericResponse: {
+				// Handle response
+				switch(message.commandGenericResponseGetResponse()) {
+					case GameMessage::GenericResponse::UsernameBad:
+						// TODO: e.g. ask for a new username (also below is a hack)
+						printf("Bad username\n");
+						exit(0);
+					break;
+					case GameMessage::GenericResponse::UsernameUsed:
+						// TODO: e.g. ask for a new username (also below is a hack)
+						printf("Username already in use\n");
+						exit(0);
+					break;
+					case GameMessage::GenericResponse::AlreadyJoined:
+						// Nothing to do - we should receive the response soon
+					break;
+				}
+			} break;
+			case GameMessage::CommandIdGameJoinRequest: {
+				// We should not receive this command
+			} break;
+			case GameMessage::CommandIdGameJoinResponse: {
+				// Update session fields
+				sessionActive=true;
+				sessionRequestSeqNum=-1;
+				sessionToken=message.commandGameJoinResponseGetToken();
+			} break;
+		}
+	}
+}
+
+void engineClientReceiptFunctorWrapper(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, bool success, void *userData) {
+	Client *client=(Client *)userData;
+
+	client->receiptFunctor(conId, seqNum, success);
+}
+
+void engineClientRecvFunctorWrapper(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, const void *data, size_t len, void *userData) {
+	Client *client=(Client *)userData;
+
+	client->recvFunctor(conId, seqNum, data, len);
 }
 
 };

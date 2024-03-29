@@ -7,6 +7,8 @@
 #include "./graphics/renderer.h"
 #include "./map/map.h"
 #include "./map/mapobject.h"
+#include "./net/gamemessage.h"
+#include "./net/rudpsocket.h"
 
 namespace Engine {
 	class Client {
@@ -22,16 +24,29 @@ namespace Engine {
 		MapObject *getPlayerObject(void);
 		void setPlayerObject(MapObject *object);
 
+		// These are to be considered private
+		void receiptFunctor(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, bool success);
+		void recvFunctor(RudpSocket::ConnectionId conId, RudpPacket::SeqNum seqNum, const void *data, size_t len);
+
 	private:
+		// Flags/parameters
 		int maxZoom;
 		int fps;
 		bool debug;
 		bool stopFlag;
 
+		// Game fields
 		class Map *map;
 		Graphics::Renderer renderer;
 		Graphics::Camera camera;
 		MapObject *playerObject;
+
+		// Network fields
+		char username[GameMessage::maxUsernameSize+1];
+		RudpSocket *sock;
+		bool sessionActive;
+		int sessionRequestSeqNum; // either a (non-negative) RudpPacket::SeqNum or -1
+		uint64_t sessionToken;
 	};
 };
 

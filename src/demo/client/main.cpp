@@ -12,14 +12,15 @@ using namespace Engine;
 int main(int argc, char **argv) {
 	// Parse arguments.
 	if (argc!=4 && argc!=5) {
-		printf("Usage: %s mapfile starttilex starttiley [--debug]\n", argv[0]);
+		printf("Usage: %s mapfile starttilex starttiley username [--debug]\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	const char *path=argv[1];
 	int startTileX=atoi(argv[2]);
 	int startTileY=atoi(argv[3]);
-	bool debug=(argc==5 && strcmp(argv[4], "--debug")==0);
+	const char *username=atoi(argv[4]);
+	bool debug=(argc==6 && strcmp(argv[5], "--debug")==0);
 
 	// Set various constants/parameters.
 	const int defaultZoom=4;
