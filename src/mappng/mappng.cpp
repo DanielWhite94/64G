@@ -8,13 +8,10 @@
 #include <new>
 #include <png.h>
 
-#include "../engine/map/map.h"
-#include "../engine/map/mapobject.h"
-#include "../engine/map/mappnglib.h"
-#include "../engine/util.h"
+#include "../common/common.h"
 
-using namespace Engine;
-using namespace Engine::Map;
+using namespace Common;
+using namespace Common::EMap;
 
 int main(int argc, char **argv) {
 	// Grab arguments.
@@ -40,15 +37,15 @@ int main(int argc, char **argv) {
 	int imageHeight=atoi(argv[arg++]);
 	const char *imagePath=argv[arg++];
 
-	if (mapTileX<0 || mapTileX>=Engine::Map::Map::regionsSize*MapRegion::tilesSize) {
+	if (mapTileX<0 || mapTileX>=Common::EMap::Map::regionsSize*MapRegion::tilesSize) {
 		if (!quiet)
-			printf("Bad mapX '%i': must be at least zero and less than max map width (%i)\n", mapTileX, Engine::Map::Map::regionsSize*MapRegion::tilesSize);
+			printf("Bad mapX '%i': must be at least zero and less than max map width (%i)\n", mapTileX, Common::EMap::Map::regionsSize*MapRegion::tilesSize);
 		return EXIT_FAILURE;
 	}
 
-	if (mapTileY<0 || mapTileY>=Engine::Map::Map::regionsSize*MapRegion::tilesSize) {
+	if (mapTileY<0 || mapTileY>=Common::EMap::Map::regionsSize*MapRegion::tilesSize) {
 		if (!quiet)
-			printf("Bad mapY '%i': must be at least zero and less than max map height (%i)\n", mapTileY, Engine::Map::Map::regionsSize*MapRegion::tilesSize);
+			printf("Bad mapY '%i': must be at least zero and less than max map height (%i)\n", mapTileY, Common::EMap::Map::regionsSize*MapRegion::tilesSize);
 		return EXIT_FAILURE;
 	}
 

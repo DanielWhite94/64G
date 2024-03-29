@@ -2,7 +2,7 @@ CPP = clang++
 CFLAGS = -Wall -std=c++20 -Wno-c99-designator
 LFLAGS = -lpng -lpthread
 
-OBJS = ../engine/gen/edgedetect.o ../engine/gen/floodfill.o ../engine/gen/forest.o ../engine/gen/house.o ../engine/gen/kingdom.o ../engine/gen/modifytiles.o ../engine/gen/particleflow.o ../engine/gen/pathfind.o ../engine/gen/search.o ../engine/gen/stats.o ../engine/gen/town.o ../engine/map/map.o ../engine/map/mapobject.o ../engine/map/mappnglib.o ../engine/map/mapregion.o ../engine/map/mapitem.o ../engine/map/mapkingdom.o ../engine/map/maplandmass.o ../engine/map/maptexture.o ../engine/map/maptiled.o ../engine/map/maptile.o ../engine/physics/hitmask.o ../engine/physics/coord.o ../engine/fbnnoise.o ../engine/perlinnoise.o ../engine/prng.o ../engine/util.o mappng.o
+OBJS = ../common/gen/edgedetect.o ../common/gen/floodfill.o ../common/gen/forest.o ../common/gen/house.o ../common/gen/kingdom.o ../common/gen/modifytiles.o ../common/gen/particleflow.o ../common/gen/pathfind.o ../common/gen/search.o ../common/gen/stats.o ../common/gen/town.o ../common/emap/map.o ../common/emap/mapobject.o ../common/emap/mappnglib.o ../common/emap/mapregion.o ../common/emap/mapitem.o ../common/emap/mapkingdom.o ../common/emap/maplandmass.o ../common/emap/maptexture.o ../common/emap/maptiled.o ../common/emap/maptile.o ../common/physics/hitmask.o ../common/physics/coord.o ../common/fbnnoise.o ../common/perlinnoise.o ../common/prng.o ../common/util.o mappng.o
 
 debug: CFLAGS += -O0 -g -ggdb3
 release: CFLAGS += -O3 -DNDEBUG

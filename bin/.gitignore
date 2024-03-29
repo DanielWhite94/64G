@@ -1,7 +1,8 @@
+client
 demogen
-engine
-mapeditor
+editor
 mappng
+server
 slippymapgen
 
 slippymapdata/*

@@ -5,8 +5,7 @@
 #include <iostream>
 #include <new>
 
-#include "../engine/map/map.h"
-#include "../engine/map/maptiled.h"
+#include "../common/common.h"
 
 int main(int argc, char *argv[]) {
 	// Grab arguments.
