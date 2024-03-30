@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_MAPITEM_H
-#define ENGINE_GRAPHICS_MAPITEM_H
+#ifndef COMMON_EMAP_MAPITEM_H
+#define COMMON_EMAP_MAPITEM_H
 
 #include <cstdint>
 

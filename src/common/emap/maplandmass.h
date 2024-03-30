@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_MAPLANDMASS_H
-#define ENGINE_GRAPHICS_MAPLANDMASS_H
+#ifndef COMMON_EMAP_MAPLANDMASS_H
+#define COMMON_EMAP_MAPLANDMASS_H
 
 #include <cstdint>
 #include <cstdio>

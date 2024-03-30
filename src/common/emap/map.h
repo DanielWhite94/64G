@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_MAP_H
-#define ENGINE_GRAPHICS_MAP_H
+#ifndef COMMON_EMAP_MAP_H
+#define COMMON_EMAP_MAP_H
 
 #include <cstdio>
 #include <mutex>

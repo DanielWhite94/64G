@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_MAPTILE_H
-#define ENGINE_GRAPHICS_MAPTILE_H
+#ifndef COMMON_EMAP_MAPTILE_H
+#define COMMON_EMAP_MAPTILE_H
 
 #include "maplandmass.h"
 #include "mapobject.h"

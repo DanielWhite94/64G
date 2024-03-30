@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_MAPKINGDOM_H
-#define ENGINE_GRAPHICS_MAPKINGDOM_H
+#ifndef COMMON_EMAP_MAPKINGDOM_H
+#define COMMON_EMAP_MAPKINGDOM_H
 
 #include <cstdint>
 #include <cstdio>

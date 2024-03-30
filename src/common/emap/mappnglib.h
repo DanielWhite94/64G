@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_MAPPNGLIB_H
-#define ENGINE_GRAPHICS_MAPPNGLIB_H
+#ifndef COMMON_EMAP_MAPPNGLIB_H
+#define COMMON_EMAP_MAPPNGLIB_H
 
 #include <cmath>
 #include <cstdbool>
