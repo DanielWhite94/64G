@@ -64,6 +64,8 @@ namespace Editor {
 		bool menuViewLayersPathsIsActive(void);
 		bool menuViewLayersPathsToggled(GtkWidget *widget);
 
+		bool sidePaneTextureClicked(GtkWidget *widget, GdkEventButton *event);
+
 		GtkWidget *window;
 		GtkWidget *menuFileNew;
 		GtkWidget *menuFileOpen;
@@ -90,6 +92,13 @@ namespace Editor {
 		GtkWidget *menuViewLayersPolitical;
 		GtkWidget *menuViewLayersHeightContours;
 		GtkWidget *menuViewLayersPaths;
+		GtkWidget *sidePaneNotebook;
+		GtkWidget *sidePaneTexturesGrid;
+		GtkWidget *sidePaneTexturesActiveImage;
+		GtkWidget *sidePaneTexturesActiveIdSpinButton;
+		GtkWidget *sidePaneTexturesActiveNameEntry;
+		GtkWidget *sidePaneTexturesActiveScaleSpinButton;
+		GtkWidget *sidePaneTexturesActiveMapColourButton;
 
 		class Map *map;
 
@@ -108,6 +117,11 @@ namespace Editor {
 		int mapTileToGenX, mapTileToGenY, mapTileToGenZoom;
 		MapTiled::ImageLayerSet mapTileToGenLayerSet;
 	private:
+		// Textures grid parameters
+		static const unsigned texturesActiveImageSize=128;
+		static const unsigned texturesGridWidth=4;
+		static const unsigned texturesGridThumbnailSize=64;
+
 		const char *initialMapFilenameToOpen;
 
 		int timerTickSource;
@@ -116,6 +130,9 @@ namespace Editor {
 		unsigned operationCounter; // if 0 then no operation
 
 		double drawingAreaMouseDeviceX, drawingAreaMouseDeviceY;
+
+		int sidePaneTexturesActiveId; // -1 if nothing selected
+		GtkWidget *sidePaneTexturesActiveWidget; // NULL if nothing selected
 
 		bool mapNew(void);
 		bool mapOpen(const char *filename); // Returns true if successfully opened, false if choosen folder is not a valid map.
@@ -136,10 +153,14 @@ namespace Editor {
 
 		void drawingAreaDrawTileSurface(cairo_t *cr, cairo_surface_t *surface, double userX, double userY);
 
-		void updateFileMenuSensitivity(void);
+		void updateWidgetSensitivities(void);
 		void updateTitle(void);
 		void updateDrawingArea(void);
 		void updatePositionLabel(void);
+
+		void sidePaneTexturesGridPopulate(void);
+		void sidePaneTexturesGridClear(void);
+		void sidePaneTexturesSetActiveTexture(unsigned id, GtkWidget *widget);
 
 		cairo_surface_t *getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer);
 

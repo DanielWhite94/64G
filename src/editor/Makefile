@@ -14,6 +14,7 @@ debug: $(OBJS)
 	cp -f kingdomterritorydialogue.glade ../../bin/kingdomterritorydialogue.glade
 	cp -f mainwindow.glade ../../bin/mainwindow.glade
 	cp -f newdialogue.glade ../../bin/newdialogue.glade
+	cp -f style.css ../../bin/style.css
 
 release: $(OBJS)
 	$(CPP) $(CFLAGS) $(OBJS) -o ../../bin/editor $(LFLAGS)
@@ -22,6 +23,7 @@ release: $(OBJS)
 	cp -f kingdomterritorydialogue.glade ../../bin/kingdomterritorydialogue.glade
 	cp -f mainwindow.glade ../../bin/mainwindow.glade
 	cp -f newdialogue.glade ../../bin/newdialogue.glade
+	cp -f style.css ../../bin/style.css
 
 %.o: %.cpp %.h
 	$(CPP) $(CFLAGS) -c -o $@ $<

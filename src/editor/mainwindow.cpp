@@ -65,6 +65,8 @@ gboolean mapEditorMainWindowWrapperMenuLayersToggled(GtkWidget *widget, gpointer
 gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *widget, gpointer userData);
 gboolean mapEditorMainWindowWrapperMenuLayersPathsToggled(GtkWidget *widget, gpointer userData);
 
+gboolean mapEditorMainWindowWrapperSidePaneTextureClicked(GtkWidget *widget, GdkEventButton *event, gpointer userData);
+
 void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
 
 void mainWindowToolsHeightTemperatureModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData);
@@ -104,6 +106,15 @@ namespace Editor {
 			throw std::runtime_error("could not init main window glade file"); // TODO: use 'err' for more info
 		}
 
+		// Load CSS file
+		GtkCssProvider *provider=gtk_css_provider_new();
+		GdkDisplay *display=gdk_display_get_default();
+		GdkScreen *screen=gdk_display_get_default_screen(display);
+		gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+		gtk_css_provider_load_from_file(provider, g_file_new_for_path("style.css"), NULL);
+		g_object_unref(provider);
+
 		// Connect glade signals
 		gtk_builder_connect_signals(builder, NULL);
 
@@ -135,6 +146,13 @@ namespace Editor {
 		error|=(menuToolsClear=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsClear")))==NULL;
 		error|=(menuToolsHeightTemperature=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsHeightTemperature")))==NULL;
 		error|=(menuToolsKingdomTerritory=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsKingdomTerritory")))==NULL;
+		error|=(sidePaneNotebook=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneNotebook")))==NULL;
+		error|=(sidePaneTexturesGrid=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesGrid")))==NULL;
+		error|=(sidePaneTexturesActiveImage=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesActiveImage")))==NULL;
+		error|=(sidePaneTexturesActiveIdSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesActiveIdSpinButton")))==NULL;
+		error|=(sidePaneTexturesActiveNameEntry=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesActiveNameEntry")))==NULL;
+		error|=(sidePaneTexturesActiveScaleSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesActiveScaleSpinButton")))==NULL;
+		error|=(sidePaneTexturesActiveMapColourButton=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesActiveMapColourButton")))==NULL;
 		if (error)
 			throw std::runtime_error("could not grab main window widgets");
 
@@ -181,7 +199,7 @@ namespace Editor {
 		gtk_window_maximize(GTK_WINDOW(window));
 
 		// Ensure widgets are setup correctly before showing the window
-		updateFileMenuSensitivity();
+		updateWidgetSensitivities();
 		updateTitle();
 		updatePositionLabel();
 		gtk_label_set_text(GTK_LABEL(statusLabel), "No map open");
@@ -936,6 +954,18 @@ namespace Editor {
 		return false;
 	}
 
+	bool MainWindow::sidePaneTextureClicked(GtkWidget *widget, GdkEventButton *event) {
+		// Sanity check
+		if (map==NULL)
+			return false;
+
+		// Grab relevant ID and use it to set the active texture
+		unsigned id=(unsigned)(uint64_t)g_object_get_data(G_OBJECT(widget), "id");
+		sidePaneTexturesSetActiveTexture(id, widget);
+
+		return false;
+	}
+
 	bool MainWindow::mapNew(void) {
 		// Close the current map (if any)
 		if (!mapClose())
@@ -1007,7 +1037,7 @@ namespace Editor {
 		sprintf(statusLabelStr, "Created new map at: %s", filename);
 		gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 
-		updateFileMenuSensitivity();
+		updateWidgetSensitivities();
 		updateTitle();
 
 		// Centre map within the drawing area with the zoom set such that the whole map is visible
@@ -1072,12 +1102,15 @@ namespace Editor {
 		sprintf(statusLabelStr, "Opened map at: %s", filename);
 		gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 
-		updateFileMenuSensitivity();
+		updateWidgetSensitivities();
 		updateTitle();
 
 		// Centre map within the drawing area with the zoom set such that the whole map is visible
 		// This also updates the drawing area and position label
 		zoomFit();
+
+		// Populate textures grid
+		sidePaneTexturesGridPopulate();
 
 		return true;
 	}
@@ -1094,7 +1127,7 @@ namespace Editor {
 		// Update various things
 		gtk_label_set_text(GTK_LABEL(statusLabel), "Map saved");
 
-		updateFileMenuSensitivity();
+		updateWidgetSensitivities();
 		updateTitle();
 
 		return true;
@@ -1127,7 +1160,7 @@ namespace Editor {
 		sprintf(statusLabelStr, "Map now saved to: %s", filename);
 		gtk_label_set_text(GTK_LABEL(statusLabel), statusLabelStr);
 
-		updateFileMenuSensitivity();
+		updateWidgetSensitivities();
 		updateTitle();
 
 		// Tidy up
@@ -1148,7 +1181,8 @@ namespace Editor {
 		// Update various things
 		gtk_label_set_text(GTK_LABEL(statusLabel), "Closed map");
 
-		updateFileMenuSensitivity();
+		sidePaneTexturesGridClear();
+		updateWidgetSensitivities();
 		updateTitle();
 		updateDrawingArea();
 		updatePositionLabel();
@@ -1226,10 +1260,11 @@ namespace Editor {
 		cairo_restore(cr);
 	}
 
-	void MainWindow::updateFileMenuSensitivity(void) {
+	void MainWindow::updateWidgetSensitivities(void) {
 		bool mapOpen=(map!=NULL);
 		bool mapChanges=mapGetUnsavedChanges();
 
+		// File menu
 		gtk_widget_set_sensitive(menuFileSave, (mapOpen && mapChanges));
 		gtk_widget_set_sensitive(menuFileSaveAs, mapOpen);
 		gtk_widget_set_sensitive(menuFileClose, mapOpen);
@@ -1237,6 +1272,9 @@ namespace Editor {
 		gtk_widget_set_sensitive(menuToolsClear, mapOpen);
 		gtk_widget_set_sensitive(menuToolsHeightTemperature, mapOpen);
 		gtk_widget_set_sensitive(menuToolsKingdomTerritory, mapOpen);
+
+		// Side pane
+		gtk_widget_set_sensitive(sidePaneNotebook, mapOpen);
 	}
 
 	void MainWindow::updateTitle(void) {
@@ -1264,6 +1302,116 @@ namespace Editor {
 		setlocale(LC_NUMERIC, oldLocale);
 
 		gtk_label_set_text(GTK_LABEL(positionLabel), str);
+	}
+
+	void MainWindow::sidePaneTexturesGridPopulate(void) {
+		// Loop over textures
+		int foundId=-1;
+		GtkWidget *foundWidget=NULL;
+		unsigned x=0, y=0;
+		for(unsigned i=0; i<MapTexture::IdMax; ++i) {
+			// Grab texture with this id (if any)
+			const MapTexture *texture=map->getTexture(i);
+			if (texture==NULL)
+				continue;
+
+			// Create widgets to display texture
+			GtkWidget *eventBox=gtk_event_box_new();
+			gtk_widget_set_name(eventBox, "TextureGridEventBox");
+			g_object_set_data(G_OBJECT(eventBox), "id", (void *)(uintptr_t)i);
+			g_signal_connect(eventBox, "button-press-event", G_CALLBACK(mapEditorMainWindowWrapperSidePaneTextureClicked), this);
+			gtk_grid_attach(GTK_GRID(sidePaneTexturesGrid), eventBox, x, y, 1, 1);
+
+			GdkPixbuf* pixbuf=gdk_pixbuf_new_from_file_at_scale(texture->getImagePath(), texturesGridThumbnailSize, texturesGridThumbnailSize, true, NULL);
+			GtkWidget *image=gtk_image_new_from_pixbuf(pixbuf);
+			g_object_unref(pixbuf);
+			gtk_widget_set_margin_start(image, 3);
+			gtk_widget_set_margin_end(image, 3);
+			gtk_widget_set_margin_top(image, 3);
+			gtk_widget_set_margin_bottom(image, 3);
+
+			gtk_container_add(GTK_CONTAINER(eventBox), image);
+
+			// We want a texture to select initially
+			if (foundId==-1) {
+				foundId=i;
+				foundWidget=eventBox;
+			}
+
+			// Advance x/y ready for next texture
+			++x;
+			if (x>=texturesGridWidth) {
+				x=0;
+				++y;
+			}
+		}
+
+		// Select first texture
+		sidePaneTexturesActiveId=-1;
+		if (foundId!=-1)
+			sidePaneTexturesSetActiveTexture(foundId, foundWidget);
+
+		// Show widgets
+		gtk_widget_show_all(sidePaneTexturesGrid);
+	}
+
+	void MainWindow::sidePaneTexturesGridClear(void) {
+		// TODO: this is a bit of a hack
+
+		for(unsigned i=0; i<texturesGridWidth; ++i)
+			gtk_grid_remove_column(GTK_GRID(sidePaneTexturesGrid), 0);
+
+		sidePaneTexturesActiveId=-1;
+		sidePaneTexturesActiveWidget=NULL;
+	}
+
+	void MainWindow::sidePaneTexturesSetActiveTexture(unsigned id, GtkWidget *widget) {
+		assert(widget!=NULL);
+
+		GtkStyleContext *styleContext;
+
+		// No change?
+		if (id==sidePaneTexturesActiveId) {
+			assert(widget==sidePaneTexturesActiveWidget);
+			return;
+		}
+
+		// Deselect current active texture (if any)
+		if (sidePaneTexturesActiveId>=0) {
+			styleContext=gtk_widget_get_style_context(sidePaneTexturesActiveWidget);
+			gtk_style_context_remove_class(styleContext, "textureGridActiveEventBox");
+		}
+
+		// Update fields
+		sidePaneTexturesActiveId=id;
+		sidePaneTexturesActiveWidget=widget;
+
+		// Select new active texture
+		styleContext=gtk_widget_get_style_context(widget);
+		gtk_style_context_add_class(styleContext, "textureGridActiveEventBox");
+
+		// Update the 'info box'
+		const MapTexture *texture=map->getTexture(sidePaneTexturesActiveId);
+		if (texture==NULL) {
+			assert(false);
+			sidePaneTexturesActiveId=-1;
+			return;
+		}
+
+		GdkRGBA textureColour={
+			texture->getMapColourR()/255.0,
+			texture->getMapColourG()/255.0,
+			texture->getMapColourB()/255.0,
+			1.0,
+		};
+
+		GdkPixbuf* pixbuf=gdk_pixbuf_new_from_file_at_scale(texture->getImagePath(), texturesActiveImageSize, texturesActiveImageSize, true, NULL);
+		gtk_image_set_from_pixbuf(GTK_IMAGE(sidePaneTexturesActiveImage), pixbuf);
+		g_object_unref(pixbuf);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(sidePaneTexturesActiveIdSpinButton), texture->getId());
+		gtk_entry_set_text(GTK_ENTRY(sidePaneTexturesActiveNameEntry), texture->getName());
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(sidePaneTexturesActiveScaleSpinButton), texture->getScale());
+		gtk_color_button_set_rgba(GTK_COLOR_BUTTON(sidePaneTexturesActiveMapColourButton), &textureColour);
 	}
 
 	cairo_surface_t *MainWindow::getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer) {
@@ -1493,6 +1641,11 @@ gboolean mapEditorMainWindowWrapperMenuLayersHeightContoursToggled(GtkWidget *wi
 gboolean mapEditorMainWindowWrapperMenuLayersPathsToggled(GtkWidget *widget, gpointer userData) {
 	Editor::MainWindow *mainWindow=(Editor::MainWindow *)userData;
 	return mainWindow->menuViewLayersPathsToggled(widget);
+}
+
+gboolean mapEditorMainWindowWrapperSidePaneTextureClicked(GtkWidget *widget, GdkEventButton *event, gpointer userData) {
+	Editor::MainWindow *mainWindow=(Editor::MainWindow *)userData;
+	return mainWindow->sidePaneTextureClicked(widget, event);
 }
 
 void mainWindowToolsClearModifyTilesFunctor(unsigned threadId, class Map *map, unsigned x, unsigned y, void *userData) {
