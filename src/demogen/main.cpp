@@ -49,6 +49,56 @@ void demogenTownFolkModifyTilesFunctor(unsigned threadId, class Map *map, unsign
 bool demogenTownTileTestFunctor(class Map *map, int x, int y, int w, int h, void *userData);
 
 bool demogenAddTextures(class Map *map) {
+
+	const char *textureNames[TextureIdNB]={
+		[TextureIdGrass0]="tiles_grass0",
+		[TextureIdGrass1]="tiles_grass1",
+		[TextureIdGrass2]="tiles_grass2",
+		[TextureIdGrass3]="tiles_grass3",
+		[TextureIdGrass4]="tiles_grass4",
+		[TextureIdGrass5]="tiles_grass5",
+		[TextureIdBrickPath]="tiles_tile",
+		[TextureIdDirt]="tiles_dirt",
+		[TextureIdDock]="tiles_dock",
+		[TextureIdWater]="tiles_water",
+		[TextureIdTree1]="objects_tree1",
+		[TextureIdTree2]="objects_tree2",
+		[TextureIdTree3]="objects_tree3",
+		[TextureIdMan1]="objects_man1",
+		[TextureIdOldManN]="npcs_oldbeardman_north",
+		[TextureIdOldManE]="npcs_oldbeardman_east",
+		[TextureIdOldManS]="npcs_oldbeardman_south",
+		[TextureIdOldManW]="npcs_oldbeardman_west",
+		[TextureIdHouseDoorBL]="tiles_house_doorbl",
+		[TextureIdHouseDoorBR]="tiles_house_doorbr",
+		[TextureIdHouseDoorTL]="tiles_house_doortl",
+		[TextureIdHouseDoorTR]="tiles_house_doortr",
+		[TextureIdHouseRoof]="tiles_house_roof",
+		[TextureIdHouseRoofTop]="tiles_house_rooftop",
+		[TextureIdHouseWall2]="tiles_house_wall2",
+		[TextureIdHouseWall3]="tiles_house_wall3",
+		[TextureIdHouseWall4]="tiles_house_wall4",
+		[TextureIdHouseChimney]="tiles_house_chimney",
+		[TextureIdHouseChimneyTop]="tiles_house_chimneytop",
+		[TextureIdSand]="tiles_sand",
+		[TextureIdHotSand]="tiles_hotsand",
+		[TextureIdSnow]="tiles_snow",
+		[TextureIdShopCobbler]="tiles_shops_cobbler",
+		[TextureIdDeepWater]="tiles_deepwater",
+		[TextureIdRiver]="tiles_water",
+		[TextureIdHighAlpine]="tiles_highalpine",
+		[TextureIdLowAlpine]="tiles_lowalpine",
+		[TextureIdSheepN]="npcs_sheep_north",
+		[TextureIdSheepE]="npcs_sheep_east",
+		[TextureIdSheepS]="npcs_sheep_south",
+		[TextureIdSheepW]="npcs_sheep_west",
+		[TextureIdRoseBush]="objects_rosebush",
+		[TextureIdCoins]="objects_coins",
+		[TextureIdDog]="npcs_dog_east",
+		[TextureIdChestClosed]="objects_chestclosed",
+		[TextureIdChestOpen]="objects_chestopen",
+	};
+
 	const char *texturePaths[TextureIdNB]={
 		[TextureIdGrass0]="../src/demogen/images/tiles/grass0.png",
 		[TextureIdGrass1]="../src/demogen/images/tiles/grass1.png",
@@ -97,6 +147,7 @@ bool demogenAddTextures(class Map *map) {
 		[TextureIdChestClosed]="../src/demogen/images/objects/chestclosed.png",
 		[TextureIdChestOpen]="../src/demogen/images/objects/chestopen.png",
 	};
+
 	int textureScales[TextureIdNB]={
 		[TextureIdGrass0]=4,
 		[TextureIdGrass1]=4,
@@ -196,7 +247,7 @@ bool demogenAddTextures(class Map *map) {
 
 	bool success=true;
 	for(unsigned textureId=0; textureId<TextureIdNB; ++textureId)
-		success&=map->addTexture(new MapTexture(textureId, texturePaths[textureId], textureScales[textureId], textureColours[textureId][0], textureColours[textureId][1], textureColours[textureId][2]));
+		success&=map->addTexture(new MapTexture(textureId, textureNames[textureId], texturePaths[textureId], textureScales[textureId], textureColours[textureId][0], textureColours[textureId][1], textureColours[textureId][2]));
 
 	return success;
 };

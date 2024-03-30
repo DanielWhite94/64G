@@ -10,12 +10,13 @@ namespace Common {
 			typedef uint16_t Id;
 			static const unsigned IdMax=((1u)<<16)-1;
 
-			MapTexture(unsigned id, const char *path, unsigned scale, uint8_t mapColourR, uint8_t mapColourG, uint8_t mapColourB);
+			MapTexture(unsigned id, const char *name, const char *path, unsigned scale, uint8_t mapColourR, uint8_t mapColourG, uint8_t mapColourB);
 			~MapTexture();
 
 			bool save(const char *texturesDirPath) const;
 
 			unsigned getId(void) const;
+			const char *getName(void) const;
 			const char *getImagePath(void) const;
 			unsigned getScale(void) const;
 
@@ -24,6 +25,7 @@ namespace Common {
 			uint8_t getMapColourB(void) const;
 		private:
 			unsigned id;
+			char *name;
 			char *path;
 			unsigned scale;
 			uint8_t mapColourR, mapColourG, mapColourB;

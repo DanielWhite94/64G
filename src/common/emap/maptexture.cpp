@@ -13,12 +13,15 @@
 
 namespace Common {
 	namespace EMap {
-		MapTexture::MapTexture(unsigned gId, const char *gPath, unsigned gScale, uint8_t gMapColourR, uint8_t gMapColourG, uint8_t gMapColourB) {
+		MapTexture::MapTexture(unsigned gId,const char *gName, const char *gPath, unsigned gScale, uint8_t gMapColourR, uint8_t gMapColourG, uint8_t gMapColourB) {
 			assert(gId<IdMax);
+			assert(gName!=NULL);
 			assert(gPath!=NULL);
 			assert(gScale>=1);
 
 			id=gId;
+			name=(char *)malloc(strlen(gName)+1); // TODO: Check return.
+			strcpy(name, gName);
 			path=(char *)malloc(strlen(gPath)+1); // TODO: Check return.
 			strcpy(path, gPath);
 			scale=gScale;
@@ -28,6 +31,8 @@ namespace Common {
 		}
 
 		MapTexture::~MapTexture() {
+			free(name);
+			name=NULL;
 			free(path);
 			path=NULL;
 		}
@@ -38,7 +43,7 @@ namespace Common {
 			// Copy image file.
 			const char *extension="png"; // TODO: Avoid hardcoding this.
 			char outPath[4096]; // TODO: This better.
-			sprintf(outPath, "%s/%us%ur%ug%ub%u.%s", texturesDirPath, getId(), getScale(), getMapColourR(), getMapColourG(), getMapColourB(), extension);
+			sprintf(outPath, "%s/%us%ur%ug%ub%u-%s.%s", texturesDirPath, getId(), getScale(), getMapColourR(), getMapColourG(), getMapColourB(), getName(), extension);
 
 			int inFd=open(getImagePath(), O_RDONLY); // TODO: Check return.
 			int outFd=open(outPath, O_WRONLY|O_CREAT, 0777); // TODO: Check return.
@@ -77,6 +82,10 @@ namespace Common {
 
 		unsigned MapTexture::getId(void) const {
 			return id;
+		}
+
+		const char *MapTexture::getName(void) const {
+			return name;
 		}
 
 		const char *MapTexture::getImagePath(void) const {

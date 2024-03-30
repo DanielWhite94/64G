@@ -221,7 +221,8 @@ namespace Common {
 						namePtr=dirEntryFileName;
 
 					unsigned textureId=0, textureScale=0, textureMapR=0, textureMapG=0, textureMapB=0;
-					if (sscanf(namePtr, "%us%ur%ug%ub%u.", &textureId, &textureScale, &textureMapR, &textureMapG, &textureMapB)!=5) {
+					char textureName[256]; // FIXME: bad
+					if (sscanf(namePtr, "%us%ur%ug%ub%u-%s", &textureId, &textureScale, &textureMapR, &textureMapG, &textureMapB, textureName)!=6) {
 						// TODO: error msg
 						continue;
 					}
@@ -230,8 +231,10 @@ namespace Common {
 						continue;
 					}
 
+					*strchrnul(textureName, '.')='\0'; // strip extension
+
 					// Add texture.
-					MapTexture *texture=new MapTexture(textureId, dirEntryFileName, textureScale, textureMapR, textureMapG, textureMapB);
+					MapTexture *texture=new MapTexture(textureId, textureName, dirEntryFileName, textureScale, textureMapR, textureMapG, textureMapB);
 					addTexture(texture); // TODO: Check return.
 				}
 
