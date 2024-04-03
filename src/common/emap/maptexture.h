@@ -18,6 +18,7 @@ namespace Common {
 			unsigned getId(void) const;
 			const char *getName(void) const;
 			const char *getImagePath(void) const;
+			bool getImagePathIsUpToDate(const char *texturesDirPath) const;
 			unsigned getScale(void) const;
 
 			uint8_t getMapColourR(void) const;
@@ -29,6 +30,8 @@ namespace Common {
 			char *path;
 			unsigned scale;
 			uint8_t mapColourR, mapColourG, mapColourB;
+
+			void genImagePath(char *outPath, const char *texturesDirPath) const;
 		};
 	};
 };

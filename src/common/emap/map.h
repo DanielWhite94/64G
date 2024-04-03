@@ -62,7 +62,7 @@ namespace Common {
 			bool moveObject(MapObject *object, const CoordVec &newPos);
 
 			bool addTexture(MapTexture *texture); // These functions will free texture later.
-			void removeTexture(unsigned id);
+			void removeTexture(unsigned id, bool deleteFile); // even if deleteFile is true, will still only delete images residing at the correct path
 			const MapTexture *getTexture(unsigned id) const;
 
 			bool addItem(MapItem *item); // These functions will free item later.

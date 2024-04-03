@@ -340,7 +340,7 @@ namespace Common {
 
 			// Remove textures.
 			for(i=0; i<MapTexture::IdMax; ++i)
-				removeTexture(i);
+				removeTexture(i, false);
 
 			// Remove items.
 			for(i=0; i<MapItem::IdMax; ++i)
@@ -928,17 +928,26 @@ namespace Common {
 			// Create texture and add to array.
 			textures[texture->getId()]=texture;
 
-			return (textures[texture->getId()]!=NULL);
+			// Save texture (to ensure it is copied/renamed as required)
+			texture->save(getTexturesDir());
+
+			return true;
 		}
 
-		void Map::removeTexture(unsigned id) {
+		void Map::removeTexture(unsigned id, bool deleteFile) {
 			assert(id<MapTexture::IdMax);
 
-			// If there is a texture here, free it and set entry to NULL.
-			if (textures[id]!=NULL) {
-				delete textures[id];
-				textures[id]=NULL;
-			}
+			// No such texture?
+			if (textures[id]==NULL)
+				return;
+
+			// Delete file (if needed)
+			if (deleteFile && textures[id]->getImagePathIsUpToDate(getTexturesDir()))
+				unlink(textures[id]->getImagePath());
+
+			// Free texture and clear entry
+			delete textures[id];
+			textures[id]=NULL;
 		}
 
 		const MapTexture *Map::getTexture(unsigned id) const {

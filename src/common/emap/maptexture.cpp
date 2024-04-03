@@ -40,10 +40,16 @@ namespace Common {
 		bool MapTexture::save(const char *texturesDirPath) const {
 			assert(texturesDirPath!=NULL);
 
-			// Copy image file.
-			const char *extension="png"; // TODO: Avoid hardcoding this.
+			// Create true/new path (based on current attributes)
 			char outPath[4096]; // TODO: This better.
-			sprintf(outPath, "%s/%us%ur%ug%ub%u-%s.%s", texturesDirPath, getId(), getScale(), getMapColourR(), getMapColourG(), getMapColourB(), getName(), extension);
+			genImagePath(outPath, texturesDirPath);
+
+			// No change?
+			// TODO: need to normalise paths or?
+			if (strcmp(outPath, getImagePath())==0)
+				return true;
+
+			// Copy image file.
 
 			int inFd=open(getImagePath(), O_RDONLY); // TODO: Check return.
 			int outFd=open(outPath, O_WRONLY|O_CREAT, 0777); // TODO: Check return.
@@ -92,6 +98,12 @@ namespace Common {
 			return path;
 		}
 
+		bool MapTexture::getImagePathIsUpToDate(const char *texturesDirPath) const {
+			char outPath[4096]; // TODO: better
+			genImagePath(outPath, texturesDirPath);
+			return (strcmp(outPath, getImagePath())==0);
+		}
+
 		unsigned MapTexture::getScale(void) const {
 			return scale;
 		}
@@ -107,5 +119,11 @@ namespace Common {
 		uint8_t MapTexture::getMapColourB(void) const {
 			return mapColourB;
 		}
+
+		void MapTexture::genImagePath(char *outPath, const char *texturesDirPath) const {
+			const char *extension="png"; // TODO: Avoid hardcoding this.
+			sprintf(outPath, "%s/%us%ur%ug%ub%u-%s.%s", texturesDirPath, getId(), getScale(), getMapColourR(), getMapColourG(), getMapColourB(), getName(), extension);
+		}
+
 	};
 };
