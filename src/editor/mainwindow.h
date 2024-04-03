@@ -65,6 +65,8 @@ namespace Editor {
 		bool menuViewLayersPathsToggled(GtkWidget *widget);
 
 		bool sidePaneTextureClicked(GtkWidget *widget, GdkEventButton *event);
+		bool sidePaneTexturesAddButtonClicked(GtkWidget *widget);
+		bool sidePaneTexturesRemoveButtonClicked(GtkWidget *widget);
 
 		GtkWidget *window;
 		GtkWidget *menuFileNew;
@@ -99,6 +101,8 @@ namespace Editor {
 		GtkWidget *sidePaneTexturesActiveNameEntry;
 		GtkWidget *sidePaneTexturesActiveScaleSpinButton;
 		GtkWidget *sidePaneTexturesActiveMapColourButton;
+		GtkWidget *sidePaneTexturesAddButton;
+		GtkWidget *sidePaneTexturesRemoveButton;
 
 		class Map *map;
 
@@ -160,7 +164,8 @@ namespace Editor {
 
 		void sidePaneTexturesGridPopulate(void);
 		void sidePaneTexturesGridClear(void);
-		void sidePaneTexturesSetActiveTexture(unsigned id, GtkWidget *widget);
+		void sidePaneTexturesSetActiveTexture(int id, GtkWidget *widget);
+		GtkWidget *sidePaneTexturesGetWidgetForId(int id);
 
 		cairo_surface_t *getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer);
 

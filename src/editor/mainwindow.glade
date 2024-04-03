@@ -446,7 +446,6 @@
                                 <child>
                                   <object class="GtkEntry" id="sidePaneTexturesActiveNameEntry">
                                     <property name="visible">True</property>
-                                    <property name="sensitive">False</property>
                                     <property name="can-focus">True</property>
                                   </object>
                                   <packing>
@@ -468,7 +467,6 @@
                                 <child>
                                   <object class="GtkSpinButton" id="sidePaneTexturesActiveScaleSpinButton">
                                     <property name="visible">True</property>
-                                    <property name="sensitive">False</property>
                                     <property name="can-focus">True</property>
                                     <property name="adjustment">adjustment1</property>
                                   </object>
@@ -491,7 +489,6 @@
                                 <child>
                                   <object class="GtkColorButton" id="sidePaneTexturesActiveMapColourButton">
                                     <property name="visible">True</property>
-                                    <property name="sensitive">False</property>
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">True</property>
                                   </object>
@@ -618,10 +615,9 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton">
+                          <object class="GtkButton" id="sidePaneTexturesAddButton">
                             <property name="label" translatable="yes">Add</property>
                             <property name="visible">True</property>
-                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
                           </object>
@@ -632,10 +628,9 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton">
+                          <object class="GtkButton" id="sidePaneTexturesRemoveButton">
                             <property name="label" translatable="yes">Remove</property>
                             <property name="visible">True</property>
-                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
                           </object>
