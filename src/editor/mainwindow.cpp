@@ -1338,7 +1338,7 @@ namespace Editor {
 		int cursorTileX=drawingAreaDeviceXToTileX(drawingAreaMouseDeviceX);
 		int cursorTileY=drawingAreaDeviceYToTileY(drawingAreaMouseDeviceY);
 
-		char *oldLocale = setlocale(LC_NUMERIC, NULL);
+		char *oldLocale=setlocale(LC_NUMERIC, NULL);
 		setlocale(LC_NUMERIC, "");
 		sprintf(str, "Centre (%.0f,%.0f), Cursor (%i,%i), Zoom level %i (x%.0f)", userCentreX, userCentreY, cursorTileX, cursorTileY, getZoomLevelHuman(), getZoomFactorHuman());
 		setlocale(LC_NUMERIC, oldLocale);
