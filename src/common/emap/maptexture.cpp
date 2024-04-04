@@ -20,8 +20,9 @@ namespace Common {
 			assert(gScale>=1);
 
 			id=gId;
-			name=(char *)malloc(strlen(gName)+1); // TODO: Check return.
-			strcpy(name, gName);
+			name=(char *)malloc(strlen("Unnamed")+1); // TODO: Check return.
+			strcpy(name, "Unnamed");
+			setName(gName);
 			path=(char *)malloc(strlen(gPath)+1); // TODO: Check return.
 			strcpy(path, gPath);
 			scale=gScale;
@@ -118,6 +119,30 @@ namespace Common {
 
 		uint8_t MapTexture::getMapColourB(void) const {
 			return mapColourB;
+		}
+
+		bool MapTexture::setName(const char *gName) {
+			// Verify name is valid (a-z, A-Z, 0-9 and _, not empty)
+			if (*gName=='\0')
+				return false;
+
+			for(const char *c=gName; *c!='\0'; ++c) {
+				if (!((*c>='a' && *c<='z') ||
+				      (*c>='A' && *c<='Z') ||
+				      (*c>='0' && *c<='9') ||
+				      (*c=='_')))
+					return false;
+			}
+
+			// Copy name
+			char *newName=(char *)realloc(name, strlen(gName)+1);
+			if (newName==NULL)
+				return false;
+
+			name=newName;
+			strcpy(name, gName);
+
+			return true;
 		}
 
 		void MapTexture::genImagePath(char *outPath, const char *texturesDirPath) const {

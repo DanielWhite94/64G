@@ -24,6 +24,9 @@ namespace Common {
 			uint8_t getMapColourR(void) const;
 			uint8_t getMapColourG(void) const;
 			uint8_t getMapColourB(void) const;
+
+			bool setName(const char *gName);
+
 		private:
 			unsigned id;
 			char *name;
