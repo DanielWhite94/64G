@@ -974,6 +974,42 @@ namespace Editor {
 	}
 
 	bool MainWindow::sidePaneTexturesAddButtonClicked(GtkWidget *widget) {
+		// Find new unique id
+		unsigned id;
+		for(id=0; id<MapTexture::IdMax; ++id) {
+			if (map->getTexture(id)==NULL)
+				break;
+		}
+
+		if (id==MapTexture::IdMax)
+			return false; // TODO: add message/dialogue that texture limit reached
+
+		// Prompt for image file
+		GtkWidget *dialog=gtk_file_chooser_dialog_new("Choose Texture Image", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, "Cancel", GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_ACCEPT, NULL);
+		GtkFileFilter *filter=gtk_file_filter_new();
+		gtk_file_filter_add_mime_type(filter, "image/*");
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+		gint res=gtk_dialog_run(GTK_DIALOG(dialog));
+		if (res!=GTK_RESPONSE_ACCEPT) {
+			gtk_widget_destroy(dialog);
+			return false;
+		}
+
+		// Create texture and add to map
+		char *path=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		MapTexture *texture=new MapTexture(id, "Unnamed", path, 4, 0, 0, 0);
+		map->addTexture(texture);
+
+		g_free(path);
+		gtk_widget_destroy(dialog);
+
+		// Clear and repopulate textures grid
+		sidePaneTexturesGridClear();
+		sidePaneTexturesGridPopulate();
+
+		// Make new texture the active one
+		sidePaneTexturesSetActiveTexture(id, sidePaneTexturesGetWidgetForId(id));
+
 		return false;
 	}
 
