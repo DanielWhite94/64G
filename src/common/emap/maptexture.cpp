@@ -50,7 +50,7 @@ namespace Common {
 				return true;
 
 			// Copy image file.
-
+			// TODO: want to rename instead of copy (only if say in correct dir and the id matches - so the id in the path matches texture->getId)
 			int inFd=open(getImagePath(), O_RDONLY); // TODO: Check return.
 			int outFd=open(outPath, O_WRONLY|O_CREAT, 0777); // TODO: Check return.
 
