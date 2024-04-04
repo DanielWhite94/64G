@@ -967,7 +967,7 @@ namespace Editor {
 			return false;
 
 		// Grab relevant ID and use it to set the active texture
-		unsigned id=(unsigned)(uint64_t)g_object_get_data(G_OBJECT(widget), "id");
+		unsigned id=sidePaneTexturesGetIdForWidget(widget);
 		sidePaneTexturesSetActiveTexture(id, widget);
 
 		return false;
@@ -1460,19 +1460,29 @@ namespace Editor {
 	}
 
 	GtkWidget *MainWindow::sidePaneTexturesGetWidgetForId(int id) {
+		if (id==-1)
+			return NULL;
+
 		for(unsigned y=0; 1; ++y) {
 			for(unsigned x=0; x<texturesGridWidth; ++x) {
 				GtkWidget *widget=gtk_grid_get_child_at(GTK_GRID(sidePaneTexturesGrid), x, y);
 				if (widget==NULL)
 					return NULL;
 
-				unsigned widgetId=(unsigned)(uint64_t)g_object_get_data(G_OBJECT(widget), "id");
+				int widgetId=sidePaneTexturesGetIdForWidget(widget);
 				if (widgetId==id)
 					return widget;
 			}
 		}
 
 		return NULL;
+	}
+
+	int MainWindow::sidePaneTexturesGetIdForWidget(GtkWidget *widget) {
+		if (widget==NULL)
+			return -1;
+
+		return (unsigned)(uint64_t)g_object_get_data(G_OBJECT(widget), "id");
 	}
 
 	cairo_surface_t *MainWindow::getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer) {

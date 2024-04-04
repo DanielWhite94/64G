@@ -166,6 +166,7 @@ namespace Editor {
 		void sidePaneTexturesGridClear(void);
 		void sidePaneTexturesSetActiveTexture(int id, GtkWidget *widget);
 		GtkWidget *sidePaneTexturesGetWidgetForId(int id);
+		int sidePaneTexturesGetIdForWidget(GtkWidget *widget); // -1 on failure
 
 		cairo_surface_t *getMapTiledImageSurface(unsigned z, unsigned x, unsigned y, MapTiled::ImageLayer layer);
 
