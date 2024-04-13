@@ -122,7 +122,7 @@ namespace Editor {
 		MapTiled::ImageLayerSet mapTileToGenLayerSet;
 	private:
 		// Textures grid parameters
-		static const unsigned texturesActiveImageSize=128;
+		static const unsigned texturesActiveImageSize=256;
 		static const unsigned texturesGridWidth=4;
 		static const unsigned texturesGridThumbnailSize=64;
 
