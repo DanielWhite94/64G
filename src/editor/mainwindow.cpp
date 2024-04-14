@@ -659,10 +659,11 @@ namespace Editor {
 		cairo_fill(cr);
 
 		// Calculate extents of what is on screen in user space units.
-		double userTopLeftX=deviceTopLeftX, userTopLeftY=deviceTopLeftY;
-		cairo_device_to_user(cr, &userTopLeftX, &userTopLeftY);
-		double userBottomRightX=deviceBottomRightX, userBottomRightY=deviceBottomRightY;
-		cairo_device_to_user(cr, &userBottomRightX, &userBottomRightY);
+		// TODO: why doesn't using cairo_device_to_user work here?
+		const double userTopLeftX=drawingAreaDeviceXToTileX(deviceTopLeftX);
+		const double userTopLeftY=drawingAreaDeviceYToTileY(deviceTopLeftY);
+		const double userBottomRightX=drawingAreaDeviceXToTileX(deviceBottomRightX);
+		const double userBottomRightY=drawingAreaDeviceYToTileY(deviceBottomRightY);
 
 		// Draw regions
 		if (1) {
