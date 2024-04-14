@@ -678,7 +678,48 @@ namespace Editor {
 						if (tile==NULL)
 							continue;
 
-						// Choose colour
+						// Special case for texture layer
+						if (activeLayer==MapTiled::ImageLayerTexture) {
+							// Loop over tile layers
+							for(int z=0; z<MapTile::layersMax; ++z) {
+								// Grab texture and load surface
+								const MapTile::Layer *layer=tile->getLayer(z);
+								if (layer->textureId==MapTexture::IdMax)
+									continue;
+
+								const MapTexture *texture=map->getTexture(layer->textureId);
+								if (texture==NULL)
+									continue;
+
+								const char *path=texture->getImagePath();
+								cairo_surface_t *surface=cairo_image_surface_create_from_png(path);
+								if (cairo_surface_status(surface)!=CAIRO_STATUS_SUCCESS) {
+									cairo_surface_destroy(surface);
+									continue;
+								}
+
+								// Render surface
+								double deviceX=tileX;
+								double deviceY=tileY;
+								cairo_user_to_device(cr, &deviceX, &deviceY);
+								deviceX=floor(deviceX);
+								deviceY=floor(deviceY);
+
+								double zoom=(256.0*cairo_image_surface_get_width(surface))/getZoomFactorHuman();
+
+								cairo_save(cr);
+								cairo_identity_matrix(cr);
+								cairo_surface_set_device_scale(surface, zoom, zoom);
+								cairo_set_source_surface(cr, surface, deviceX, deviceY);
+								cairo_paint(cr);
+								cairo_surface_destroy(surface);
+								cairo_restore(cr);
+							}
+
+							continue;
+						}
+
+						// Standard case - choose colour
 						uint8_t r, g, b, a;
 						MapPngLib::getColourForTile(map, tileX, tileY, tile, activeLayer, &r, &g, &b, &a);
 
