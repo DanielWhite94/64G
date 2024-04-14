@@ -286,6 +286,10 @@ namespace Editor {
 		if (!MapTiled::generateImage(map, mapTileToGenZoom, mapTileToGenX, mapTileToGenY, mapTileToGenLayerSet, 100, NULL, NULL))
 			return;
 
+		// Avoid redrawing for no reason
+		if (mapTileToGenZoom==0)
+			return;
+
 		// Reset to-gen variables
 		mapTileToGenX=0;
 		mapTileToGenY=0;
