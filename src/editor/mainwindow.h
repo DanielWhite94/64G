@@ -107,7 +107,7 @@ namespace Editor {
 		class Map *map;
 
 		// Zoom limits based on available MapTiled images
-		static const int zoomExtra=5; // At zoom=MapTiled::maxZoom MapTiled images are 1:1 with the screen, this is how many levels we can scale them to zoom in further.
+		static const int zoomExtra=6; // At zoom=MapTiled::maxZoom MapTiled images are 1:1 with the screen, this is how many levels we can scale them to zoom in further.
 		static const int zoomLevelMin=0, zoomLevelMax=MapTiled::maxZoom+zoomExtra;
 
 		int zoomLevel;

@@ -629,10 +629,10 @@ namespace Editor {
 
 		//                                              zoom level = {  0   1   2   3   4   5   6   7   8   9  10    11,    12,     13}
 		// TODO: this will need adjusting after changing MapTiled image size parameters
-		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,1/32.0,1/64.0,1/128.0};
-		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={ 64, 32, 32, 16,  8,  8,  4,  2,  1,  1,0.5,  0.25, 0.125,  0.125};
-		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={128, 64, 32, 32, 32, 16,  8,  4,  2,  2,  1,   0.5,  0.25,   0.25};
-		assert(zoomLevelMax-zoomLevelMin==9+5);
+		assert(zoomLevelMax-zoomLevelMin==9+6);
+		const double tileGridLineWidths[zoomLevelMax-zoomLevelMin]  ={  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,1/32.0,1/64.0,1/128.0,1/128.0};
+		const double regionGridLineWidths[zoomLevelMax-zoomLevelMin]={ 64, 32, 32, 16,  8,  8,  4,  2,  1,  1,0.5,  0.25, 0.125,  0.125,  0.125};
+		const double kmGridLineWidths[zoomLevelMax-zoomLevelMin]    ={128, 64, 32, 32, 32, 16,  8,  4,  2,  2,  1,   0.5,  0.25,   0.25,   0.25};
 
 		double deviceTopLeftX=0.0, deviceTopLeftY=0.0;
 		double deviceBottomRightX=gtk_widget_get_allocated_width(drawingArea);
