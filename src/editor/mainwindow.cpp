@@ -663,7 +663,29 @@ namespace Editor {
 		// Draw regions
 		if (1) {
 			// Calculate which set of map tile images to use (i.e. which zoom level)
-			if (1) {
+			MapTiled::ImageLayer activeLayer=menuViewLayersGetActiveLayer();
+			if (userBottomRightX-userTopLeftX<=64 && userBottomRightY-userTopLeftY<=64) {
+				// zoomed in enough to render tiles in real time
+				for(int tileY=std::max<int>(0,userTopLeftY); tileY<=std::min<int>(userBottomRightY, userMapSizeY); ++tileY) {
+					for(int tileX=std::max<int>(0,userTopLeftX); tileX<=std::min<int>(userBottomRightX, userMapSizeX); ++tileX) {
+						// Grab tile
+						const MapTile *tile=map->getTileAtOffset(tileX, tileY, Common::EMap::Map::GetTileFlag::None);
+						if (tile==NULL)
+							continue;
+
+						// Choose colour
+						uint8_t r, g, b, a;
+						MapPngLib::getColourForTile(map, tileX, tileY, tile, activeLayer, &r, &g, &b, &a);
+
+						// Draw tile
+						cairo_set_source_rgb(cr, r/255.0, g/255.0, b/255.0);
+						cairo_rectangle(cr, tileX, tileY, 1, 1);
+						cairo_fill(cr);
+					}
+				}
+			} else {
+				// zoomed out enough to use MapTiled slippymap images
+
 				double userDevicePixelSize=pow(2.0, zoomLevelMax-zoomExtra-1-zoomLevel); // how many user space units are represent by a single pixel (in either X or Y direction, they are equal)
 				double userMapTileImageSize=userDevicePixelSize*MapTiled::imageSize;
 
@@ -690,8 +712,6 @@ namespace Editor {
 					mapTileEndY=0;
 				if (mapTileEndY>=mapTileMax)
 					mapTileEndY=mapTileMax-1;
-
-				MapTiled::ImageLayer activeLayer=menuViewLayersGetActiveLayer();
 
 				for(int mapTileY=mapTileStartY; mapTileY<=mapTileEndY; ++mapTileY) {
 					double userMapTileTopLeftY=mapTileY*userMapTileImageSize;
