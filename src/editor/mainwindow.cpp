@@ -683,7 +683,7 @@ namespace Editor {
 						MapPngLib::getColourForTile(map, tileX, tileY, tile, activeLayer, &r, &g, &b, &a);
 
 						// Draw tile
-						cairo_set_source_rgb(cr, r/255.0, g/255.0, b/255.0);
+						cairo_set_source_rgba(cr, r/255.0, g/255.0, b/255.0, a/255.0);
 						cairo_rectangle(cr, tileX, tileY, 1, 1);
 						cairo_fill(cr);
 					}
