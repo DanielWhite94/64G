@@ -1558,7 +1558,7 @@ namespace Editor {
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(sidePaneTexturesActiveIdSpinButton), texture->getId());
 		gtk_entry_set_text(GTK_ENTRY(sidePaneTexturesActiveNameEntry), texture->getName());
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(sidePaneTexturesActiveScaleSpinButton), texture->getScale());
-		gtk_color_button_set_rgba(GTK_COLOR_BUTTON(sidePaneTexturesActiveMapColourButton), &textureColour);
+		gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(sidePaneTexturesActiveMapColourButton), &textureColour);
 	}
 
 	GtkWidget *MainWindow::sidePaneTexturesGetWidgetForId(int id) {
