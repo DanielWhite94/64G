@@ -1,3 +1,33 @@
+/*
+
+.....
+
+we are on the wrong branch, but just for fun
+thinking about marching squares
+
+now have tile images 'watergrass' in demogen marching squares dir
+so make a engine/gen algo for this
+and then use it here (in demogen) to make land/water interface look much better
+
+a few things to consider:
+* would like a way to combine all 16/18 images into a single thing
+	so we can call it say grasswaterinterface and just paint it down with a brush or select it in a tool menu
+	maybe this is a 'brush'?
+	so brush parameters would be something like
+	size, shape, texture or special things like marching squares
+	could also have a texture per layer (or none or unticked or w/e)
+	so this handles that issue we had nicely 
+* add two other saddle point images, might as well get this right straight away
+	seems weird given how much of the tile the land bit takes up?
+	not sure, do some tests in the editor first
+* the standard algorithm considers 4 neighbours per tile,
+	while our tiles have 8
+
+
+
+demogenGroundModifyTilesFunctor
+
+*/
 #include <cassert>
 #include <cfloat>
 #include <cmath>

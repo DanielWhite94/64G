@@ -1,3 +1,21 @@
+/*
+
+.....
+
+want to add basic tools:
+* Move Tool
+	this is what we have now basically
+	being able to pan the map by dragging
+	but not affecting anything in the map like tiles or textures
+* Selection Tool
+	initially make so can just click a tile to select
+	but then add e.g. rectangle selection and maybe others
+* Brush Tool
+	clicking/dragging to apply selected texture to indicated layer
+* Fill Tool
+	.....
+
+*/
 #include <algorithm>
 #include <cassert>
 #include <clocale>
@@ -148,7 +166,9 @@ namespace Editor {
 		error|=(menuToolsClear=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsClear")))==NULL;
 		error|=(menuToolsHeightTemperature=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsHeightTemperature")))==NULL;
 		error|=(menuToolsKingdomTerritory=GTK_WIDGET(gtk_builder_get_object(builder, "menuToolsKingdomTerritory")))==NULL;
-		error|=(sidePaneNotebook=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneNotebook")))==NULL;
+		error|=(sidePaneLeftToolPalette=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneLeftToolPalette")))==NULL;
+		sidePaneToolsGroup=NULL; // initialised slightly later in this function
+		error|=(sidePaneRightNotebook=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneRightNotebook")))==NULL;
 		error|=(sidePaneTexturesGrid=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesGrid")))==NULL;
 		error|=(sidePaneTexturesActiveImage=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesActiveImage")))==NULL;
 		error|=(sidePaneTexturesActiveIdSpinButton=GTK_WIDGET(gtk_builder_get_object(builder, "sidePaneTexturesActiveIdSpinButton")))==NULL;
@@ -204,6 +224,18 @@ namespace Editor {
 
 		// Try to ensure the window is maximised on startup
 		gtk_window_maximize(GTK_WINDOW(window));
+
+		// ..... add tools
+		sidePaneToolsGroup=gtk_tool_item_group_new("Tools");
+		gtk_container_add(GTK_CONTAINER(sidePaneLeftToolPalette), sidePaneToolsGroup);
+		gtk_tool_item_group_set_collapsed(GTK_TOOL_ITEM_GROUP(sidePaneToolsGroup), false);
+
+		toolsAdd("Move Tool");
+		toolsAdd("Selection Tool");
+		toolsAdd("Brush Tool");
+
+		gtk_widget_show_all(sidePaneToolsGroup); // .....
+		gtk_widget_show_all(sidePaneLeftToolPalette);
 
 		// Ensure widgets are setup correctly before showing the window
 		updateWidgetSensitivities();
@@ -947,11 +979,43 @@ namespace Editor {
 		dragBeginUserCentreY=userCentreY;
 	}
 
+	/*
+
+	.....
+
+	this is where drag functions are
+	in due course, what these do will depend on which tool is selected (along with its parameters)
+	also want to add click functions
+	or maybe drag begin does this well enough anyway idk
+
+	*/
+
 	void MainWindow::drawingAreaDragUpdate(double startX, double startY, double offsetX, double offsetY) {
+		// ..... original panning code
+		/*
+		......
 		double zoomFactor=getZoomFactor();
 		userCentreX=dragBeginUserCentreX-offsetX/zoomFactor;
 		userCentreY=dragBeginUserCentreY-offsetY/zoomFactor;
+		*/
 
+		// ..... temp/hack
+		if (sidePaneTexturesActiveId!=-1) {
+			double endX=startX+offsetX;
+			double endY=startY+offsetY;
+			int endTileX=drawingAreaDeviceXToTileX(endX);
+			int endTileY=drawingAreaDeviceYToTileY(endY);
+
+			MapTile *tile=map->getTileAtOffset(endTileX, endTileY, Common::EMap::Map::GetTileFlag::CreateDirty);
+			if (tile!=NULL) {
+				tile->setLayer(0, {.textureId=(MapTexture::Id)sidePaneTexturesActiveId});
+				MapTiled::clearImagesRegion(map, endTileX/MapRegion::tilesSize, endTileY/MapRegion::tilesSize, MapTiled::ImageLayerSetTexture); // ..... can do better by not deleting as much? or maybe not much difference, think about
+				// ..... some kind of bug with either our logic/calculations, or clearImagesRegion function
+				// ..... (looks like regions (0,0) and (1,0) are the only images getting cleared, or something...)
+			}
+		}
+
+		// .....
 		updateDrawingArea();
 		updatePositionLabel();
 	}
@@ -1417,8 +1481,11 @@ namespace Editor {
 		gtk_widget_set_sensitive(menuToolsHeightTemperature, mapOpen);
 		gtk_widget_set_sensitive(menuToolsKingdomTerritory, mapOpen);
 
-		// Side pane
-		gtk_widget_set_sensitive(sidePaneNotebook, mapOpen);
+		// Left side pane
+		gtk_widget_set_sensitive(sidePaneLeftToolPalette, mapOpen);
+
+		// Right side pane
+		gtk_widget_set_sensitive(sidePaneRightNotebook, mapOpen);
 	}
 
 	void MainWindow::updateTitle(void) {
@@ -1446,6 +1513,30 @@ namespace Editor {
 		setlocale(LC_NUMERIC, oldLocale);
 
 		gtk_label_set_text(GTK_LABEL(positionLabel), str);
+	}
+
+	void MainWindow::toolsAdd(const char *name) {
+		/*
+
+		.....
+
+		why doesn't this work - we simply don't get anything added to the tool palette?
+		tried show all in various places
+		and have verified the image exists
+		not sure...
+
+		.....
+
+		colors-chromablue.svg looks nice for a fill tool (also have green, red,  black, grey and white options)
+		color-select.svg for a colour picker
+		have gtk icon browser to check icons too
+
+		*/
+
+		GtkToolItem *item=gtk_tool_button_new_from_stock(GTK_STOCK_OK);
+		// ..... GtkToolItem *item=gtk_tool_button_new(gtk_label_new(name), name);
+		// ..... gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(item), "document-open");
+		gtk_tool_item_group_insert(GTK_TOOL_ITEM_GROUP(sidePaneToolsGroup), item, -1);
 	}
 
 	void MainWindow::sidePaneTexturesGridPopulate(void) {

@@ -94,7 +94,9 @@ namespace Editor {
 		GtkWidget *menuViewLayersPolitical;
 		GtkWidget *menuViewLayersHeightContours;
 		GtkWidget *menuViewLayersPaths;
-		GtkWidget *sidePaneNotebook;
+		GtkWidget *sidePaneLeftToolPalette;
+		GtkWidget *sidePaneToolsGroup;
+		GtkWidget *sidePaneRightNotebook;
 		GtkWidget *sidePaneTexturesGrid;
 		GtkWidget *sidePaneTexturesActiveImage;
 		GtkWidget *sidePaneTexturesActiveIdSpinButton;
@@ -161,6 +163,8 @@ namespace Editor {
 		void updateTitle(void);
 		void updateDrawingArea(void);
 		void updatePositionLabel(void);
+
+		void toolsAdd(const char *name);
 
 		void sidePaneTexturesGridPopulate(void);
 		void sidePaneTexturesGridClear(void);
