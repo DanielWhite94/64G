@@ -10,6 +10,7 @@
 #include "gen/forest.h"
 #include "gen/house.h"
 #include "gen/kingdom.h"
+#include "gen/marchingsquares.h"
 #include "gen/modifytiles.h"
 #include "gen/particleflow.h"
 #include "gen/pathfind.h"
